@@ -1,0 +1,21 @@
+$primary-color: #bbb;
+
+%primary-input-styles {
+	background-color: #444;
+	border: none;
+	border-radius: 2px;
+	color: $primary-color;
+}
+
+body { background-color: #333; }
+
+* { box-sizing: border-box; }
+
+.title {
+	margin-top: 12px;
+	margin-bottom: 12px;
+	text-align: center;
+	color: $primary-color;
+	font-size: 48px;
+	font-weight: 200;
+}
