@@ -211,6 +211,22 @@ function saveZip(data) {
     }
 }
 
+function convertToPixels(value, percentage) {
+    return value * (Number.parseInt(percentage, 10) / 100);
+}
+
+function convertDimension(dimenion, imageDimenion) {
+    if (!dimenion) {
+        return;
+    }
+
+    if (dimenion.includes("%")) {
+        return convertToPixels(imageDimenion, dimenion);
+    }
+
+    return Number.parseInt(dimenion, 10);
+}
+
 function getDimensionsWithoutRatio(_ref) {
     var width = _ref.width;
     var height = _ref.height;
@@ -309,16 +325,24 @@ function processImage(images, dimensions) {
             imageToResize = images.splice(0, 1)[0];
 
         image.onload = function () {
-            var ratio = image.width / image.height,
-                adjustedDimensions = dimensions.map(function (dimension) {
-                return cb(dimension, ratio);
-            }),
-                resize = resizeImage(image, imageToResize, inc);
-
             if (dropbox.isCanceled) {
                 return;
             }
 
+            var resize = resizeImage(image, imageToResize, inc),
+                ratio = image.width / image.height,
+                adjustedDimensions = [];
+
+            adjustedDimensions = dimensions.map(function (dimension) {
+                return {
+                    width: convertDimension(dimension.width, image.width),
+                    height: convertDimension(dimension.height, image.height)
+                };
+            }).map(function (dimension) {
+                return cb(dimension, ratio);
+            });
+
+            console.log(adjustedDimensions);
             dropbox.setProgressLabel("Processing: " + imageToResize.name);
             resize(adjustedDimensions);
         };
@@ -351,7 +375,7 @@ function inputsValid() {
         isValidHeight = select.isValid(heights);
 
     if (!isValidWidth || !isValidHeight) {
-        showMessageWithButton("Only numbers allowed.", dropbox.processBtn);
+        showMessageWithButton("Only values in pixels or percents are allowed.", dropbox.processBtn);
         return false;
     }
 
@@ -364,8 +388,8 @@ function getDimensions() {
         dimensions = [];
 
     for (var i = 0, l = widths.length; i < l; i++) {
-        var width = Number.parseInt(widths[i].value, 10),
-            height = Number.parseInt(heights[i].value, 10);
+        var width = widths[i].value,
+            height = heights[i].value;
 
         if (width || height) {
             dimensions.push({ width: width, height: height });
@@ -628,10 +652,11 @@ function indicateInput(input) {
 }
 
 function isValid(inputs) {
-    var valid = true;
+    var regex = /^\d+(px|%)?$/,
+        valid = true;
 
     Array.prototype.forEach.call(inputs, function (input) {
-        if (/\D/g.test(input.value)) {
+        if (input.value && !regex.test(input.value)) {
             indicateInput(input);
             valid = false;
         }
