@@ -46,10 +46,11 @@ function indicateInput(input) {
 }
 
 function isValid(inputs) {
-    var valid = true;
+    var regex = /^\d+(px|%)?$/,
+        valid = true;
 	
-    Array.prototype.forEach.call(inputs, input => {       
-        if (/\D/g.test(input.value)) {
+    Array.prototype.forEach.call(inputs, input => {
+        if (input.value && !regex.test(input.value)) {
             indicateInput(input);
             valid = false;
         }
