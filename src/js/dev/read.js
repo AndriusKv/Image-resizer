@@ -28,13 +28,27 @@ function isImage(type) {
     return type.includes("image");
 }
 
+function removeFileType(fileName) {
+    return fileName.slice(0, fileName.lastIndexOf("."));
+}
+
+function setImageName(name) {
+    var imageName = document.getElementById("js-image-name").value || removeFileType(name),
+        imageNameSeperator = document.getElementById("js-image-name-seperator").value || "-";
+
+    return imageName + imageNameSeperator;
+}
+
 function readImage(image) {
     let reader = new FileReader();
 
     reader.readAsDataURL(image);
     reader.onloadend = function(event) {
         process.images.push({
-            name: image.name,
+            name: {
+                original: image.name,
+                setByUser: setImageName(image.name)
+            },
             type: image.type,
             size: image.size / 1e6,
             uri: event.target.result
@@ -46,6 +60,7 @@ function readFiles(files, inc) {
     var file = files[0];
 
     dropbox.setProgressLabel(`Reading: ${file.name}`);
+
     files = Array.prototype.slice.call(files, 1);
 
     if (isImage(file.type)) {

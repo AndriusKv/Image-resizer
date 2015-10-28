@@ -24,6 +24,9 @@ var widthInputCointaner = document.getElementById("js-width-input-container"),
     
     assignValuesToInputs(widthInputCointaner.children, selections.widthInputValues);
     assignValuesToInputs(heightInputContainer.children, selections.heightInputValues);
+    
+    document.getElementById("js-image-name").value = selections.imageName;
+    document.getElementById("js-image-name-seperator").value = selections.imageNameSeperator;
 })();
 
 function saveToLocalStorage() {
@@ -31,7 +34,9 @@ function saveToLocalStorage() {
         numberOfInputs: select.value,
         checked: checkbox.checked,
         widthInputValues: getInputValues(widthInputCointaner.children),
-        heightInputValues: getInputValues(heightInputContainer.children)
+        heightInputValues: getInputValues(heightInputContainer.children),
+        imageName: document.getElementById("js-image-name").value || "",
+        imageNameSeperator : document.getElementById("js-image-name-seperator").value || ""
     };
 
     localStorage.setItem("Selections", JSON.stringify(selections));
@@ -121,6 +126,21 @@ function onSelection(event) {
     appendInputs(heightInputContainer, numberOfInputs);
 }
 
+function toggleClass(elementId) {
+    document.getElementById(elementId).classList.toggle("show");
+}
+
+function toggleSettings(event) {
+    var button = event.target;
+    
+    button.innerHTML = button.innerHTML === "Settings" ? "Selections" : "Settings";
+    
+    toggleClass("js-selections");
+    toggleClass("js-settings");
+}
+
 select.addEventListener("input", onSelection, false);
+
+document.getElementById("js-settings-toggle").addEventListener("click", toggleSettings, false);
 
 export { widthInputCointaner, heightInputContainer, saveToLocalStorage, hasValue, isValid, checkbox };

@@ -44,7 +44,7 @@ function saveZip(data) {
         document.getElementsByTagName("body")[0].appendChild(script);
         
         script.onload = function() {
-            saveZip(data);
+            saveAs(data, "images.zip");
         };
     }
 }
@@ -124,7 +124,7 @@ function resizeImage(image, imageToResize, inc) {
         worker.postMessage({
             action: "add",
             image: {
-                name: imageToResize.name,
+                name: imageToResize.name.setByUser,
                 uri: getUri(image, imageToResize.type, dimension),
                 type: imageToResize.type.slice(6)
             }
@@ -173,8 +173,7 @@ function processImage(images, dimensions) {
                 })
                 .map(dimension => cb(dimension, ratio));
             
-            console.log(adjustedDimensions);
-            dropbox.setProgressLabel(`Processing: ${imageToResize.name}`);
+            dropbox.setProgressLabel(`Processing: ${imageToResize.name.original}`);
             resize(adjustedDimensions);
         };
         image.src = imageToResize.uri;
