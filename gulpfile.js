@@ -14,8 +14,14 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var uglify = require('gulp-uglify');
 var csso = require("gulp-csso");
+var clean = require("gulp-clean");
 
 gulp.task('default', ['watch']);
+
+gulp.task("clean", function() {
+    return gulp.src(["src/css", "src/js/tmp", "src/js/main.js", "src/js/main.js.map"], {read: false})
+        .pipe(clean());
+});
 
 gulp.task("sass", function() {
     return gulp.src("src/scss/*.scss")
@@ -28,13 +34,13 @@ gulp.task("sass", function() {
 });
 
 gulp.task("babel", function() {
-    return gulp.src(["src/js/dev/*.js"])
+    return gulp.src("src/js/dev/*.js")
         .pipe(babel())
-        .pipe(gulp.dest("src/js/temp"));
+        .pipe(gulp.dest("src/js/tmp"));
 });
 
 gulp.task("js", ["babel"], function() {
-    return browserify(["src/js/temp/main.js"]).bundle()
+    return browserify("src/js/tmp/main.js").bundle()
         .pipe(source("main.js"))
         .pipe(buffer())
         .pipe(sourcemaps.init())
@@ -48,29 +54,34 @@ gulp.task("watch", function() {
     gulp.watch(["src/scss/*.scss", "src/scss/imports/*.scss"], ["sass"]);
 });
 
-gulp.task("build", ["build:html", "build:css", "build:js", "build:libs", "build:workers"]);
+gulp.task("build", ["build:html", "build:css", "build:js", "build:libs", "build:workers"], function() {
+    return gulp.src(["src/css", "src/js/tmp", "src/js/main.js", "src/js/main.js.map"], { read: false })
+        .pipe(clean());
+});
 
 gulp.task("build:html", function() {
-	return gulp.src(["src/index.html"])
+	return gulp.src("src/index.html")
         .pipe(gulp.dest("dist"));
 });
 
 gulp.task("build:css", ["sass"], function() {
-	return gulp.src(["src/css/main.css"])
+	return gulp.src("src/css/main.css")
 		.pipe(csso())
         .pipe(gulp.dest("dist/css"));
 });
 
 gulp.task("build:js", ["js"], function() {
-	return gulp.src(["src/js/main.js"])
+	return gulp.src("src/js/main.js")
 		.pipe(uglify())
 		.pipe(gulp.dest("dist/js"));
 });
+
 gulp.task("build:libs", function() {
-	return gulp.src(["src/js/libs/*.js"])
+	return gulp.src("src/js/libs/*.js")
 		.pipe(gulp.dest("dist/js/libs"));
 });
+
 gulp.task("build:workers", function() {
-	return gulp.src(["src/js/workers/*.js"])
+	return gulp.src("src/js/workers/*.js")
 		.pipe(gulp.dest("dist/js/workers"));
 });

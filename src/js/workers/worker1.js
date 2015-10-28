@@ -1,4 +1,3 @@
-/* jshint esnext: true */
 /* global importScripts, JSZip, onmessage, postMessage */
 
 importScripts("../libs/jszip.min.js");
@@ -10,16 +9,6 @@ function zipImages(name, uri, type) {
     "use strict";
     
 	zip.folder("images").file(name + "." + type, uri, { base64: true });
-}
-
-function removeFileType(file) {
-    "use strict";
-    
-    file = file.split(".");
-
-    file.splice(file.length - 1, 1);
-
-    return file.join(".");
 }
 
 function truncateUri(uri, type) {
@@ -42,17 +31,15 @@ onmessage = function(event) {
 		case "add":
 			let image = data.image,
                 type = image.type,
-                name = removeFileType(image.name),
+                name = image.name,
                 uri = truncateUri(image.uri, type);
             
-			zipImages(name + "-" + i, uri, type);
+			zipImages(name + i, uri, type);
             i += 1;
 			break;
 		case "generate":
-            let blob = zip.generate({type:"blob"});
-
-            postMessage(blob);
-            
+            i = 0;
+            postMessage(zip.generate({type:"blob"}));
 			break;
 		case "remove":
 			zip.remove("images");
