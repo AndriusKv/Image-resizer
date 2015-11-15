@@ -1,6 +1,6 @@
 "use strict";
 
-import { addClass, removeClass } from "./main.js";
+import { changeClass } from "./main.js";
 
 var widthInputCointaner = document.getElementById("js-width-input-container"),
     heightInputContainer = document.getElementById("js-height-input-container"),
@@ -36,17 +36,17 @@ function saveToLocalStorage() {
         widthInputValues: getInputValues(widthInputCointaner.children),
         heightInputValues: getInputValues(heightInputContainer.children),
         imageName: document.getElementById("js-image-name").value || "",
-        imageNameSeperator : document.getElementById("js-image-name-seperator").value || ""
+        imageNameSeperator: document.getElementById("js-image-name-seperator").value || ""
     };
 
     localStorage.setItem("Selections", JSON.stringify(selections));
 }
 
 function indicateInput(input) {
-    addClass(input, "invalid");
+    changeClass("add", input, "invalid");
 
     setTimeout(() => {
-        removeClass(input, "invalid");
+        changeClass("remove", input, "invalid");
     }, 400);
 }
 
@@ -102,11 +102,11 @@ function createInputs(num) {
 }
 
 function appendInputs(element, num) {
-    var totalChildren = element.children.length;
+    const totalChildren = element.children.length;
 
     if (totalChildren < num) {
         let toAppend = num - totalChildren;
-
+        
         element.appendChild(createInputs(toAppend));
     }
     else {
@@ -120,7 +120,7 @@ function appendInputs(element, num) {
 }
 
 function onSelection(event) {
-    var numberOfInputs = Number.parseInt(event.target.value, 10);
+    const numberOfInputs = Number.parseInt(event.target.value, 10);
 
     appendInputs(widthInputCointaner, numberOfInputs);
     appendInputs(heightInputContainer, numberOfInputs);
@@ -131,7 +131,7 @@ function toggleClass(elementId) {
 }
 
 function toggleSettings(event) {
-    var button = event.target;
+    let button = event.target;
     
     button.innerHTML = button.innerHTML === "Settings" ? "Selections" : "Settings";
     

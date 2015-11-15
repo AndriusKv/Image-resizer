@@ -4,15 +4,15 @@
 
 import * as select from "./selections.js";
 import * as dropbox from "./dropbox.js";
-import { showElement, hideElement, showMessage } from "./main.js";
+import { toggleElement } from "./main.js";
 
-var images = [],
+let images = [],
     worker,
     zip;
 
 function showMessageWithButton(message, button) {
-    showMessage(message);
-    showElement(button);
+    dropbox.showMessage(message);
+    toggleElement("add", button);
 }
 
 function initWorker() {
@@ -108,8 +108,8 @@ function doneResizing() {
             return;
         } 
 		
-        hideElement(dropbox.progressBar);
-        hideElement(dropbox.cancelBtn);
+        toggleElement("remove", dropbox.progressBar);
+        toggleElement("remove", dropbox.cancelBtn);
         dropbox.resetProgress();
         generateZip();
     }, 1000);
@@ -117,7 +117,7 @@ function doneResizing() {
 
 function resizeImage(image, imageToResize, inc) {
     return function resize(dimensions) {
-        var dimension = dimensions.splice(0, 1)[0];
+        const dimension = dimensions.splice(0, 1)[0];
 
         dropbox.updateProgress(inc);
 
@@ -260,7 +260,7 @@ function cancelWork() {
     zip = null;
     images.length = 0;
     dropbox.resetDropbox();
-    showMessage("Work canceled.");
+    dropbox.showMessage("Work canceled.");
 }
 
 dropbox.processBtn.addEventListener("click", processImages, false);

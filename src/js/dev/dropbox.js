@@ -1,13 +1,36 @@
 "use strict";
 
-import { addMasks, removeMasks, showElement, hideElement } from "./main.js";
+import { toggleMasks, toggleElement } from "./main.js";
 
-var progressBar = document.getElementById("js-progress"),
+let progressBar = document.getElementById("js-progress"),
     processBtn = document.getElementById("js-process"),
     downloadBtn = document.getElementById("js-download"),
     cancelBtn = document.getElementById("js-cancel"),
     isCanceled = false,
-    isWorking = false;
+    isWorking = false,
+    timeout;
+
+function hideMessageAfter(delay) {
+    if (timeout) {
+        clearTimeout(timeout);
+    }
+    
+    timeout = setTimeout(() => {
+        showMessage();
+    }, delay);
+}
+
+function showMessage(message = "") {
+    requestAnimationFrame(() => {
+        document.getElementById("js-msg").innerHTML = message;
+    });
+    
+    if (!message) {
+        return;
+    }
+
+    hideMessageAfter(2000);
+}
 
 function setProgressLabel(text) {
     requestAnimationFrame(() => {
@@ -29,21 +52,21 @@ function isDone() {
 
 function removeMasksAndLabel() {
     setProgressLabel("");
-    removeMasks();
+    toggleMasks("remove");
 }
 
 function beforeWork() {
-    addMasks();
+    toggleMasks("add");
     isWorking = true;
-    showElement(progressBar);
-    hideElement(processBtn);
-    showElement(cancelBtn);
+    toggleElement("add", progressBar);
+    toggleElement("remove", processBtn);
+    toggleElement("add", cancelBtn);
 }
 
 function resetDropbox() {
     isWorking = false;
-    hideElement(progressBar);
-    hideElement(cancelBtn);
+    toggleElement("remove", progressBar);
+    toggleElement("remove", cancelBtn);
     resetProgress();
     removeMasksAndLabel();
 }
@@ -57,6 +80,7 @@ export {
 	processBtn,
     progressBar,
 	downloadBtn,
+    showMessage,
 	resetDropbox,
 	resetProgress,
 	updateProgress,
