@@ -1,6 +1,6 @@
 "use strict";
 
-import { addClass, removeClass, hideElement, showMessage } from "./main.js";
+import { changeClass, toggleElement } from "./main.js";
 import * as dropbox from "./dropbox.js";
 import * as process from "./process.js";
 
@@ -19,7 +19,7 @@ function doneReadingFiles() {
         }
         else {
             dropbox.resetDropbox();
-            showMessage("No images to process.");
+            dropbox.showMessage("No images to process.");
         }
     }, 1200);
 }
@@ -74,7 +74,7 @@ function readFiles(files, inc) {
     }
 
     if (files.length) {
-        let delay = file.size / 1e6 * 100 + 100;
+        const delay = file.size / 1e6 * 100 + 100;
         
         setTimeout(() => {
             if (dropbox.isCanceled) {
@@ -95,13 +95,13 @@ function onFiles(files) {
     
     process.zip = null;
     dropbox.isCanceled = false;
-    hideElement(dropbox.downloadBtn);
+    toggleElement("remove", dropbox.downloadBtn);
     dropbox.beforeWork();
     readFiles(files, inc);
 }
 
 function onUpload(event) {
-    var files = event.target.files;
+    let files = event.target.files;
     
     event.preventDefault();
 
@@ -112,7 +112,7 @@ function onUpload(event) {
 
 function onDrop(event) {
     counter = 0;
-    removeClass(event.target, "over");
+    changeClass("add", event.target, "over");
     
     event.stopPropagation();
     event.preventDefault();
@@ -139,7 +139,7 @@ function onDragenter(event) {
     }
     
     counter += 1;
-    addClass(event.target, "over");
+    changeClass("add", event.target, "over");
 }
 
 function onDragleave(event) {
@@ -150,7 +150,7 @@ function onDragleave(event) {
     counter -= 1;
 
     if (!counter) {
-        removeClass(event.target, "over");
+        changeClass("remove", event.target, "over");
     }
 }
 
