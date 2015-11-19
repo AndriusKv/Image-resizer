@@ -4,15 +4,15 @@ import { changeClass, toggleElement } from "./main.js";
 import * as dropbox from "./dropbox.js";
 import * as process from "./process.js";
 
-var dropboxElement = document.getElementById("js-dropbox"),
+let dropboxElement = document.getElementById("js-dropbox"),
     counter = 0;
 
-function doneReadingFiles() {	
+function doneReadingFiles() {
     setTimeout(() => {
         if (dropbox.isCanceled) {
             return;
         }
-		
+        
         if (process.images.length) {
             dropbox.resetProgress();
             process.processImages();
@@ -33,7 +33,7 @@ function removeFileType(fileName) {
 }
 
 function setImageName(name) {
-    var imageName = document.getElementById("js-image-name").value || removeFileType(name),
+    let imageName = document.getElementById("js-image-name").value || removeFileType(name),
         imageNameSeperator = document.getElementById("js-image-name-seperator").value || "-";
 
     return imageName + imageNameSeperator;
@@ -57,7 +57,7 @@ function readImage(image) {
 }
 
 function readFiles(files, inc) {
-    var file = files[0];
+    let file = files[0];
 
     dropbox.setProgressLabel(`Reading: ${file.name}`);
 
@@ -87,7 +87,7 @@ function readFiles(files, inc) {
 }
 
 function onFiles(files) {
-    var inc = 100 / files.length;
+    const inc = 100 / files.length;
     
     if (process.worker) {
         process.worker.postMessage({ action: "remove" });
@@ -107,7 +107,7 @@ function onUpload(event) {
 
     if (files.length) {
         onFiles(files);
-    }    
+    }
 }
 
 function onDrop(event) {
