@@ -26,6 +26,7 @@
 .font-button {
     float: right;
     padding: 0 2px;
+    margin-bottom: 6px;
     border: none;
     background-color: transparent;
     
@@ -66,17 +67,6 @@
 	padding: 3px 4px 2px 4px;
 
 	&:last-child { margin-bottom: 0; }
-    
-    &.invalid { animation: shake .4s; }
-}
-@keyframes shake {
-    0% { transform: scale(1.02) rotate(1deg); }
-    
-    33% { transform: scale(1.02) rotate(-1deg); }
-    
-    66% { transform: scale(1.02) rotate(1deg); }
-    
-    100% { transform: scale(1) rotate(0); }
 }
 .settings {
     display: none;
@@ -93,12 +83,9 @@
 
 .setting-label { vertical-align: middle; }
 
-.setting-checkbox, .setting-input { float: right; }
-
-.setting-checkbox { margin-top: 4px; }
-
 .setting-input {
     @extend %primary-input-styles;
     
-    padding: 2px;
+    float: right;
+    padding: 2px 4px;
 }
