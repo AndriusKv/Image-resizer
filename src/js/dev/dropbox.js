@@ -2,13 +2,14 @@
 
 import { toggleMasks, toggleElement } from "./main.js";
 
-let progressBar = document.getElementById("js-progress"),
-    processBtn = document.getElementById("js-process"),
-    downloadBtn = document.getElementById("js-download"),
-    cancelBtn = document.getElementById("js-cancel"),
-    isCanceled = false,
-    isWorking = false,
-    timeout;
+const progressBar = document.getElementById("js-progress");
+const processBtn = document.getElementById("js-process");
+const downloadBtn = document.getElementById("js-download");
+const cancelBtn = document.getElementById("js-cancel");
+
+let isCanceled = false;
+let isWorking = false;
+let timeout;
 
 function hideMessageAfter(delay) {
     if (timeout) {

@@ -3,6 +3,7 @@
 import { changeClass, toggleElement } from "./main.js";
 import * as dropbox from "./dropbox.js";
 import * as process from "./process.js";
+import * as crop from "./crop.js";
 
 let dropboxElement = document.getElementById("js-dropbox"),
     counter = 0;
@@ -12,14 +13,20 @@ function doneReadingFiles() {
         if (dropbox.isCanceled) {
             return;
         }
-        
-        if (process.images.length) {
-            dropbox.resetProgress();
-            process.processImages();
-        }
-        else {
+
+        if (!process.images.length) {
             dropbox.resetDropbox();
             dropbox.showMessage("No images to process.");
+            return;
+        }
+
+        if (document.getElementById("js-crop-checkbox").checked) {
+            dropbox.resetDropbox();
+            crop.init();
+        }
+        else {
+            dropbox.resetProgress();
+            process.processImages();
         }
     }, 1200);
 }
@@ -93,6 +100,10 @@ function onFiles(files) {
         process.worker.postMessage({ action: "remove" });
     }
     
+    if (process.images.length) {
+        process.images.length = 0;
+    }
+
     process.zip = null;
     dropbox.isCanceled = false;
     toggleElement("remove", dropbox.downloadBtn);
@@ -112,7 +123,7 @@ function onUpload(event) {
 
 function onDrop(event) {
     counter = 0;
-    changeClass("add", event.target, "over");
+    changeClass("remove", event.target, "over");
     
     event.stopPropagation();
     event.preventDefault();
