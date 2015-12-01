@@ -4,7 +4,6 @@
 
 var gulp = require("gulp");
 var watch = require("gulp-watch");
-var sourcemaps = require("gulp-sourcemaps");
 var autoprefixer = require("gulp-autoprefixer");
 var sass = require("gulp-sass");
 var babel = require("gulp-babel");
@@ -14,21 +13,22 @@ var source = require("vinyl-source-stream");
 var buffer = require("vinyl-buffer");
 var uglify = require("gulp-uglify");
 var csso = require("gulp-csso");
-var clean = require("gulp-clean");
+var del = require("del");
 
 gulp.task("default", ["watch"]);
 
 gulp.task("clean", function() {
-    return gulp.src(["src/css", "src/js/tmp", "src/js/main.js", "src/js/main.js.map"], {read: false})
-        .pipe(clean());
+    return del([
+        "src/css",
+        "src/js/tmp",
+        "src/js/main.js"
+    ]);
 });
 
 gulp.task("sass", function() {
     return gulp.src("src/scss/*.scss")
-        .pipe(sourcemaps.init())
         .pipe(sass())
         .pipe(autoprefixer())
-        .pipe(sourcemaps.write("./maps"))
         .on("error", console.error.bind(console))
         .pipe(gulp.dest("src/css"));
 });
@@ -56,8 +56,11 @@ gulp.task("watch", function() {
 });
 
 gulp.task("build", ["build:html", "build:css", "build:js", "build:libs", "build:workers"], function() {
-    return gulp.src(["src/css", "src/js/tmp", "src/js/main.js", "src/js/main.js.map"], { read: false })
-        .pipe(clean());
+    return del([
+        "src/css",
+        "src/js/tmp",
+        "src/js/main.js"
+    ]);
 });
 
 gulp.task("build:html", function() {

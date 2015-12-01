@@ -18,9 +18,9 @@
         </div>
 		<div id="js-dropbox-label" class="label-title">Click to select or drop images here</div>
         <div class="btn-container">
-            <button id="js-process" class="dropbox-btn">Process</button>
-            <button id="js-download" class="dropbox-btn">Download</button>
-            <button id="js-cancel" class="dropbox-btn">Cancel</button>
+            <button id="js-process" class="btn dropbox-btn">Process</button>
+            <button id="js-download" class="btn dropbox-btn">Download</button>
+            <button id="js-cancel" class="btn dropbox-btn">Cancel</button>
         </div>
 	</label>
 	<input type="file" id="js-image-select" class="image-select-input">
@@ -45,7 +45,7 @@
                 <div class="dimension-label">Image width</div>
                 <div class="dimension-label">Image height</div>
             </div>
-            <div class="dimension-inputs">
+            <div id="js-input-container" class="dimension-inputs">
                 <div id="js-width-input-container" class="input-container">
                     <input type="text" class="image-input">
                 </div>
@@ -56,6 +56,10 @@
 	    </div>
 	    <div id="js-settings" class="settings">
             <div class="setting">
+                <label for="js-crop-checkbox" class="setting-label">Enable image cropping</label>
+                <input type="checkbox" id="js-crop-checkbox" class="setting-input setting-checkbox">
+            </div>
+                <div class="setting">
                 <label for="js-image-name" class="setting-label">Image name</label>
                 <input type="text" id="js-image-name" class="setting-input">
             </div>
@@ -65,6 +69,28 @@
             </div>
 	    </div>
 	</div>
+    <div id="js-crop" class="crop">
+        <div class="crop-container">
+            <div class="crop-info">
+                <div id="js-crop-remaining" class="crop-remaining"></div>
+                <div id="js-crop-image-name"></div>
+                <div class="crop-measurments-info">
+                    <div>
+                        <span>width:</span>
+                        <span id="js-crop-width" class="crop-measurment">0px</span>
+                    </div>
+                    <div>
+                        <span>height:</span>
+                        <span id="js-crop-height" class="crop-measurment">0px</span>
+                    </div>
+                </div>
+            </div>
+            <canvas id="js-canvas" class="crop-canvas"></canvas>
+            <button id="js-crop-ok" class="btn crop-btn">Crop</button>
+            <button id="js-crop-skip" class="btn crop-btn">Skip</button>
+            <button id="js-crop-close" class="btn crop-btn">Close</button>
+        </div>
+    </div>
 	<script src="js/main.js"></script>
 </body>
 </html>

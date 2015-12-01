@@ -73,6 +73,7 @@ function convertMeasurement(dimension, measurement, originalMeasurement) {
 
 function convertMeasurements(measurement, originalMeasurement) {
     const ratio = originalMeasurement.width / originalMeasurement.height;
+
     let newWidth = 0;
     let newHeight = 0;
     
@@ -158,7 +159,7 @@ function resizeImage(image, imageToResize) {
                 if (dropbox.isCanceled) {
                     return;
                 }
-                
+
                 resize(dimensions, inc);
             }, delay);
         }
@@ -166,39 +167,42 @@ function resizeImage(image, imageToResize) {
 }
 
 function processImage(images, measurments) {
-    let image = new Image(),
-        imageToResize = images.splice(0, 1)[0];
+    const inc = 100 / (images.length * measurments.length);
 
-    image.onload = function() {
-        if (dropbox.isCanceled) {
-            return;
-        }
+    return function process() {
+        const image = new Image();
+        const imageToResize = images.splice(0, 1)[0];
 
-        let resize = resizeImage(image, imageToResize),
-            imageMeasurment = {
-                width: image.width,
-                height: image.height
-            },
-            adjustedDimensions = measurments.map(measurment => convertMeasurements(measurment, imageMeasurment)),
-            inc = 100 / ((images.length + 1) * adjustedDimensions.length);
-
-        dropbox.setProgressLabel(`Processing: ${imageToResize.name.original}`);
-        resize(adjustedDimensions, inc);
-    };
-
-    image.src = imageToResize.uri;
-
-    if (images.length) {
-        const delay = imageToResize.size * 400 + 100;
-
-        setTimeout(() => {
+        image.onload = function() {
             if (dropbox.isCanceled) {
                 return;
             }
-            
-            processImage(images, measurments);
-        }, delay);
-    }
+
+            const resize = resizeImage(image, imageToResize);
+            const imageMeasurment = {
+                width: image.width,
+                height: image.height
+            };
+            const adjustedDimensions = measurments.map(measurment => convertMeasurements(measurment, imageMeasurment));
+
+            dropbox.setProgressLabel(`Processing: ${imageToResize.name.original}`);
+            resize(adjustedDimensions, inc);
+        };
+
+        image.src = imageToResize.uri;
+
+        if (images.length) {
+            const delay = imageToResize.size * 400 + 100;
+
+            setTimeout(() => {
+                if (dropbox.isCanceled) {
+                    return;
+                }
+
+                process();
+            }, delay);
+        }
+    };
 }
 
 function verifyValues(values) {
@@ -244,9 +248,9 @@ function processImages() {
     
     initWorker();
     dropbox.beforeWork();
+    const process = processImage(images, inputValues);
     
-    processImage(images, inputValues);
-    
+    process();
     select.saveToLocalStorage();
 }
 
@@ -266,4 +270,4 @@ dropbox.processBtn.addEventListener("click", processImages, false);
 dropbox.downloadBtn.addEventListener("click", downloadImages, false);
 dropbox.cancelBtn.addEventListener("click", cancelWork, false);
 
-export { zip, images, worker, processImages };
+export { zip, images, worker, processImages, initWorker, generateZip };

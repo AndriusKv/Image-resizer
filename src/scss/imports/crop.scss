@@ -1,0 +1,52 @@
+.crop {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: none;
+    background-color: #ddd;
+    text-align: center;
+    user-select: none;
+    cursor: default;
+    
+    &.show { display: block; }
+}
+.crop-container {
+    position: relative;
+    display: inline-block;
+    padding: 0 4px 4px 4px;
+}
+.crop-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    padding: 4px;
+    background-color: #003459;
+    box-shadow: 0 0 5px rgba(0,0,0,0.4);
+    font-size: 14px;
+    color: $light-color;
+    line-height: 1.428;
+}
+.crop-measurments-info {
+    width: 80px;
+    text-align: left;
+    font-size: 10px;
+    line-height: 1;
+}
+.crop-measurment {
+    float: right;
+}
+.crop-canvas {
+    display: block;
+    margin-bottom: 4px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.4);
+}
+.crop-btn {
+    &:disabled {
+        color: rgba(221, 221, 221, .2);
+        
+        &:hover { background-color: #003459; }
+    }
+}

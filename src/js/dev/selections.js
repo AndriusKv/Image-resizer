@@ -1,10 +1,13 @@
 "use strict";
 
 import { toggleElement } from "./main.js";
+import { showMessage } from "./dropbox.js";
 
-let widthInputCointaner = document.getElementById("js-width-input-container"),
-    heightInputContainer = document.getElementById("js-height-input-container"),
-    select = document.getElementById("js-select");
+const widthInputCointaner = document.getElementById("js-width-input-container");
+const heightInputContainer = document.getElementById("js-height-input-container");
+const select = document.getElementById("js-select");
+const imageName = document.getElementById("js-image-name");
+const imageNameSeperator = document.getElementById("js-image-name-seperator");
 
 (function loadFromLocalStorage() {
     let selections = localStorage.getItem("Selections");
@@ -23,17 +26,17 @@ let widthInputCointaner = document.getElementById("js-width-input-container"),
     assignValuesToInputs(widthInputCointaner.children, selections.widthInputValues);
     assignValuesToInputs(heightInputContainer.children, selections.heightInputValues);
     
-    document.getElementById("js-image-name").value = selections.imageName;
-    document.getElementById("js-image-name-seperator").value = selections.imageNameSeperator;
+    imageName.value = selections.imageName;
+    imageNameSeperator.value = selections.imageNameSeperator;
 })();
 
 function saveToLocalStorage() {
-    let selections = {
+    const selections = {
         numberOfInputs: select.value,
         widthInputValues: getInputValues(widthInputCointaner.children),
         heightInputValues: getInputValues(heightInputContainer.children),
-        imageName: document.getElementById("js-image-name").value || "",
-        imageNameSeperator: document.getElementById("js-image-name-seperator").value || ""
+        imageName: imageName.value || "",
+        imageNameSeperator: imageNameSeperator.value || ""
     };
 
     localStorage.setItem("Selections", JSON.stringify(selections));
@@ -56,7 +59,7 @@ function getInputValues(inputs) {
 }
 
 function createInput() {
-    let input = document.createElement("input");
+    const input = document.createElement("input");
 
     input.setAttribute("type", "text");
     input.classList.add("image-input");
@@ -65,7 +68,7 @@ function createInput() {
 }
 
 function createInputs(num) {
-    let fragment = document.createDocumentFragment();
+    const fragment = document.createDocumentFragment();
 
     for (let i = 0; i < num; i++) {
         fragment.appendChild(createInput());
@@ -100,7 +103,7 @@ function onSelection(event) {
 }
 
 function toggleSettings(event) {
-    let button = event.target;
+    const button = event.target;
     
     button.innerHTML = button.innerHTML === "Settings" ? "Selections" : "Settings";
     
@@ -108,8 +111,15 @@ function toggleSettings(event) {
     toggleElement("toggle", document.getElementById("js-settings"));
 }
 
-select.addEventListener("input", onSelection, false);
+function onInput(event) {
+    if (event.target.classList.contains("image-input") && document.getElementById("js-crop-checkbox").checked) {
+        showMessage("Disable image cropping to change input values");
+        event.preventDefault();
+    }
+}
 
+select.addEventListener("input", onSelection, false);
+document.getElementById("js-input-container").addEventListener("keydown", onInput, false);
 document.getElementById("js-settings-toggle").addEventListener("click", toggleSettings, false);
 
 export { widthInputCointaner, heightInputContainer, saveToLocalStorage, verifyValue };

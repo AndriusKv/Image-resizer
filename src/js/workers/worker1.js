@@ -1,48 +1,49 @@
 /* global importScripts, JSZip, onmessage, postMessage */
 
+"use strict";
+
 importScripts("../libs/jszip.min.js");
 
-var zip = new JSZip(),
-    i = 0;
+const zip = new JSZip();
+
+let i = 0;
 
 function zipImages(name, uri, type) {
-    "use strict";
-    
-	zip.folder("images").file(name + "." + type, uri, { base64: true });
+    zip.folder("images").file(name + "." + type, uri, { base64: true });
 }
 
 function truncateUri(uri, type) {
-    "use strict";
-    
     if (type.length === 4) {
         return uri.slice(23);
     }
-    else {
-        return uri.slice(22);
-    }
+
+    return uri.slice(22);
 }
 
 onmessage = function(event) {
-    "use strict";
+    const data = event.data;
     
-	var data = event.data;
-
-	switch (data.action) {
-		case "add":
-			let image = data.image,
-                type = image.type,
-                name = image.name,
-                uri = truncateUri(image.uri, type);
+    switch (data.action) {
+        case "add":
+			const image = data.image;
+            const type = image.type;
+            const uri = truncateUri(image.uri, type);
             
-			zipImages(name + i, uri, type);
+			zipImages(image.name + i, uri, type);
             i += 1;
+
 			break;
 		case "generate":
             i = 0;
-            postMessage(zip.generate({type:"blob"}));
+
+            if (Object.keys(zip.files).length) {
+                postMessage(zip.generate({type: "blob"}));
+            }
+
 			break;
 		case "remove":
 			zip.remove("images");
+
 			break;
-	}
+    }
 };
