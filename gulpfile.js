@@ -87,5 +87,8 @@ gulp.task("build:libs", function() {
 
 gulp.task("build:workers", function() {
     return gulp.src("src/js/workers/*.js")
+        .pipe(babel({
+            presets: ["es2015"]
+        }))
         .pipe(gulp.dest("dist/js/workers"));
 });
