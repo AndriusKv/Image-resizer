@@ -10,7 +10,7 @@ const imageName = document.getElementById("js-image-name");
 const imageNameSeperator = document.getElementById("js-image-name-seperator");
 
 (function loadFromLocalStorage() {
-    let selections = localStorage.getItem("Selections");
+    let selections = localStorage.getItem("selections");
 
     if (!selections) {
         return;
@@ -39,7 +39,7 @@ function saveToLocalStorage() {
         imageNameSeperator: imageNameSeperator.value || ""
     };
 
-    localStorage.setItem("Selections", JSON.stringify(selections));
+    localStorage.setItem("selections", JSON.stringify(selections));
 }
 
 function verifyValue(value, value2) {
@@ -118,7 +118,7 @@ function onInput(event) {
     }
 }
 
-select.addEventListener("input", onSelection, false);
+select.addEventListener("click", onSelection, false);
 document.getElementById("js-input-container").addEventListener("keydown", onInput, false);
 document.getElementById("js-settings-toggle").addEventListener("click", toggleSettings, false);
 
