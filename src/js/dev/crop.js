@@ -78,14 +78,31 @@ function updateMeasurmentDisplay(width, height) {
 function strokeRect() {
     const area = selectionArea;
     
-    ctx.lineJoin = "miter";
-    ctx.lineCap = "square";
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(area.x, area.y, area.width, area.height);
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(area.x, area.y, area.width, area.height);
+    let x = area.x;
+    let y = area.y;
+    let imageData;
+
+    if (area.width && area.height) {
+        imageData = ctx.getImageData(area.x, area.y, area.width, area.height);
+
+        if (area.width < 0) {
+            x = x + area.width;
+        }
+
+        if (area.height < 0) {
+            y = y + area.height;
+        }
+    }
+
+    ctx.fillStyle = "rgba(0, 0, 0, .4)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (imageData) {
+        ctx.putImageData(imageData, x, y);
+    }
+
+    ctx.strokeStyle = "#006494";
+    ctx.strokeRect(area.x + 0.5, area.y + 0.5, area.width, area.height);
 }
 
 function drawRect() {
