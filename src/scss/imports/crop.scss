@@ -29,14 +29,21 @@
     color: $light-color;
     line-height: 1.428;
 }
-.crop-measurments-info {
-    width: 80px;
+.crop-data {
     text-align: left;
     font-size: 10px;
     line-height: 1;
 }
-.crop-measurment {
-    float: right;
+.crop-data-group {
+    display: inline-block;
+    width: 70px;
+
+    &:first-of-type {
+        width: 60px;
+    }
+}
+.crop-data-measurment-name {
+    margin-right: 2px;
 }
 .crop-canvas {
     display: block;

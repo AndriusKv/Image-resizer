@@ -57,7 +57,7 @@
 	    <div id="js-settings" class="settings">
             <div class="setting">
                 <label for="js-crop-checkbox" class="setting-label">Enable image cropping</label>
-                <input type="checkbox" id="js-crop-checkbox" class="setting-input setting-checkbox">
+                <input type="checkbox" id="js-crop-checkbox" class="setting-input setting-checkbox" checked>
             </div>
                 <div class="setting">
                 <label for="js-image-name" class="setting-label">Image name</label>
@@ -74,14 +74,26 @@
             <div class="crop-info">
                 <div id="js-crop-remaining" class="crop-remaining"></div>
                 <div id="js-crop-image-name"></div>
-                <div class="crop-measurments-info">
-                    <div>
-                        <span>width:</span>
-                        <span id="js-crop-width" class="crop-measurment">0px</span>
+                <div class="crop-data">
+                    <div class="crop-data-group">
+                        <div>
+                            <span>X:</span>
+                            <span id="js-crop-x">0px</span>
+                        </div>
+                        <div>
+                            <span>Y:</span>
+                            <span id="js-crop-y">0px</span>
+                        </div>
                     </div>
-                    <div>
-                        <span>height:</span>
-                        <span id="js-crop-height" class="crop-measurment">0px</span>
+                    <div class="crop-data-group">
+                        <div>
+                            <span class="crop-data-measurment-name">width:</span>
+                            <span id="js-crop-width">0px</span>
+                        </div>
+                        <div>
+                            <span>height:</span>
+                            <span id="js-crop-height">0px</span>
+                        </div>
                     </div>
                 </div>
             </div>

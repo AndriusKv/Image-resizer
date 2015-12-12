@@ -16,6 +16,8 @@ const mousePosition = {};
 let selectionArea = {};
 let position = "";
 let moveSelectedArea = "";
+let widthRatio = 1;
+let heightRatio = 1;
 
 function toggleButton(button, disabled) {
     button.disabled = disabled;
@@ -43,6 +45,29 @@ function updateRemainingImageIndicator(action) {
 
 function displayImageName(name) {
     document.getElementById("js-crop-image-name").textContent = name;
+}
+
+function updatePointDisplay(x = 0, y = 0) {
+    if (x) {
+        if (selectionArea.width > 0) {
+            x = selectionArea.x;
+        }
+        else {
+            x = selectionArea.x + selectionArea.width;
+        }
+    }
+
+    if (y) {
+        if (selectionArea.height > 0) {
+            y = selectionArea.y;
+        }
+        else {
+            y = selectionArea.y + selectionArea.height;
+        }
+    }
+
+    document.getElementById("js-crop-x").textContent = Math.round(x * widthRatio) + "px";
+    document.getElementById("js-crop-y").textContent = Math.round(y * heightRatio) + "px";
 }
 
 function updateMeasurmentDisplay(width, height) {
@@ -85,7 +110,10 @@ function drawInitialImage(uri) {
         
         canvas.width = width;
         canvas.height = height;
-                
+
+        widthRatio = image.width / canvas.width;
+        heightRatio = image.height / canvas.height;
+
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
     });
 
@@ -284,6 +312,8 @@ function resizeSelectedArea(event) {
     requestAnimationFrame(drawRect);
     
     updateScaledArea();
+
+    updatePointDisplay(selectionArea.x, selectionArea.y);
 }
 
 function adjustSelectedAreaPosition(coord, dimension) {
@@ -304,6 +334,8 @@ function adjustSelectedAreaPosition(coord, dimension) {
     else if (coordMeasurment > canvasMeasurment) {
         selectionArea[coord] = canvasMeasurment;
     }
+
+    updatePointDisplay(selectionArea.x, selectionArea.y);
 }
 
 function getDistanceBetweenPoints(x, y) {
@@ -378,6 +410,8 @@ function selectArea(event) {
     requestAnimationFrame(drawRect);
     
     updateScaledArea();
+
+    updatePointDisplay(x, y);
 }
 
 function removeMoveCursor() {
@@ -393,9 +427,6 @@ function changeCursorToMove(event) {
 }
 
 function updateScaledArea() {
-    const widthRatio = image.width / canvas.width;
-    const heightRatio = image.height / canvas.height;
-    
     scaledSelectionArea.x = Math.round(selectionArea.x * widthRatio);
     scaledSelectionArea.y = Math.round(selectionArea.y * heightRatio);
     scaledSelectionArea.width = Math.round(selectionArea.width * widthRatio);
@@ -412,6 +443,7 @@ function toggleCropButton() {
     }
     else {
         selectionArea = {};
+        updatePointDisplay(0, 0);
         updateMeasurmentDisplay(0, 0);
         canvas.style.cursor = "default";
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -512,6 +544,7 @@ function loadNextImage(image) {
         updateRemainingImageIndicator();
         selectionArea = {};
         displayImageName(image.name.original);
+        updatePointDisplay(0, 0);
         updateMeasurmentDisplay(0, 0);
         drawInitialImage(image.uri);
     }
@@ -541,6 +574,7 @@ function skipImage() {
 
 function closeCropping() {
     selectionArea = {};
+    updatePointDisplay(0, 0);
     updateMeasurmentDisplay(0, 0);
     updateRemainingImageIndicator("remove");
     toggleElement("remove", cropping);
