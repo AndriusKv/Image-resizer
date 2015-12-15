@@ -90,7 +90,16 @@
 }
 .crop-button-container {
     display: flex;
-    justify-content: space-around;
+    margin-top: 8px;
+
+    .crop-btn {
+        flex-basis: 33%;
+        border-right: 1px solid #ccc;
+
+        &:last-of-type { border: 0; }
+
+        &:active { transform: scale(1); }
+    }
 }
 .crop-btn {
     font-size: 14px;

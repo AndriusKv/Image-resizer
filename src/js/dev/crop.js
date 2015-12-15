@@ -118,10 +118,10 @@ function drawInitialImage(uri) {
         const ratio = image.width / image.height;
         const maxWidth = window.innerWidth - 212;
         const maxHeight = window.innerHeight - 40;
-        
-        let width = window.innerWidth;
-        let height = window.innerHeight;
-        
+
+        let width = image.width;
+        let height = image.height;
+
         toggleElement("add", cropping);
         
         if (width > maxWidth) {
@@ -567,7 +567,6 @@ function init() {
     process.initWorker();
     displayImageName(image.name.original);
     drawInitialImage(image.uri);
-    document.getElementById("js-crop-preview").src = image.uri;
     toggleButton(cropButton, true);
     toggleButton(previewButton, true);
     toggleSkipButton(process.images.length);
@@ -609,7 +608,7 @@ function skipImage() {
 function closeCropping() {
     if (isPreviewOpen) {
         isPreviewOpen = false;
-        cropPreview.classList.remove("show");
+        toggleElement("remove", cropPreview);
         return;
     }
 
@@ -632,7 +631,7 @@ function showPreview() {
     let ratio = width / height;
 
     isPreviewOpen = true;
-    cropPreview.classList.add("show");
+    toggleElement("add", cropPreview);
 
     if (width > maxWidth) {
         width = maxWidth;
