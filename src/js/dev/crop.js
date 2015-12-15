@@ -648,9 +648,15 @@ function showPreview() {
     img.src = croppedImage.uri;
 }
 
+function removeTransitionPrevention() {
+    cropping.classList.remove("preload");
+    window.removeEventListener("load", removeTransitionPrevention, false);
+}
+
 cropButton.addEventListener("click", cropImage, false);
 skipButton.addEventListener("click", skipImage, false);
 closeButton.addEventListener("click", closeCropping, false);
 previewButton.addEventListener("click", showPreview, false);
+window.addEventListener("load", removeTransitionPrevention, false);
 
 export { init };

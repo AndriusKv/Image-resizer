@@ -1,15 +1,24 @@
 .crop {
+    opacity: 0;
+    visibility: collapse;
     position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
-    display: none;
     background-color: #ddd;
     user-select: none;
     cursor: default;
+    transform: scale(.8);
+    transition: all .4s;
     
-    &.show { display: block; }
+    &.preload { transition: none; }
+
+    &.show {
+        opacity: 1;
+        visibility: visible;
+        transform: scale(1);
+    }
 }
 .crop-container {
     position: relative;
