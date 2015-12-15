@@ -72,35 +72,43 @@
     <div id="js-crop" class="crop">
         <div class="crop-container">
             <div class="crop-info">
-                <div id="js-crop-remaining" class="crop-remaining"></div>
+                <div id="js-crop-remaining"></div>
                 <div id="js-crop-image-name"></div>
-                <div class="crop-data">
-                    <div class="crop-data-group">
-                        <div>
-                            <span>X:</span>
-                            <span id="js-crop-x">0px</span>
-                        </div>
-                        <div>
-                            <span>Y:</span>
-                            <span id="js-crop-y">0px</span>
-                        </div>
-                    </div>
-                    <div class="crop-data-group">
-                        <div>
-                            <span class="crop-data-measurment-name">width:</span>
-                            <span id="js-crop-width">0px</span>
-                        </div>
-                        <div>
-                            <span>height:</span>
-                            <span id="js-crop-height">0px</span>
-                        </div>
-                    </div>
-                </div>
+                <button id="js-crop-close" class="btn inv-btn crop-btn">Close</button>
             </div>
             <canvas id="js-canvas" class="crop-canvas"></canvas>
-            <button id="js-crop-ok" class="btn crop-btn">Crop</button>
-            <button id="js-crop-skip" class="btn crop-btn">Skip</button>
-            <button id="js-crop-close" class="btn crop-btn">Close</button>
+            <div class="crop-sidebar">
+                <div class="crop-data">
+                    <div class="crop-data-group">
+                        <span class="crop-data-measurment">X:</span>
+                        <span id="js-crop-x" class="crop-data-value">0</span>
+                        <span class="crop-data-value-unit">px</span>
+                    </div>
+                    <div class="crop-data-group">
+                        <span class="crop-data-measurment">Y:</span>
+                        <span id="js-crop-y" class="crop-data-value">0</span>
+                        <span class="crop-data-value-unit">px</span>
+                    </div>
+                    <div class="crop-data-group">
+                        <span class="crop-data-measurment">Width:</span>
+                        <span id="js-crop-width" class="crop-data-value">0</span>
+                        <span class="crop-data-value-unit">px</span>
+                    </div>
+                    <div class="crop-data-group">
+                        <span class="crop-data-measurment">Height:</span>
+                        <span id="js-crop-height" class="crop-data-value">0</span>
+                        <span class="crop-data-value-unit">px</span>
+                    </div>
+                </div>
+                <div class="crop-button-container">
+                    <button id="js-crop-ok" class="btn inv-btn crop-btn">Crop</button>
+                    <button id="js-crop-preview-btn" class="btn inv-btn crop-btn">Preview</button>
+                    <button id="js-crop-skip" class="btn inv-btn crop-btn">Skip</button>
+                </div>
+            </div>
+            <div id="js-crop-preview" class="crop-preview-container">
+                <img class="crop-preview-image" src="">
+            </div>
         </div>
     </div>
 	<script src="js/main.js"></script>

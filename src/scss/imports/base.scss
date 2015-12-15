@@ -8,11 +8,11 @@ $dark-color: #222;
 }
 %primary-input-styles {
 	border: none;
-	background-color: #ddd;
+	background-color: $light-color;
     color: $dark-color;
 }
 
-body { background-color: #ddd; }
+body { background-color: $light-color; }
 
 *, *:after, *:before { box-sizing: border-box; }
 
@@ -39,4 +39,10 @@ body { background-color: #ddd; }
     &:hover { background-color: #003C64; }
     
     &:active { transform: scale(.96); }
+}
+.inv-btn {
+    background-color: $light-color;
+    color: #003C64;
+
+    &:hover { background-color: #ccc; }
 }

@@ -9,6 +9,8 @@ const ctx = canvas.getContext("2d");
 const cropButton = document.getElementById("js-crop-ok");
 const skipButton = document.getElementById("js-crop-skip");
 const closeButton = document.getElementById("js-crop-close");
+const previewButton = document.getElementById("js-crop-preview-btn");
+const cropPreview = document.getElementById("js-crop-preview");
 const image = new Image();
 const scaledSelectionArea = {};
 const mousePosition = {};
@@ -18,6 +20,7 @@ let position = "";
 let moveSelectedArea = "";
 let widthRatio = 1;
 let heightRatio = 1;
+let isPreviewOpen = false;
 
 function toggleButton(button, disabled) {
     button.disabled = disabled;
@@ -66,13 +69,13 @@ function updatePointDisplay(x = 0, y = 0) {
         }
     }
 
-    document.getElementById("js-crop-x").textContent = Math.round(x * widthRatio) + "px";
-    document.getElementById("js-crop-y").textContent = Math.round(y * heightRatio) + "px";
+    document.getElementById("js-crop-x").textContent = Math.round(x * widthRatio);
+    document.getElementById("js-crop-y").textContent = Math.round(y * heightRatio);
 }
 
 function updateMeasurmentDisplay(width, height) {
-    document.getElementById("js-crop-width").textContent = width < 0 ? -width + "px" : width + "px";
-    document.getElementById("js-crop-height").textContent = height < 0 ? -height + "px" : height + "px";
+    document.getElementById("js-crop-width").textContent = width < 0 ? -width : width;
+    document.getElementById("js-crop-height").textContent = height < 0 ? -height : height;
 }
 
 function strokeRect() {
@@ -113,13 +116,19 @@ function drawRect() {
 function drawInitialImage(uri) {
     image.addEventListener("load", () => {
         const ratio = image.width / image.height;
-        const maxHeight = window.innerHeight - 66;
+        const maxWidth = window.innerWidth - 212;
+        const maxHeight = window.innerHeight - 40;
         
-        let width = window.innerWidth - 10;
-        let height = width / ratio;
+        let width = window.innerWidth;
+        let height = window.innerHeight;
         
         toggleElement("add", cropping);
         
+        if (width > maxWidth) {
+            width = maxWidth;
+            height = width / ratio;
+        }
+
         if (height > maxHeight) {
             height = maxHeight;
             width = height * ratio;
@@ -137,39 +146,53 @@ function drawInitialImage(uri) {
     image.src = uri;
 }
 
-function convertImageDataToUri(croppedImage) {
-    return new Promise(resolve => {
-        const image = new Image();
+function getCroppedImage(image, imageType = "image/jpg") {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const area = scaledSelectionArea;
 
-        image.addEventListener("load", () => {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-            const area = scaledSelectionArea;
+    canvas.width = image.width;
+    canvas.height = image.height;
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-            canvas.width = image.width;
-            canvas.height = image.height;
+    const imageData = ctx.getImageData(area.x, area.y, area.width, area.height);
 
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            
-            const imageData = ctx.getImageData(area.x, area.y, area.width, area.height);
+    canvas.width = imageData.width;
+    canvas.height = imageData.height;
 
-            canvas.width = imageData.width;
-            canvas.height = imageData.height;
-            ctx.putImageData(imageData, 0, 0);
+    ctx.putImageData(imageData, 0, 0);
 
-            process.worker.postMessage({
-                action: "add",
-                image: {
-                    name: croppedImage.name.setByUser,
-                    uri: canvas.toDataURL(croppedImage.type),
-                    type: croppedImage.type.slice(6)
-                }
-            });
-            resolve();
+    return {
+        uri: canvas.toDataURL(imageType),
+        width: canvas.width,
+        height: canvas.height
+    };
+}
+
+function sendImageToWorker(imageToCrop) {
+    const image = new Image();
+
+    image.addEventListener("load", () => {
+        const croppedImage = getCroppedImage(image, imageToCrop.type);
+
+        process.worker.postMessage({
+            action: "add",
+            image: {
+                name: imageToCrop.name.setByUser,
+                type: imageToCrop.type.slice(6),
+                uri: croppedImage.uri
+            }
         });
 
-        image.src = croppedImage.uri;
+        if (!process.images.length) {
+            updateRemainingImageIndicator("remove");
+            canvas.removeEventListener("mousedown", onSelectionStart, false);
+            toggleElement("remove", cropping);
+            process.generateZip();
+        }
     });
+
+    image.src = imageToCrop.uri;
 }
 
 function getMousePosition(event) {
@@ -372,7 +395,8 @@ function getDistanceBetweenPoints(x, y) {
         adjustSelectedAreaPosition("x", "width");
         adjustSelectedAreaPosition("y", "height");
 
-        drawRect();
+        requestAnimationFrame(drawRect);
+        updateScaledArea();
     };
 }
 
@@ -405,6 +429,9 @@ function onSelectionStart(event) {
         cropping.addEventListener("mouseup", lockMovedArea, false);
     }
     else {
+        ctx.fillStyle = "rgba(0, 0, 0, .4)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
         selectionArea.x = x;
         selectionArea.y = y;
         selectionArea.width = 0;
@@ -452,11 +479,15 @@ function updateScaledArea() {
     updateMeasurmentDisplay(scaledSelectionArea.width, scaledSelectionArea.height);
 }
 
-function toggleCropButton() {
+function onMouseup(mousemoveCallback, mouseupCallback) {
+    cropping.removeEventListener("mousemove", mousemoveCallback, false);
+    cropping.removeEventListener("mouseup", mouseupCallback, false);
+
     if (selectionArea.width && selectionArea.height) {
         canvas.addEventListener("mousemove", changeCursor, false);
         document.addEventListener("keydown", changeCursorToMove, false);
         toggleButton(cropButton, false);
+        toggleButton(previewButton, false);
     }
     else {
         selectionArea = {};
@@ -465,6 +496,7 @@ function toggleCropButton() {
         canvas.style.cursor = "default";
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
         toggleButton(cropButton, true);
+        toggleButton(previewButton, true);
     }
 }
 
@@ -518,24 +550,15 @@ function changeCursor(event) {
 }
 
 function lockAdjustedArea() {
-    cropping.removeEventListener("mousemove", resizeSelectedArea, false);
-    cropping.removeEventListener("mouseup", lockAdjustedArea, false);
-
-    toggleCropButton();
+    onMouseup(resizeSelectedArea, lockAdjustedArea);
 }
 
 function lockMovedArea() {
-    cropping.removeEventListener("mousemove", moveSelectedArea, false);
-    cropping.removeEventListener("mouseup", lockMovedArea, false);
-    
-    toggleCropButton();
+    onMouseup(moveSelectedArea, lockMovedArea);
 }
 
 function lockSelectedArea() {
-    cropping.removeEventListener("mousemove", selectArea, false);
-    cropping.removeEventListener("mouseup", lockSelectedArea, false);
-    
-    toggleCropButton();
+    onMouseup(selectArea, lockSelectedArea);
 }
 
 function init() {
@@ -544,7 +567,9 @@ function init() {
     process.initWorker();
     displayImageName(image.name.original);
     drawInitialImage(image.uri);
+    document.getElementById("js-crop-preview").src = image.uri;
     toggleButton(cropButton, true);
+    toggleButton(previewButton, true);
     toggleSkipButton(process.images.length);
     canvas.addEventListener("mousedown", onSelectionStart, false);
     
@@ -556,6 +581,7 @@ function init() {
 function loadNextImage(image) {
     toggleSkipButton(process.images.length);
     toggleButton(cropButton, true);
+    toggleButton(previewButton, true);
     
     if (process.images.length) {
         updateRemainingImageIndicator();
@@ -570,17 +596,8 @@ function loadNextImage(image) {
 function cropImage() {
     const image = process.images.splice(0, 1)[0];
     
-    convertImageDataToUri(image)
-        .then(() => {
-            loadNextImage(process.images[0]);
-
-            if (!process.images.length) {
-                updateRemainingImageIndicator("remove");
-                canvas.removeEventListener("mousedown", onSelectionStart, false);
-                toggleElement("remove", cropping);
-                process.generateZip();
-            }
-        });
+    sendImageToWorker(image);
+    loadNextImage(process.images[0]);
 }
 
 function skipImage() {
@@ -590,6 +607,12 @@ function skipImage() {
 }
 
 function closeCropping() {
+    if (isPreviewOpen) {
+        isPreviewOpen = false;
+        cropPreview.classList.remove("show");
+        return;
+    }
+
     selectionArea = {};
     updatePointDisplay(0, 0);
     updateMeasurmentDisplay(0, 0);
@@ -598,8 +621,37 @@ function closeCropping() {
     process.worker.postMessage({ action: "generate" });
 }
 
+function showPreview() {
+    const croppedImage = getCroppedImage(image);
+    const maxWidth = window.innerWidth - 8;
+    const maxHeight = window.innerHeight - 40;
+    const img = cropPreview.children[0];
+
+    let width = croppedImage.width;
+    let height = croppedImage.height;
+    let ratio = width / height;
+
+    isPreviewOpen = true;
+    cropPreview.classList.add("show");
+
+    if (width > maxWidth) {
+        width = maxWidth;
+        height = width / ratio;
+    }
+
+    if (height > maxHeight) {
+        height = maxHeight;
+        width = height * ratio;
+    }
+
+    img.style.width = Math.floor(width) + "px";
+    img.style.height = Math.floor(height) + "px";
+    img.src = croppedImage.uri;
+}
+
 cropButton.addEventListener("click", cropImage, false);
 skipButton.addEventListener("click", skipImage, false);
 closeButton.addEventListener("click", closeCropping, false);
+previewButton.addEventListener("click", showPreview, false);
 
 export { init };

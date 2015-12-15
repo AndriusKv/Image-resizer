@@ -6,7 +6,6 @@
     right: 0;
     display: none;
     background-color: #ddd;
-    text-align: center;
     user-select: none;
     cursor: default;
     
@@ -14,46 +13,91 @@
 }
 .crop-container {
     position: relative;
-    display: inline-block;
-    padding: 0 4px 4px 4px;
+    height: 100%;
+    padding: 4px;
+}
+.crop-canvas {
+    vertical-align: top;
+    box-shadow: 0 0 5px rgba(0,0,0,0.4);
 }
 .crop-info {
+    z-index: 1;
+    position: relative;
     display: flex;
     justify-content: space-between;
-    margin-top: 4px;
     margin-bottom: 4px;
     padding: 4px;
     background-color: #003459;
     box-shadow: 0 0 5px rgba(0,0,0,0.4);
     font-size: 14px;
     color: $light-color;
-    line-height: 1.428;
+}
+.crop-preview-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: none;
+    height: 100%;
+    padding: 36px 4px 4px 4px;
+    background-color: rgba(0, 0, 0, .4);
+    text-align: center;
+
+    &.show { display: block; }
+}
+.crop-preview-image {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    box-shadow: 0 0 5px rgba(0, 0, 0, .8);
+}
+.crop-sidebar {
+    float: right;
+    width: 200px;
+    padding: 4px;
+    background-color: #003459;
+    box-shadow: 0 0 5px rgba(0,0,0,0.4);
+    color: $light-color;
 }
 .crop-data {
-    text-align: left;
-    font-size: 10px;
-    line-height: 1;
+    font-size: 12px;
+    color: #222;
 }
 .crop-data-group {
-    display: inline-block;
-    width: 70px;
-
-    &:first-of-type {
-        width: 60px;
-    }
-}
-.crop-data-measurment-name {
-    margin-right: 2px;
-}
-.crop-canvas {
-    display: block;
+    display: flex;
     margin-bottom: 4px;
-    box-shadow: 0 0 5px rgba(0,0,0,0.4);
+    border: 1px solid #ccc;
+}
+.crop-data-measurment {
+    width: 58px;
+    padding: 4px 0;
+    background-color: #ddd;
+    text-align: center;
+}
+.crop-data-value {
+    width: 100px;
+    padding: 4px;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    background-color: #eee;
+}
+.crop-data-value-unit {
+    width: 36px;
+    padding: 4px 0;
+    background-color: #ddd;
+    text-align: center;
+}
+.crop-button-container {
+    display: flex;
+    justify-content: space-around;
 }
 .crop-btn {
+    font-size: 14px;
+
     &:disabled {
-        color: rgba(221, 221, 221, .2);
+        color: rgba(0, 52, 89, .2);
         
-        &:hover { background-color: #003459; }
+        &:hover { background-color: $light-color; }
     }
 }
