@@ -8,11 +8,11 @@ $dark-color: #222;
 }
 %primary-input-styles {
 	border: none;
-	background-color: #ddd;
+	background-color: $light-color;
     color: $dark-color;
 }
 
-body { background-color: #ddd; }
+body { background-color: $light-color; }
 
 *, *:after, *:before { box-sizing: border-box; }
 
@@ -32,11 +32,16 @@ body { background-color: #ddd; }
 .btn {
     padding: 2px 10px;
     border: 0;
-    border-radius: 2px;
     background-color: #003459;
     color: $light-color;
     
     &:hover { background-color: #003C64; }
     
     &:active { transform: scale(.96); }
+}
+.inv-btn {
+    background-color: $light-color;
+    color: #003C64;
+
+    &:hover { background-color: #ccc; }
 }

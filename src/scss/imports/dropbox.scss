@@ -16,8 +16,7 @@
         color: $light-color;
         
         .dropbox-btn {
-            background-color: #ddd;
-            color: $dark-color;
+            @extend .inv-btn;
         }
     }
 }
