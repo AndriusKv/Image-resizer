@@ -25,7 +25,7 @@ onmessage = function(event) {
     
     switch (data.action) {
         case "add":
-            const image = data.image;
+			const image = data.image;
             const type = image.type;
             const uri = truncateUri(image.uri, type);
             
