@@ -141,6 +141,8 @@ function drawInitialImage(uri) {
         heightRatio = image.height / canvas.height;
 
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        canvas.classList.add("show");
     });
 
     image.src = uri;
@@ -578,6 +580,8 @@ function init() {
 }
 
 function loadNextImage(image) {
+    canvas.classList.remove("show");
+
     toggleSkipButton(process.images.length);
     toggleButton(cropButton, true);
     toggleButton(previewButton, true);
@@ -588,7 +592,10 @@ function loadNextImage(image) {
         displayImageName(image.name.original);
         updatePointDisplay(0, 0);
         updateMeasurmentDisplay(0, 0);
-        drawInitialImage(image.uri);
+
+        setTimeout(() => {
+            drawInitialImage(image.uri);
+        }, 200);
     }
 }
 
