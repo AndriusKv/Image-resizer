@@ -146,7 +146,7 @@ function drawInitialImage(uri) {
     image.src = uri;
 }
 
-function getCroppedImage(image, imageType = "image/jpg") {
+function getCroppedImage(image, imageType = "image/jpeg") {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const area = scaledSelectionArea;
@@ -609,6 +609,11 @@ function closeCropping() {
     if (isPreviewOpen) {
         isPreviewOpen = false;
         toggleElement("remove", cropPreview);
+
+        setTimeout(()=> {
+            cropPreview.removeChild(cropPreview.children[0]);
+        }, 600);
+
         return;
     }
 
@@ -622,29 +627,36 @@ function closeCropping() {
 
 function showPreview() {
     const croppedImage = getCroppedImage(image);
-    const maxWidth = window.innerWidth - 8;
-    const maxHeight = window.innerHeight - 40;
-    const img = cropPreview.children[0];
-
-    let width = croppedImage.width;
-    let height = croppedImage.height;
-    let ratio = width / height;
+    const img = new Image();
 
     isPreviewOpen = true;
-    toggleElement("add", cropPreview);
 
-    if (width > maxWidth) {
-        width = maxWidth;
-        height = width / ratio;
-    }
+    img.classList.add("crop-preview-image");
+    img.addEventListener("load", () => {
+        const maxWidth = window.innerWidth - 8;
+        const maxHeight = window.innerHeight - 40;
 
-    if (height > maxHeight) {
-        height = maxHeight;
-        width = height * ratio;
-    }
+        let width = croppedImage.width;
+        let height = croppedImage.height;
+        let ratio = width / height;
 
-    img.style.width = Math.floor(width) + "px";
-    img.style.height = Math.floor(height) + "px";
+        if (width > maxWidth) {
+            width = maxWidth;
+            height = width / ratio;
+        }
+
+        if (height > maxHeight) {
+            height = maxHeight;
+            width = height * ratio;
+        }
+
+        img.style.width = Math.floor(width) + "px";
+        img.style.height = Math.floor(height) + "px";
+
+        cropPreview.appendChild(img);
+        toggleElement("add", cropPreview);
+    });
+
     img.src = croppedImage.uri;
 }
 
