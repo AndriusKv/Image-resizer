@@ -11,16 +11,19 @@ const skipButton = document.getElementById("js-crop-skip");
 const closeButton = document.getElementById("js-crop-close");
 const previewButton = document.getElementById("js-crop-preview-btn");
 const cropPreview = document.getElementById("js-crop-preview");
+const qualitySlider = document.getElementById("js-crop-quality");
 const image = new Image();
+const imageWithQuality = new Image();
 const scaledSelectionArea = {};
 const mousePosition = {};
-    
+
 let selectionArea = {};
 let position = "";
 let moveSelectedArea = "";
 let widthRatio = 1;
 let heightRatio = 1;
 let isPreviewOpen = false;
+let customQuality = false;
 
 function toggleButton(button, disabled) {
     button.disabled = disabled;
@@ -78,6 +81,24 @@ function updateMeasurmentDisplay(width, height) {
     document.getElementById("js-crop-height").textContent = height < 0 ? -height : height;
 }
 
+function updateQualityValue(quality) {
+    document.getElementById("js-quality-value").textContent = quality;
+}
+
+function drawImage() {
+    if (customQuality) {
+        ctx.drawImage(imageWithQuality, 0, 0, canvas.width, canvas.height);
+        return;
+    }
+
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+}
+
+function addMask() {
+    ctx.fillStyle = "rgba(0, 0, 0, .4)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
 function strokeRect() {
     const area = selectionArea;
     
@@ -86,7 +107,7 @@ function strokeRect() {
     let imageData;
 
     if (area.width && area.height) {
-        imageData = ctx.getImageData(area.x, area.y, area.width, area.height);
+        imageData = ctx.getImageData(x, y, area.width, area.height);
 
         if (area.width < 0) {
             x = x + area.width;
@@ -97,8 +118,9 @@ function strokeRect() {
         }
     }
 
-    ctx.fillStyle = "rgba(0, 0, 0, .4)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (x || y || (area.width && area.height)) {
+        addMask();
+    }
 
     if (imageData) {
         ctx.putImageData(imageData, x, y);
@@ -108,8 +130,8 @@ function strokeRect() {
     ctx.strokeRect(area.x + 0.5, area.y + 0.5, area.width, area.height);
 }
 
-function drawRect() {
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+function drawCanvas() {
+    drawImage();
     strokeRect();
 }
 
@@ -153,6 +175,12 @@ function getCroppedImage(image, imageType = "image/jpeg") {
     const ctx = canvas.getContext("2d");
     const area = scaledSelectionArea;
 
+    let quality = 0.92;
+
+    if (customQuality) {
+        quality = qualitySlider.value / 100;
+    }
+
     canvas.width = image.width;
     canvas.height = image.height;
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -165,7 +193,7 @@ function getCroppedImage(image, imageType = "image/jpeg") {
     ctx.putImageData(imageData, 0, 0);
 
     return {
-        uri: canvas.toDataURL(imageType),
+        uri: canvas.toDataURL(imageType, quality),
         width: canvas.width,
         height: canvas.height
     };
@@ -187,10 +215,12 @@ function sendImageToWorker(imageToCrop) {
         });
 
         if (!process.images.length) {
-            updateRemainingImageIndicator("remove");
-            canvas.removeEventListener("mousedown", onSelectionStart, false);
-            toggleElement("remove", cropping);
+            resetCropper();
             process.generateZip();
+            canvas.removeEventListener("mousedown", onSelectionStart, false);
+        }
+        else {
+            resetQualitySlider();
         }
     });
 
@@ -227,7 +257,7 @@ function getPositionName(x, y) {
         if (inEastBound) {
             return "ne";
         }
-        
+
         if (inXBound) {
             return "n";
         }
@@ -241,7 +271,7 @@ function getPositionName(x, y) {
         if (inWestBound) {
             return "sw";
         }
-        
+
         if (inXBound) {
             return "s";
         }
@@ -251,6 +281,7 @@ function getPositionName(x, y) {
         if (inEastBound) {
             return "e";
         }
+
         if (inWestBound) {
             return "w";
         }
@@ -350,9 +381,9 @@ function resizeSelectedArea(event) {
     }
     
     Object.assign(selectionArea, adjustedSelectedArea);
-    
-    requestAnimationFrame(drawRect);
-    
+
+    requestAnimationFrame(drawCanvas);
+
     updateScaledArea();
 
     updatePointDisplay(selectionArea.x, selectionArea.y);
@@ -397,7 +428,7 @@ function getDistanceBetweenPoints(x, y) {
         adjustSelectedAreaPosition("x", "width");
         adjustSelectedAreaPosition("y", "height");
 
-        requestAnimationFrame(drawRect);
+        requestAnimationFrame(drawCanvas);
         updateScaledArea();
     };
 }
@@ -408,11 +439,10 @@ function onSelectionStart(event) {
     }
     
     const { x, y } = getMousePosition(event);
-        
+    
     position = getPositionName(x, y);
-    
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-    
+    drawImage();
+
     canvas.removeEventListener("mousemove", changeCursor, false);
     document.removeEventListener("keydown", changeCursorToMove, false);
     
@@ -424,21 +454,21 @@ function onSelectionStart(event) {
     }
     else if (event.ctrlKey && isMouseInsideSelectedArea(x, y)) {
         moveSelectedArea = getDistanceBetweenPoints(x, y);
-        
         strokeRect();
         
         cropping.addEventListener("mousemove", moveSelectedArea, false);
         cropping.addEventListener("mouseup", lockMovedArea, false);
     }
     else {
-        ctx.fillStyle = "rgba(0, 0, 0, .4)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (selectionArea.width && selectionArea.height) {
+            addMask();
+        }
 
         selectionArea.x = x;
         selectionArea.y = y;
         selectionArea.width = 0;
         selectionArea.height = 0;
-                
+
         cropping.addEventListener("mousemove", selectArea, false);
         cropping.addEventListener("mouseup", lockSelectedArea, false);
     }
@@ -453,8 +483,8 @@ function selectArea(event) {
     selectionArea.width = x - selectionArea.x;
     selectionArea.height = y - selectionArea.y;
 
-    requestAnimationFrame(drawRect);
-    
+    requestAnimationFrame(drawCanvas);
+
     updateScaledArea();
 
     updatePointDisplay(x, y);
@@ -492,13 +522,11 @@ function onMouseup(mousemoveCallback, mouseupCallback) {
         toggleButton(previewButton, false);
     }
     else {
-        selectionArea = {};
-        updatePointDisplay(0, 0);
-        updateMeasurmentDisplay(0, 0);
-        canvas.style.cursor = "default";
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resetData();
+        drawImage();
         toggleButton(cropButton, true);
         toggleButton(previewButton, true);
+        canvas.style.cursor = "default";
     }
 }
 
@@ -507,7 +535,7 @@ function getReversePosition(position, reversePosition) {
     const y = selectionArea.y;
     const x2 = x + selectionArea.width;
     const y2 = y + selectionArea.height;
-        
+
     if (x2 > x) {
         if (y2 < y) {
             return reversePosition;
@@ -587,16 +615,33 @@ function loadNextImage(image) {
     toggleButton(previewButton, true);
     
     if (process.images.length) {
+        resetData();
         updateRemainingImageIndicator();
-        selectionArea = {};
         displayImageName(image.name.original);
-        updatePointDisplay(0, 0);
-        updateMeasurmentDisplay(0, 0);
 
         setTimeout(() => {
             drawInitialImage(image.uri);
         }, 200);
     }
+}
+
+function resetData() {
+    selectionArea = {};
+    updatePointDisplay(0, 0);
+    updateMeasurmentDisplay(0, 0);
+}
+
+function resetQualitySlider() {
+    customQuality = false;
+    qualitySlider.value = 92;
+    updateQualityValue(0.92);
+}
+
+function resetCropper() {
+    resetQualitySlider();
+    resetData();
+    updateRemainingImageIndicator("remove");
+    toggleElement("remove", cropping);
 }
 
 function cropImage() {
@@ -608,7 +653,8 @@ function cropImage() {
 
 function skipImage() {
     process.images.splice(0, 1);
-    
+
+    resetQualitySlider();
     loadNextImage(process.images[0]);
 }
 
@@ -624,11 +670,7 @@ function closeCropping() {
         return;
     }
 
-    selectionArea = {};
-    updatePointDisplay(0, 0);
-    updateMeasurmentDisplay(0, 0);
-    updateRemainingImageIndicator("remove");
-    toggleElement("remove", cropping);
+    resetCropper();
     process.worker.postMessage({ action: "generate" });
 }
 
@@ -672,10 +714,35 @@ function removeTransitionPrevention() {
     window.removeEventListener("load", removeTransitionPrevention, false);
 }
 
+function changeCanvasQuality(quality) {
+    const canvas2 = document.createElement("canvas");
+    const ctx2 = canvas2.getContext("2d");
+
+    imageWithQuality.addEventListener("load", () => {
+        drawCanvas();
+    });
+
+    canvas2.width = image.width;
+    canvas2.height = image.height;
+    ctx2.drawImage(image, 0, 0, canvas2.width, canvas2.height);
+
+    imageWithQuality.src = canvas2.toDataURL("image/jpeg", quality);
+}
+
+function adjustQuality(event) {
+    const quality = event.target.value / 100;
+
+    customQuality = quality < 0.92;
+
+    changeCanvasQuality(quality);
+    updateQualityValue(quality);
+}
+
 cropButton.addEventListener("click", cropImage, false);
 skipButton.addEventListener("click", skipImage, false);
 closeButton.addEventListener("click", closeCropping, false);
 previewButton.addEventListener("click", showPreview, false);
+qualitySlider.addEventListener("input", adjustQuality, false);
 window.addEventListener("load", removeTransitionPrevention, false);
 
 export { init };
