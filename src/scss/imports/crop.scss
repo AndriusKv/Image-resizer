@@ -120,29 +120,10 @@
     text-align: center;
 }
 .crop-data-quality-slider {
-    appearance: none;
     width: calc(100% - 8px);
     margin: 4px 0;
-    cursor: pointer;
 
-    &:focus { outline: none; }
-
-    &::-webkit-slider-thumb {
-        appearance: none;
-        width: 8px;
-        height: 12px;
-        margin-top: -5px;
-        border-radius: 2px;
-        background-color: $light-color;
-        box-shadow: 0 0 4px rgba(0, 0, 0, .4);
-    }
-
-    &::-webkit-slider-runnable-track {
-        width: calc(100% - 8px);
-        height: 4px;
-        background-color: $light-color;
-        box-shadow: 0 0 4px rgba(0, 0, 0, .4);
-    }
+    @extend %slider;
 }
 .crop-button-container {
     display: flex;

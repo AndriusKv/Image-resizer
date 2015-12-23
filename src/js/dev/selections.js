@@ -8,6 +8,7 @@ const heightInputContainer = document.getElementById("js-height-input-container"
 const select = document.getElementById("js-select");
 const imageName = document.getElementById("js-image-name");
 const imageNameSeperator = document.getElementById("js-image-name-seperator");
+const qualitySlider = document.getElementById("js-image-quality");
 
 (function loadFromLocalStorage() {
     let selections = localStorage.getItem("selections");
@@ -28,6 +29,7 @@ const imageNameSeperator = document.getElementById("js-image-name-seperator");
     
     imageName.value = selections.imageName;
     imageNameSeperator.value = selections.imageNameSeperator;
+    qualitySlider.value = selections.imageQuality;
 })();
 
 function saveToLocalStorage() {
@@ -36,7 +38,8 @@ function saveToLocalStorage() {
         widthInputValues: getInputValues(widthInputCointaner.children),
         heightInputValues: getInputValues(heightInputContainer.children),
         imageName: imageName.value || "",
-        imageNameSeperator: imageNameSeperator.value || ""
+        imageNameSeperator: imageNameSeperator.value || "",
+        imageQuality: qualitySlider.value
     };
 
     localStorage.setItem("selections", JSON.stringify(selections));
@@ -118,8 +121,13 @@ function onInput(event) {
     }
 }
 
+function updateImageQuality(event) {
+    showMessage(`Image quality set to: ${event.target.value}%`);
+}
+
 select.addEventListener("click", onSelection, false);
 document.getElementById("js-input-container").addEventListener("keydown", onInput, false);
 document.getElementById("js-settings-toggle").addEventListener("click", toggleSettings, false);
+qualitySlider.addEventListener("input", updateImageQuality, false);
 
 export { widthInputCointaner, heightInputContainer, saveToLocalStorage, verifyValue };

@@ -15,7 +15,7 @@ var uglify = require("gulp-uglify");
 var csso = require("gulp-csso");
 var del = require("del");
 
-gulp.task("default", ["watch"]);
+gulp.task("default", ["js", "sass", "watch"]);
 
 gulp.task("clean", function() {
     return del([
