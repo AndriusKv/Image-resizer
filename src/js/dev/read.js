@@ -87,7 +87,7 @@ function readFiles(files, inc) {
             if (dropbox.isCanceled) {
                 return;
             }
-			
+
             readFiles(files, inc);
         }, delay);
     }

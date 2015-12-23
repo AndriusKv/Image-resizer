@@ -12,6 +12,10 @@ function zipImages(name, uri, type) {
     zip.folder("images").file(name + "." + type, uri, { base64: true });
 }
 
+function changeFileType(type) {
+    return type !== "jpeg" ? type : "jpg";
+}
+
 function truncateUri(uri, type) {
     if (type.length === 4) {
         return uri.slice(23);
@@ -26,7 +30,7 @@ onmessage = function(event) {
     switch (data.action) {
         case "add":
 			const image = data.image;
-            const type = image.type;
+            const type = changeFileType(image.type);
             const uri = truncateUri(image.uri, type);
             
 			zipImages(image.name + i, uri, type);
