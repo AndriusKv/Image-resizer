@@ -82,11 +82,21 @@
 
 .setting-label { vertical-align: middle; }
 
-.setting-checkbox { margin-top: 3px; }
+.setting-checkbox {
+    float: right;
+    margin-top: 3px;
+}
+.setting-slider {
+    float: right;
+    width: 200px;
+    margin-top: 8px;
 
+    @extend %slider;
+}
 .setting-input {
     @extend %primary-input-styles;
     
     float: right;
+    width: 200px;
     padding: 2px 4px;
 }

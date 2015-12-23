@@ -106,13 +106,14 @@ function convertMeasurements(measurement, originalMeasurement) {
 }
 
 function getUri(image, type, { width: width, height: height }) {
-    let canvas = document.createElement("canvas");
+    const canvas = document.createElement("canvas");
+    const quality = document.getElementById("js-image-quality").value / 100;
 
     canvas.width = width;
     canvas.height = height;
     canvas.getContext("2d").drawImage(image, 0, 0, width, height);
     
-    return canvas.toDataURL(type);
+    return canvas.toDataURL(type, quality);
 }
 
 function generateZip() {
@@ -263,7 +264,7 @@ function cancelWork() {
     zip = null;
     images.length = 0;
     dropbox.resetDropbox();
-    dropbox.showMessage("Work canceled.");
+    dropbox.showMessage("Work canceled");
 }
 
 dropbox.processBtn.addEventListener("click", processImages, false);
