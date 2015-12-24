@@ -12,6 +12,8 @@ const closeButton = document.getElementById("js-crop-close");
 const previewButton = document.getElementById("js-crop-preview-btn");
 const cropPreview = document.getElementById("js-crop-preview");
 const qualitySlider = document.getElementById("js-crop-quality");
+const xInput = document.getElementById("js-crop-x");
+const yInput = document.getElementById("js-crop-y");
 const image = new Image();
 const imageWithQuality = new Image();
 const scaledSelectionArea = {};
@@ -72,8 +74,8 @@ function updatePointDisplay(x = 0, y = 0) {
         }
     }
 
-    document.getElementById("js-crop-x").textContent = Math.round(x * widthRatio);
-    document.getElementById("js-crop-y").textContent = Math.round(y * heightRatio);
+    xInput.value = Math.round(x * widthRatio);
+    yInput.value = Math.round(y * heightRatio);
 }
 
 function updateMeasurmentDisplay(width, height) {
@@ -341,24 +343,24 @@ function resizeSelectedArea(event) {
             adjustedSelectedArea.y = y;
             adjustedSelectedArea.width = area.x - x + area.width;
             adjustedSelectedArea.height = area.y - y + area.height;
-            selectedPosition = getReversePosition("nw", "ne");
+            selectedPosition = getReverseDirection("nw", "ne");
             break;
         case "ne":
             adjustedSelectedArea.y = y;
             adjustedSelectedArea.height = area.y - y + area.height;
             adjustedSelectedArea.width = x - area.x;
-            selectedPosition = getReversePosition("ne", "nw");
+            selectedPosition = getReverseDirection("ne", "nw");
             break;
         case "se":
             adjustedSelectedArea.width = x - area.x;
             adjustedSelectedArea.height = y - area.y;
-            selectedPosition = getReversePosition("se", "sw");
+            selectedPosition = getReverseDirection("se", "sw");
             break;
         case "sw":
             adjustedSelectedArea.x = x;
             adjustedSelectedArea.width = area.x - x + area.width;
             adjustedSelectedArea.height = y - area.y;
-            selectedPosition = getReversePosition("sw", "se");
+            selectedPosition = getReverseDirection("sw", "se");
             break;
         case "n":
             adjustedSelectedArea.y = y;
@@ -530,7 +532,7 @@ function onMouseup(mousemoveCallback, mouseupCallback) {
     }
 }
 
-function getReversePosition(position, reversePosition) {
+function getReverseDirection(position, reversePosition) {
     const x = selectionArea.x;
     const y = selectionArea.y;
     const x2 = x + selectionArea.width;
@@ -563,16 +565,16 @@ function changeCursor(event) {
     
     switch (position) {
         case "nw":
-            position = getReversePosition("nw", "ne");
+            position = getReverseDirection("nw", "ne");
             break;
         case "ne":
-            position = getReversePosition("ne", "nw");
+            position = getReverseDirection("ne", "nw");
             break;
         case "sw":
-            position = getReversePosition("sw", "se");
+            position = getReverseDirection("sw", "se");
             break;
         case "se":
-            position = getReversePosition("se", "sw");
+            position = getReverseDirection("se", "sw");
             break;
     }
     
@@ -738,11 +740,58 @@ function adjustQuality(event) {
     updateQualityValue(quality);
 }
 
+function updateDataPointInput(target, value, dimension, ratio) {
+    value = Math.round(value / ratio);
+
+    if (value < 0) {
+        value = 0;
+        target.value = 0;
+    }
+
+    if (selectionArea[dimension] < 0) {
+        if (value - selectionArea[dimension] > canvas[dimension]) {
+            value = canvas[dimension];
+            target.value = Math.round((canvas[dimension] + selectionArea[dimension]) * ratio);
+        }
+        else {
+            value = value - selectionArea[dimension];
+        }
+    }
+    else if (value + selectionArea[dimension] > canvas[dimension]) {
+        value = canvas[dimension] - selectionArea[dimension];
+        target.value = Math.round(value * ratio);
+    }
+
+    return value;
+}
+
+function onXInput(event) {
+    let x = Number.parseInt(event.target.value, 10);
+
+    if (!Number.isNaN(x) && selectionArea.width && selectionArea.height) {
+        selectionArea.x = updateDataPointInput(event.target, x, "width", widthRatio);
+        drawCanvas();
+        updateScaledArea();
+    }
+}
+
+function onYInput(event) {
+    let y = Number.parseInt(event.target.value, 10);
+
+    if (!Number.isNaN(y) && selectionArea.width && selectionArea.height) {
+        selectionArea.y = updateDataPointInput(event.target, y, "height", heightRatio);
+        drawCanvas();
+        updateScaledArea();
+    }
+}
+
 cropButton.addEventListener("click", cropImage, false);
 skipButton.addEventListener("click", skipImage, false);
 closeButton.addEventListener("click", closeCropping, false);
 previewButton.addEventListener("click", showPreview, false);
 qualitySlider.addEventListener("input", adjustQuality, false);
+xInput.addEventListener("keyup", onXInput, false);
+yInput.addEventListener("keyup", onYInput, false);
 window.addEventListener("load", removeTransitionPrevention, false);
 
 export { init };
