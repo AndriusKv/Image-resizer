@@ -14,13 +14,15 @@ const cropPreview = document.getElementById("js-crop-preview");
 const qualitySlider = document.getElementById("js-crop-quality");
 const xInput = document.getElementById("js-crop-x");
 const yInput = document.getElementById("js-crop-y");
+const widthInput = document.getElementById("js-crop-width");
+const heightInput = document.getElementById("js-crop-height");
 const image = new Image();
 const imageWithQuality = new Image();
 const scaledSelectionArea = {};
 const mousePosition = {};
 
 let selectionArea = {};
-let position = "";
+let direction = "";
 let moveSelectedArea = "";
 let widthRatio = 1;
 let heightRatio = 1;
@@ -79,8 +81,8 @@ function updatePointDisplay(x = 0, y = 0) {
 }
 
 function updateMeasurmentDisplay(width, height) {
-    document.getElementById("js-crop-width").textContent = width < 0 ? -width : width;
-    document.getElementById("js-crop-height").textContent = height < 0 ? -height : height;
+    widthInput.value = width < 0 ? -width : width;
+    heightInput.value = height < 0 ? -height : height;
 }
 
 function updateQualityValue(quality) {
@@ -238,7 +240,7 @@ function getMousePosition(event) {
     };
 }
 
-function getPositionName(x, y) {
+function getDirection(x, y) {
     const margin = 4;
     const x2 = selectionArea.x;
     const y2 = selectionArea.y;
@@ -332,35 +334,35 @@ function resizeSelectedArea(event) {
     const adjustedSelectedArea = {};
     
     let { x, y } = getMousePosition(event);
-    let selectedPosition = "";
+    let selectedDirection = "";
     
     x = adjustOutsideCanvasXCoord(x);
     y = adjustOutsideCanvasYCoord(y);
     
-    switch (position) {
+    switch (direction) {
         case "nw":
             adjustedSelectedArea.x = x;
             adjustedSelectedArea.y = y;
             adjustedSelectedArea.width = area.x - x + area.width;
             adjustedSelectedArea.height = area.y - y + area.height;
-            selectedPosition = getReverseDirection("nw", "ne");
+            selectedDirection = getOppositeDirection("nw", "ne");
             break;
         case "ne":
             adjustedSelectedArea.y = y;
             adjustedSelectedArea.height = area.y - y + area.height;
             adjustedSelectedArea.width = x - area.x;
-            selectedPosition = getReverseDirection("ne", "nw");
+            selectedDirection = getOppositeDirection("ne", "nw");
             break;
         case "se":
             adjustedSelectedArea.width = x - area.x;
             adjustedSelectedArea.height = y - area.y;
-            selectedPosition = getReverseDirection("se", "sw");
+            selectedDirection = getOppositeDirection("se", "sw");
             break;
         case "sw":
             adjustedSelectedArea.x = x;
             adjustedSelectedArea.width = area.x - x + area.width;
             adjustedSelectedArea.height = y - area.y;
-            selectedPosition = getReverseDirection("sw", "se");
+            selectedDirection = getOppositeDirection("sw", "se");
             break;
         case "n":
             adjustedSelectedArea.y = y;
@@ -378,8 +380,8 @@ function resizeSelectedArea(event) {
             break;
     }
     
-    if (selectedPosition) {
-        canvas.style.cursor = selectedPosition + "-resize";
+    if (selectedDirection) {
+        canvas.style.cursor = selectedDirection + "-resize";
     }
     
     Object.assign(selectionArea, adjustedSelectedArea);
@@ -387,8 +389,8 @@ function resizeSelectedArea(event) {
     requestAnimationFrame(drawCanvas);
 
     updateScaledArea();
-
     updatePointDisplay(selectionArea.x, selectionArea.y);
+    updateMeasurmentDisplay(scaledSelectionArea.width, scaledSelectionArea.height);
 }
 
 function adjustSelectedAreaPosition(coord, dimension) {
@@ -442,13 +444,13 @@ function onSelectionStart(event) {
     
     const { x, y } = getMousePosition(event);
     
-    position = getPositionName(x, y);
+    direction = getDirection(x, y);
     drawImage();
 
     canvas.removeEventListener("mousemove", changeCursor, false);
     document.removeEventListener("keydown", changeCursorToMove, false);
     
-    if (position && selectionArea.width && selectionArea.height) {
+    if (direction && selectionArea.width && selectionArea.height) {
         strokeRect();
         
         cropping.addEventListener("mousemove", resizeSelectedArea, false);
@@ -488,8 +490,8 @@ function selectArea(event) {
     requestAnimationFrame(drawCanvas);
 
     updateScaledArea();
-
     updatePointDisplay(x, y);
+    updateMeasurmentDisplay(scaledSelectionArea.width, scaledSelectionArea.height);
 }
 
 function removeMoveCursor() {
@@ -509,8 +511,6 @@ function updateScaledArea() {
     scaledSelectionArea.y = Math.round(selectionArea.y * heightRatio);
     scaledSelectionArea.width = Math.round(selectionArea.width * widthRatio);
     scaledSelectionArea.height = Math.round(selectionArea.height * heightRatio);
-    
-    updateMeasurmentDisplay(scaledSelectionArea.width, scaledSelectionArea.height);
 }
 
 function onMouseup(mousemoveCallback, mouseupCallback) {
@@ -532,7 +532,7 @@ function onMouseup(mousemoveCallback, mouseupCallback) {
     }
 }
 
-function getReverseDirection(position, reversePosition) {
+function getOppositeDirection(direction, oppositeDirection) {
     const x = selectionArea.x;
     const y = selectionArea.y;
     const x2 = x + selectionArea.width;
@@ -540,14 +540,14 @@ function getReverseDirection(position, reversePosition) {
 
     if (x2 > x) {
         if (y2 < y) {
-            return reversePosition;
+            return oppositeDirection;
         }
     }
     else if (y2 > y) {
-        return reversePosition;
+        return oppositeDirection;
     }
     
-    return position;
+    return direction;
 }
 
 function changeCursor(event) {
@@ -561,24 +561,24 @@ function changeCursor(event) {
         return;
     }
     
-    let position = getPositionName(x, y);
+    let direction = getDirection(x, y);
     
-    switch (position) {
+    switch (direction) {
         case "nw":
-            position = getReverseDirection("nw", "ne");
+            direction = getOppositeDirection("nw", "ne");
             break;
         case "ne":
-            position = getReverseDirection("ne", "nw");
+            direction = getOppositeDirection("ne", "nw");
             break;
         case "sw":
-            position = getReverseDirection("sw", "se");
+            direction = getOppositeDirection("sw", "se");
             break;
         case "se":
-            position = getReverseDirection("se", "sw");
+            direction = getOppositeDirection("se", "sw");
             break;
     }
     
-    canvas.style.cursor = position ? position + "-resize" : "default";
+    canvas.style.cursor = direction ? direction + "-resize" : "default";
 }
 
 function lockAdjustedArea() {
@@ -740,18 +740,18 @@ function adjustQuality(event) {
     updateQualityValue(quality);
 }
 
-function updateDataPointInput(target, value, dimension, ratio) {
+function updateDataPointInput(targetInput, value, dimension, ratio) {
     value = Math.round(value / ratio);
 
     if (value < 0) {
         value = 0;
-        target.value = 0;
+        targetInput.value = 0;
     }
 
     if (selectionArea[dimension] < 0) {
         if (value - selectionArea[dimension] > canvas[dimension]) {
             value = canvas[dimension];
-            target.value = Math.round((canvas[dimension] + selectionArea[dimension]) * ratio);
+            targetInput.value = Math.round((canvas[dimension] + selectionArea[dimension]) * ratio);
         }
         else {
             value = value - selectionArea[dimension];
@@ -759,7 +759,7 @@ function updateDataPointInput(target, value, dimension, ratio) {
     }
     else if (value + selectionArea[dimension] > canvas[dimension]) {
         value = canvas[dimension] - selectionArea[dimension];
-        target.value = Math.round(value * ratio);
+        targetInput.value = Math.round(value * ratio);
     }
 
     return value;
@@ -785,6 +785,39 @@ function onYInput(event) {
     }
 }
 
+function onWidthInput(event) {
+    let width = Number.parseInt(event.target.value, 10);
+
+    if (!Number.isNaN(width) && width > 0 && selectionArea.height) {
+        updateDataDimensionInput(event.target, "width", width, "x", widthRatio);
+    }
+}
+
+function onHeightInput(event) {
+    let height = Number.parseInt(event.target.value, 10);
+
+    if (!Number.isNaN(height) && height > 0 && selectionArea.width) {
+        updateDataDimensionInput(event.target, "height", height, "y", heightRatio);
+    }
+}
+
+function updateDataDimensionInput(targetInput, dimension, dimensionValue, point, ratio) {
+    let value = Math.round(dimensionValue / ratio);
+
+    if (selectionArea[dimension] < 0) {
+        selectionArea[point] = selectionArea[dimension] + selectionArea[point];
+    }
+
+    if (value > canvas[dimension]) {
+        value = canvas[dimension] - selectionArea[point];
+        targetInput.value = Math.round(value * ratio);
+    }
+
+    selectionArea[dimension] = value;
+    drawCanvas();
+    updateScaledArea();
+}
+
 cropButton.addEventListener("click", cropImage, false);
 skipButton.addEventListener("click", skipImage, false);
 closeButton.addEventListener("click", closeCropping, false);
@@ -792,6 +825,8 @@ previewButton.addEventListener("click", showPreview, false);
 qualitySlider.addEventListener("input", adjustQuality, false);
 xInput.addEventListener("keyup", onXInput, false);
 yInput.addEventListener("keyup", onYInput, false);
+widthInput.addEventListener("keyup", onWidthInput, false);
+heightInput.addEventListener("keyup", onHeightInput, false);
 window.addEventListener("load", removeTransitionPrevention, false);
 
 export { init };
