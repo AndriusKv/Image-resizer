@@ -57,7 +57,7 @@
 	    <div id="js-settings" class="settings">
             <div class="setting">
                 <label for="js-crop-checkbox" class="setting-label">Enable image cropping</label>
-                <input type="checkbox" id="js-crop-checkbox" class="setting-checkbox">
+                <input type="checkbox" id="js-crop-checkbox" class="setting-checkbox" checked>
             </div>
             <div class="setting">
                 <label for="js-image-name" class="setting-label">Image name</label>
@@ -82,25 +82,25 @@
             </div>
             <canvas id="js-canvas" class="crop-canvas"></canvas>
             <div class="crop-sidebar">
-                <div class="crop-data">
+                <div id="js-crop-data" class="crop-data">
                     <div class="crop-data-group">
                         <span class="crop-data-measurment">X:</span>
-                        <input id="js-crop-x" class="crop-data-value" value="0">
+                        <input id="js-crop-x" class="crop-data-value" value="0" data-input="x">
                         <span class="crop-data-value-unit">px</span>
                     </div>
                     <div class="crop-data-group">
                         <span class="crop-data-measurment">Y:</span>
-                        <input id="js-crop-y" class="crop-data-value" value="0">
+                        <input id="js-crop-y" class="crop-data-value" value="0" data-input="y">
                         <span class="crop-data-value-unit">px</span>
                     </div>
                     <div class="crop-data-group">
                         <span class="crop-data-measurment">Width:</span>
-                        <input id="js-crop-width" class="crop-data-value" value="0">
+                        <input id="js-crop-width" class="crop-data-value" value="0" data-input="width">
                         <span class="crop-data-value-unit">px</span>
                     </div>
                     <div class="crop-data-group">
                         <span class="crop-data-measurment">Height:</span>
-                        <input id="js-crop-height" class="crop-data-value" value="0">
+                        <input id="js-crop-height" class="crop-data-value" value="0" data-input="height">
                         <span class="crop-data-value-unit">px</span>
                     </div>
                     <div class="crop-data-block">
