@@ -6,10 +6,7 @@ import * as process from "./process.js";
 const cropping = document.getElementById("js-crop");
 const canvas = document.getElementById("js-canvas");
 const ctx = canvas.getContext("2d");
-const cropButton = document.getElementById("js-crop-ok");
-const skipButton = document.getElementById("js-crop-skip");
 const closeButton = document.getElementById("js-crop-close");
-const previewButton = document.getElementById("js-crop-preview-btn");
 const cropPreview = document.getElementById("js-crop-preview");
 const qualitySlider = document.getElementById("js-crop-quality");
 const xInput = document.getElementById("js-crop-x");
@@ -34,13 +31,19 @@ function toggleButton(button, disabled) {
     button.disabled = disabled;
 }
 
+function toggleButtons(disabled) {
+    const cropButton = document.getElementById("js-crop-ok"),
+        previewButton = document.getElementById("js-crop-preview-btn");
+
+    toggleButton(cropButton, disabled);
+    toggleButton(previewButton, disabled);
+}
+
 function toggleSkipButton(imageCount) {
-    if (imageCount > 1) {
-        toggleButton(skipButton, false);
-    }
-    else {
-        toggleButton(skipButton, true);
-    }
+    const skipButton = document.getElementById("js-crop-skip"),
+        hasImages = imageCount > 1;
+
+    toggleButton(skipButton, !hasImages);
 }
 
 function updateRemainingImageIndicator(action) {
@@ -58,24 +61,21 @@ function displayImageName(name) {
     document.getElementById("js-crop-image-name").textContent = name;
 }
 
-function updatePointDisplay(x = 0, y = 0) {
-    if (x) {
-        if (selectedArea.width > 0) {
-            x = selectedArea.x;
+function getPointToUpdate(pointValue, point, dimension) {
+    if (pointValue) {
+        if (selectedArea[dimension] > 0) {
+            return selectedArea[point];
         }
-        else {
-            x = selectedArea.x + selectedArea.width;
-        }
+
+        return selectedArea[point] + selectedArea[dimension];
     }
 
-    if (y) {
-        if (selectedArea.height > 0) {
-            y = selectedArea.y;
-        }
-        else {
-            y = selectedArea.y + selectedArea.height;
-        }
-    }
+    return 0;
+}
+
+function updatePointDisplay(x, y) {
+    x = getPointToUpdate(x, "x", "width");
+    y = getPointToUpdate(y, "y", "height");
 
     xInput.value = Math.round(x * widthRatio);
     yInput.value = Math.round(y * heightRatio);
@@ -108,13 +108,14 @@ function addMask() {
 }
 
 function strokeRect() {
-    const area = selectedArea;
+    const area = selectedArea,
+        hasArea = area.width && area.height;
     
-    let x = area.x;
-    let y = area.y;
-    let imageData;
+    let x = area.x,
+        y = area.y,
+        imageData;
 
-    if (area.width && area.height) {
+    if (hasArea) {
         imageData = ctx.getImageData(x, y, area.width, area.height);
 
         if (area.width < 0) {
@@ -126,7 +127,7 @@ function strokeRect() {
         }
     }
 
-    if (x || y || (area.width && area.height)) {
+    if (x || y || hasArea) {
         addMask();
     }
 
@@ -446,7 +447,8 @@ function onSelectionStart(event) {
         return;
     }
     
-    const { x, y } = getMousePosition(event);
+    const { x, y } = getMousePosition(event),
+        hasArea = selectedArea.width && selectedArea.height;
     
     direction = getDirection(x, y);
     drawImage();
@@ -454,7 +456,7 @@ function onSelectionStart(event) {
     canvas.removeEventListener("mousemove", changeCursor, false);
     document.removeEventListener("keydown", changeCursorToMove, false);
     
-    if (direction && selectedArea.width && selectedArea.height) {
+    if (direction && hasArea) {
         strokeRect();
         
         cropping.addEventListener("mousemove", resizeSelectedArea, false);
@@ -468,7 +470,7 @@ function onSelectionStart(event) {
         cropping.addEventListener("mouseup", lockMovedArea, false);
     }
     else {
-        if (selectedArea.width && selectedArea.height) {
+        if (hasArea) {
             addMask();
         }
 
@@ -525,22 +527,22 @@ function updateSelectedArea() {
 }
 
 function onMouseup(mousemoveCallback, mouseupCallback) {
+    const hasArea = selectedArea.width && selectedArea.height;
+
     cropping.removeEventListener("mousemove", mousemoveCallback, false);
     cropping.removeEventListener("mouseup", mouseupCallback, false);
 
-    if (selectedArea.width && selectedArea.height) {
+    if (hasArea) {
         canvas.addEventListener("mousemove", changeCursor, false);
         document.addEventListener("keydown", changeCursorToMove, false);
-        toggleButton(cropButton, false);
-        toggleButton(previewButton, false);
     }
     else {
         resetData();
         drawImage();
-        toggleButton(cropButton, true);
-        toggleButton(previewButton, true);
         canvas.style.cursor = "default";
     }
+
+    toggleButtons(!hasArea);
 }
 
 function getOppositeDirection(direction, oppositeDirection) {
@@ -610,8 +612,7 @@ function init() {
     process.initWorker();
     displayImageName(image.name.original);
     drawInitialImage(image.uri);
-    toggleButton(cropButton, true);
-    toggleButton(previewButton, true);
+    toggleButtons(true);
     toggleSkipButton(process.images.length);
     canvas.addEventListener("mousedown", onSelectionStart, false);
     
@@ -624,8 +625,7 @@ function loadNextImage(image) {
     canvas.classList.remove("show");
 
     toggleSkipButton(process.images.length);
-    toggleButton(cropButton, true);
-    toggleButton(previewButton, true);
+    toggleButtons(true);
     
     if (process.images.length) {
         resetData();
@@ -767,16 +767,14 @@ function insertChar(string, char, start, end) {
 }
 
 function updateCanvasOnInput() {
-    if (selectedArea.width && selectedArea.height) {
+    const hasArea = selectedArea.width && selectedArea.height;
+
+    if (hasArea) {
         drawCanvas();
         updateScaledSelectedArea();
-        toggleButton(cropButton, false);
-        toggleButton(previewButton, false);
     }
-    else {
-        toggleButton(cropButton, true);
-        toggleButton(previewButton, true);
-    }
+
+    toggleButtons(!hasArea);
 }
 
 function updateSelectedAreaPoint(event, inputValue, dimension) {
@@ -858,13 +856,27 @@ function updateSelectedAreaWithCropData(event) {
     }
 }
 
-cropButton.addEventListener("click", cropImage, false);
-skipButton.addEventListener("click", skipImage, false);
+function onSidebarBtnClick(event) {
+    const btn = event.target.getAttribute("data-btn");
+
+    switch (btn) {
+        case "crop":
+            cropImage();
+            break;
+        case "preview":
+            showPreview();
+            break;
+        case "skip":
+            skipImage();
+            break;
+    }
+}
+
 closeButton.addEventListener("click", closeCropping, false);
-previewButton.addEventListener("click", showPreview, false);
-qualitySlider.addEventListener("input", adjustQuality, false);
 cropData.addEventListener("keypress", updateCanvasWithCropData, false);
 cropData.addEventListener("keyup", updateSelectedAreaWithCropData, false);
+qualitySlider.addEventListener("input", adjustQuality, false);
+document.getElementById("js-crop-data-btns").addEventListener("click", onSidebarBtnClick, false);
 window.addEventListener("load", removeTransitionPrevention, false);
 
 export { init };

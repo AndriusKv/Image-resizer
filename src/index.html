@@ -57,7 +57,7 @@
 	    <div id="js-settings" class="settings">
             <div class="setting">
                 <label for="js-crop-checkbox" class="setting-label">Enable image cropping</label>
-                <input type="checkbox" id="js-crop-checkbox" class="setting-checkbox" checked>
+                <input type="checkbox" id="js-crop-checkbox" class="setting-checkbox">
             </div>
             <div class="setting">
                 <label for="js-image-name" class="setting-label">Image name</label>
@@ -110,10 +110,10 @@
                         <div id="js-quality-value">0.92</div>
                     </div>
                 </div>
-                <div class="crop-button-container">
-                    <button id="js-crop-ok" class="btn inv-btn crop-btn">Crop</button>
-                    <button id="js-crop-preview-btn" class="btn inv-btn crop-btn">Preview</button>
-                    <button id="js-crop-skip" class="btn inv-btn crop-btn">Skip</button>
+                <div id="js-crop-data-btns" class="crop-button-container">
+                    <button id="js-crop-ok" class="btn inv-btn crop-btn" data-btn="crop">Crop</button>
+                    <button id="js-crop-preview-btn" class="btn inv-btn crop-btn" data-btn="preview">Preview</button>
+                    <button id="js-crop-skip" class="btn inv-btn crop-btn" data-btn="skip">Skip</button>
                 </div>
             </div>
             <div id="js-crop-preview" class="crop-preview-container"></div>
