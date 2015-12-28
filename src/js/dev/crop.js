@@ -577,10 +577,10 @@ function getOppositeDirection(direction, oppositeDirection) {
 
 function changeCursor(event) {
     const { x, y } = getMousePosition(event);
-    
+
     mousePosition.x = x;
     mousePosition.y = y;
-    
+
     if (event.ctrlKey && isMouseInsideSelectedArea(x, y)) {
         canvas.style.cursor = "move";
         return;
