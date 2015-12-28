@@ -95,6 +95,7 @@
 .crop-data-group {
     display: flex;
     margin-bottom: 4px;
+    border: 1px solid $light-color;
     background-color: $light-color;
 }
 .crop-data-measurment {
@@ -105,8 +106,7 @@
 .crop-data-value {
     width: 100px;
     padding: 4px;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
+    border: 1px solid #ccc;
     background-color: #eee;
 }
 .crop-data-value-unit {
@@ -115,8 +115,7 @@
     text-align: center;
 }
 .crop-data-block {
-    background-color: $light-color;
-    color: $dark-color;
+    color: $light-color;
     text-align: center;
 }
 .crop-data-quality-slider {
