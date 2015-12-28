@@ -18,7 +18,7 @@ function setImageQuality(newQuality) {
     updateQualityDisplay(newQuality);
 }
 
-function resetQualitySlider() {
+function resetImageQuality() {
     customQuality = false;
     qualitySlider.value = 92;
     updateQualityDisplay(defaultQuality);
@@ -43,6 +43,6 @@ qualitySlider.addEventListener("input", adjustQuality, false);
 
 export {
     useImageWithQuality,
-    resetQualitySlider,
-    getImageQuality
+    resetImageQuality as reset,
+    getImageQuality as get
 };
