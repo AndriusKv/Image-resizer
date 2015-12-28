@@ -2,30 +2,50 @@
 
 import { toggleElement } from "./main.js";
 import * as process from "./process.js";
+import * as quality from "./crop-quality.js";
 
 const cropping = document.getElementById("js-crop");
 const canvas = document.getElementById("js-canvas");
 const ctx = canvas.getContext("2d");
 const closeButton = document.getElementById("js-crop-close");
 const cropPreview = document.getElementById("js-crop-preview");
-const qualitySlider = document.getElementById("js-crop-quality");
 const xInput = document.getElementById("js-crop-x");
 const yInput = document.getElementById("js-crop-y");
 const widthInput = document.getElementById("js-crop-width");
 const heightInput = document.getElementById("js-crop-height");
 const cropData = document.getElementById("js-crop-data");
-const image = new Image();
-const imageWithQuality = new Image();
 const scaledSelectedArea = {};
 const mousePosition = {};
+const canvasImage = {
+    original: new Image(),
+    withQuality: new Image()
+};
 
 let selectedArea = {};
 let direction = "";
 let moveSelectedArea = "";
-let widthRatio = 1;
-let heightRatio = 1;
 let isPreviewOpen = false;
-let customQuality = false;
+
+const ratio = (function() {
+    let ratio = {};
+
+    function getRatio(name) {
+        if (name === "x") {
+            name = "width";
+        }
+        else if (name === "y") {
+            name = "height";
+        }
+
+        return ratio[name];
+    }
+
+    function setRatio(name, value) {
+        ratio[name] = value;
+    }
+
+    return { getRatio, setRatio };
+})();
 
 function toggleButton(button, disabled) {
     button.disabled = disabled;
@@ -74,6 +94,9 @@ function getPointToUpdate(pointValue, point, dimension) {
 }
 
 function updatePointDisplay(x, y) {
+    const widthRatio = ratio.getRatio("width"),
+        heightRatio = ratio.getRatio("height");
+
     x = getPointToUpdate(x, "x", "width");
     y = getPointToUpdate(y, "y", "height");
 
@@ -82,24 +105,20 @@ function updatePointDisplay(x, y) {
 }
 
 function updateMeasurmentDisplay(width, height) {
-    width = Math.round(width * widthRatio);
-    height = Math.round(height * heightRatio);
+    width = Math.round(width * ratio.getRatio("width"));
+    height = Math.round(height * ratio.getRatio("height"));
 
     widthInput.value = width < 0 ? -width : width;
     heightInput.value = height < 0 ? -height : height;
 }
 
-function updateQualityValue(quality) {
-    document.getElementById("js-quality-value").textContent = quality;
-}
-
 function drawImage() {
-    if (customQuality) {
-        ctx.drawImage(imageWithQuality, 0, 0, canvas.width, canvas.height);
+    if (quality.useImageWithQuality()) {
+        ctx.drawImage(canvasImage.withQuality, 0, 0, canvas.width, canvas.height);
         return;
     }
 
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(canvasImage.original, 0, 0, canvas.width, canvas.height);
 }
 
 function addMask() {
@@ -145,50 +164,44 @@ function drawCanvas() {
 }
 
 function drawInitialImage(uri) {
-    image.addEventListener("load", () => {
-        const ratio = image.width / image.height;
-        const maxWidth = window.innerWidth - 212;
-        const maxHeight = window.innerHeight - 40;
+    canvasImage.original.addEventListener("load", () => {
+        const imageWidth = canvasImage.original.width,
+            imageHeight = canvasImage.original.height,
+            imageRatio = imageWidth / imageHeight,
+            maxWidth = window.innerWidth - 212,
+            maxHeight = window.innerHeight - 40;
 
-        let width = image.width;
-        let height = image.height;
+        let width = imageWidth,
+            height = imageHeight;
 
         toggleElement("add", cropping);
         
         if (width > maxWidth) {
             width = maxWidth;
-            height = width / ratio;
+            height = width / imageRatio;
         }
 
         if (height > maxHeight) {
             height = maxHeight;
-            width = height * ratio;
+            width = height * imageRatio;
         }
         
         canvas.width = width;
         canvas.height = height;
+        ctx.drawImage(canvasImage.original, 0, 0, canvas.width, canvas.height);
 
-        widthRatio = image.width / canvas.width;
-        heightRatio = image.height / canvas.height;
-
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        ratio.setRatio("width", imageWidth / canvas.width);
+        ratio.setRatio("height", imageHeight / canvas.height);
 
         canvas.classList.add("show");
     });
-
-    image.src = uri;
+    canvasImage.original.src = uri;
 }
 
 function getCroppedImage(image, imageType = "image/jpeg") {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const area = scaledSelectedArea;
-
-    let quality = 0.92;
-
-    if (customQuality) {
-        quality = qualitySlider.value / 100;
-    }
 
     canvas.width = image.width;
     canvas.height = image.height;
@@ -202,7 +215,7 @@ function getCroppedImage(image, imageType = "image/jpeg") {
     ctx.putImageData(imageData, 0, 0);
 
     return {
-        uri: canvas.toDataURL(imageType, quality),
+        uri: canvas.toDataURL(imageType, quality.getImageQuality()),
         width: canvas.width,
         height: canvas.height
     };
@@ -229,7 +242,7 @@ function sendImageToWorker(imageToCrop) {
             canvas.removeEventListener("mousedown", onSelectionStart, false);
         }
         else {
-            resetQualitySlider();
+            quality.reset();
         }
     });
 
@@ -513,6 +526,9 @@ function changeCursorToMove(event) {
 }
 
 function updateScaledSelectedArea() {
+    const widthRatio = ratio.getRatio("width"),
+        heightRatio = ratio.getRatio("height");
+
     scaledSelectedArea.x = selectedArea.x * widthRatio;
     scaledSelectedArea.y = selectedArea.y * heightRatio;
     scaledSelectedArea.width = selectedArea.width * widthRatio;
@@ -520,6 +536,9 @@ function updateScaledSelectedArea() {
 }
 
 function updateSelectedArea() {
+    const widthRatio = ratio.getRatio("width"),
+        heightRatio = ratio.getRatio("height");
+
     selectedArea.x = xInput.value / widthRatio;
     selectedArea.y = yInput.value / heightRatio;
     selectedArea.width = widthInput.value / widthRatio;
@@ -644,14 +663,8 @@ function resetData() {
     updateMeasurmentDisplay(0, 0);
 }
 
-function resetQualitySlider() {
-    customQuality = false;
-    qualitySlider.value = 92;
-    updateQualityValue(0.92);
-}
-
 function resetCropper() {
-    resetQualitySlider();
+    quality.reset();
     resetData();
     updateRemainingImageIndicator("remove");
     toggleElement("remove", cropping);
@@ -667,7 +680,7 @@ function cropImage() {
 function skipImage() {
     process.images.splice(0, 1);
 
-    resetQualitySlider();
+    quality.reset();
     loadNextImage(process.images[0]);
 }
 
@@ -688,7 +701,7 @@ function closeCropping() {
 }
 
 function showPreview() {
-    const croppedImage = getCroppedImage(image);
+    const croppedImage = getCroppedImage(canvasImage.original);
     const img = new Image();
 
     isPreviewOpen = true;
@@ -728,31 +741,17 @@ function removeTransitionPrevention() {
 }
 
 function changeCanvasQuality(quality) {
-    const canvas2 = document.createElement("canvas");
-    const ctx2 = canvas2.getContext("2d");
+    const canvasWithQuality = document.createElement("canvas");
+    const ctx2 = canvasWithQuality.getContext("2d");
 
-    imageWithQuality.addEventListener("load", () => {
-        drawCanvas();
+    canvasImage.withQuality.addEventListener("load", () => {
+        requestAnimationFrame(drawCanvas);
     });
 
-    canvas2.width = image.width;
-    canvas2.height = image.height;
-    ctx2.drawImage(image, 0, 0, canvas2.width, canvas2.height);
-
-    imageWithQuality.src = canvas2.toDataURL("image/jpeg", quality);
-}
-
-function adjustQuality(event) {
-    const quality = event.target.value / 100;
-
-    customQuality = quality < 0.92;
-
-    changeCanvasQuality(quality);
-    updateQualityValue(quality);
-}
-
-function getRatio(input) {
-    return input === "x" || input === "width" ? widthRatio : heightRatio;
+    canvasWithQuality.width = canvasImage.original.width;
+    canvasWithQuality.height = canvasImage.original.height;
+    ctx2.drawImage(canvasImage.original, 0, 0, canvasWithQuality.width, canvasWithQuality.height);
+    canvasImage.withQuality.src = canvasWithQuality.toDataURL("image/jpeg", quality);
 }
 
 function insertChar(string, char, start, end) {
@@ -770,7 +769,7 @@ function updateCanvasOnInput() {
     const hasArea = selectedArea.width && selectedArea.height;
 
     if (hasArea) {
-        drawCanvas();
+        requestAnimationFrame(drawCanvas);
         updateScaledSelectedArea();
     }
 
@@ -778,15 +777,15 @@ function updateCanvasOnInput() {
 }
 
 function updateSelectedAreaPoint(event, inputValue, dimension) {
-    const ratio = getRatio(dimension);
+    const inputRatio = ratio.getRatio(dimension);
 
-    inputValue = inputValue / ratio;
+    inputValue = inputValue / inputRatio;
 
     if (selectedArea[dimension] < 0) {
         if (inputValue - selectedArea[dimension] > canvas[dimension]) {
             inputValue = canvas[dimension];
             event.preventDefault();
-            event.target.value = Math.round((canvas[dimension] + selectedArea[dimension]) * ratio);
+            event.target.value = Math.round((canvas[dimension] + selectedArea[dimension]) * inputRatio);
         }
         else {
             inputValue = inputValue - selectedArea[dimension];
@@ -795,16 +794,16 @@ function updateSelectedAreaPoint(event, inputValue, dimension) {
     else if (inputValue + selectedArea[dimension] > canvas[dimension]) {
         inputValue = canvas[dimension] - selectedArea[dimension];
         event.preventDefault();
-        event.target.value = Math.round(inputValue * ratio);
+        event.target.value = Math.round(inputValue * inputRatio);
     }
 
     return inputValue;
 }
 
 function updateSelectedAreaDimension(event, inputValue, dimension, point) {
-    const ratio = getRatio(dimension);
+    const inputRatio = ratio.getRatio(dimension);
 
-    inputValue = inputValue / ratio;
+    inputValue = inputValue / inputRatio;
 
     if (selectedArea[dimension] < 0) {
         selectedArea[point] = selectedArea[dimension] + selectedArea[point];
@@ -813,7 +812,7 @@ function updateSelectedAreaDimension(event, inputValue, dimension, point) {
     if (selectedArea[point] + inputValue > canvas[dimension]) {
         inputValue = canvas[dimension] - selectedArea[point];
         event.preventDefault();
-        event.target.value = Math.round(inputValue * ratio);
+        event.target.value = Math.round(inputValue * inputRatio);
     }
 
     return inputValue;
@@ -875,8 +874,7 @@ function onSidebarBtnClick(event) {
 closeButton.addEventListener("click", closeCropping, false);
 cropData.addEventListener("keypress", updateCanvasWithCropData, false);
 cropData.addEventListener("keyup", updateSelectedAreaWithCropData, false);
-qualitySlider.addEventListener("input", adjustQuality, false);
 document.getElementById("js-crop-data-btns").addEventListener("click", onSidebarBtnClick, false);
 window.addEventListener("load", removeTransitionPrevention, false);
 
-export { init };
+export { init, changeCanvasQuality };
