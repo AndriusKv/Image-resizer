@@ -768,7 +768,7 @@ function updateCanvasOnInput() {
     toggleButtons(!hasArea);
 }
 
-function updateSelectedAreaPoint(event, inputValue, dimension) {
+function updateSelectedAreaPoint(inputValue, dimension) {
     const inputRatio = ratio.getRatio(dimension);
 
     inputValue = inputValue / inputRatio;
@@ -788,7 +788,7 @@ function updateSelectedAreaPoint(event, inputValue, dimension) {
     return inputValue;
 }
 
-function updateSelectedAreaDimension(event, inputValue, dimension, point) {
+function updateSelectedAreaDimension(inputValue, dimension, point) {
     const inputRatio = ratio.getRatio(dimension);
 
     inputValue = inputValue / inputRatio;
@@ -804,40 +804,63 @@ function updateSelectedAreaDimension(event, inputValue, dimension, point) {
     return inputValue;
 }
 
+function getKey(event) {
+    if (event.key) {
+        return event.key;
+    }
+
+    const code = event.keyCode || event.which;
+
+    if (code) {
+        if (code === 8 || code === 13) {
+            return code;
+        }
+
+        return String.fromCharCode(code);
+    }
+}
+
 function updateCanvasWithCropData(event) {
     const target = event.target,
-        char = String.fromCharCode(event.keyCode),
-        input = target.getAttribute("data-input");
+        key = getKey(event),
+        input = target.getAttribute("data-input"),
+        backspace = key === "Backspace" || key === 8,
+        enter = key === "Enter" || key === 13;
 
-    event.preventDefault();
+    if (!backspace && !enter) {
+        event.preventDefault();
+    }
 
-    if (input && /\d/.test(char)) {
-        const inputValue = insertChar(target.value, char, target.selectionStart, target.selectionEnd);
+    if (input && /\d/.test(key)) {
+        const inputValue = insertChar(target.value, key, target.selectionStart, target.selectionEnd);
 
         switch (input) {
             case "x":
-                selectedArea[input] = updateSelectedAreaPoint(event, inputValue, "width");
+                selectedArea[input] = updateSelectedAreaPoint(inputValue, "width");
                 break;
             case "y":
-                selectedArea[input] = updateSelectedAreaPoint(event, inputValue, "height");
+                selectedArea[input] = updateSelectedAreaPoint(inputValue, "height");
                 break;
             case "width":
-                selectedArea[input] = updateSelectedAreaDimension(event, inputValue, input, "x");
+                selectedArea[input] = updateSelectedAreaDimension(inputValue, input, "x");
                 break;
             case "height":
-                selectedArea[input] = updateSelectedAreaDimension(event, inputValue, input, "y");
+                selectedArea[input] = updateSelectedAreaDimension(inputValue, input, "y");
                 break;
         }
 
         updateCanvasOnInput();
         updatePointDisplay(selectedArea.x, selectedArea.y);
         updateMeasurmentDisplay(selectedArea.width, selectedArea.height);
-        return;
     }
 }
 
 function updateSelectedAreaWithCropData(event) {
-    if (event.keyCode === 8 || event.keyCode === 13) {
+    const key = getKey(event),
+        backspace = key === "Backspace" || key === 8,
+        enter = key === "Enter" || key === 13;
+
+    if (backspace || enter) {
         updateSelectedArea();
         updateCanvasOnInput();
     }
