@@ -747,7 +747,12 @@ function changeCanvasQuality(quality) {
     canvasImage.withQuality.src = canvasWithQuality.toDataURL("image/jpeg", quality);
 }
 
-function insertChar(string, char, start, end) {
+function insertChar(target, char) {
+    const start = target.selectionStart,
+        end = target.selectionEnd;
+
+    let string = target.value;
+
     if (start === end) {
         string = string.slice(0, start) + char + string.slice(start, string.length);
     }
@@ -768,14 +773,18 @@ function updateCanvasOnInput() {
     toggleButtons(!hasArea);
 }
 
+function updateInput(target, value, input) {
+    const inputRatio = ratio.getRatio(input);
+
+    target.value = Math.round(value * inputRatio);
+}
+
 function updateSelectedAreaPoint(event, inputValue, dimension) {
-    const inputRatio = ratio.getRatio(dimension);
-
-    inputValue = inputValue / inputRatio;
-
     if (selectedArea[dimension] < 0) {
         if (inputValue - selectedArea[dimension] > canvas[dimension]) {
             inputValue = canvas[dimension];
+            event.preventDefault();
+            updateInput(event.target, canvas[dimension] + selectedArea[dimension], dimension);
         }
         else {
             inputValue = inputValue - selectedArea[dimension];
@@ -783,36 +792,56 @@ function updateSelectedAreaPoint(event, inputValue, dimension) {
     }
     else if (inputValue + selectedArea[dimension] > canvas[dimension]) {
         inputValue = canvas[dimension] - selectedArea[dimension];
+        event.preventDefault();
+        updateInput(event.target, inputValue, dimension);
     }
 
     return inputValue;
 }
 
 function updateSelectedAreaDimension(event, inputValue, dimension, point) {
-    const inputRatio = ratio.getRatio(dimension);
-
-    inputValue = inputValue / inputRatio;
-
     if (selectedArea[dimension] < 0) {
         selectedArea[point] = selectedArea[dimension] + selectedArea[point];
     }
 
     if (selectedArea[point] + inputValue > canvas[dimension]) {
         inputValue = canvas[dimension] - selectedArea[point];
+        event.preventDefault();
+        updateInput(event.target, inputValue, dimension);
     }
 
     return inputValue;
 }
 
+function getKey(event) {
+    if (event.key) {
+        return event.key;
+    }
+
+    const code = event.keyCode || event.which;
+
+    if (code) {
+        if (code === 8 || code === 13) {
+            return code;
+        }
+
+        return String.fromCharCode(code);
+    }
+}
+
 function updateCanvasWithCropData(event) {
     const target = event.target,
-        char = String.fromCharCode(event.keyCode),
-        input = target.getAttribute("data-input");
+        key = getKey(event),
+        input = target.getAttribute("data-input"),
+        backspace = key === "Backspace" || key === 8,
+        enter = key === "Enter" || key === 13;
 
-    event.preventDefault();
+    if (input && /\d/.test(key)) {
+        const inputRatio = ratio.getRatio(input);
 
-    if (input && /\d/.test(char)) {
-        const inputValue = insertChar(target.value, char, target.selectionStart, target.selectionEnd);
+        let inputValue = insertChar(target, key);
+
+        inputValue = inputValue / inputRatio;
 
         switch (input) {
             case "x":
@@ -830,14 +859,19 @@ function updateCanvasWithCropData(event) {
         }
 
         updateCanvasOnInput();
-        updatePointDisplay(selectedArea.x, selectedArea.y);
-        updateMeasurmentDisplay(selectedArea.width, selectedArea.height);
         return;
+    }
+    else if (!backspace && !enter) {
+        event.preventDefault();
     }
 }
 
 function updateSelectedAreaWithCropData(event) {
-    if (event.keyCode === 8 || event.keyCode === 13) {
+    const key = getKey(event),
+        backspace = key === "Backspace" || key === 8,
+        enter = key === "Enter" || key === 13;
+
+    if (backspace || enter) {
         updateSelectedArea();
         updateCanvasOnInput();
     }

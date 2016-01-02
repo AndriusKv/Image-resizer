@@ -20,7 +20,7 @@ function setImageQuality(newQuality) {
 
 function resetImageQuality() {
     customQuality = false;
-    qualitySlider.value = 92;
+    qualitySlider.value = 0.92;
     updateQualityDisplay(defaultQuality);
 }
 
@@ -33,10 +33,10 @@ function useImageWithQuality() {
 }
 
 function adjustQuality(event) {
-    const newQuality = event.target.value / 100;
+    const quality = Number.parseFloat(event.target.value);
 
-    setImageQuality(newQuality);
-    changeCanvasQuality(newQuality);
+    setImageQuality(quality);
+    changeCanvasQuality(quality);
 }
 
 qualitySlider.addEventListener("input", adjustQuality, false);
