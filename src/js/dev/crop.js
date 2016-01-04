@@ -66,14 +66,19 @@ function toggleSkipButton(imageCount) {
 }
 
 function updateRemainingImageIndicator(action) {
-    const remainingImageIndicator = document.getElementById("js-crop-remaining");
+    const remainingImageIndicator = document.getElementById("js-crop-remaining"),
+        remaining = process.images.length - 1;
     
     if (action === "remove") {
         remainingImageIndicator.textContent = "";
         return;
     }
     
-    remainingImageIndicator.textContent = `${process.images.length - 1} images remaining`;
+    if (remaining === 1) {
+        remainingImageIndicator.textContent = `${remaining} image remaining`;
+        return;
+    }
+    remainingImageIndicator.textContent = `${remaining} images remaining`;
 }
 
 function displayImageName(name) {
