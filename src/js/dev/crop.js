@@ -422,26 +422,29 @@ function resizeSelectedArea(event) {
     updateMeasurmentDisplay(selectedArea.width, selectedArea.height);
 }
 
-function adjustSelectedAreaPosition(coord, dimension) {
-    const coordMeasurment = selectedArea[coord];
-    const dimensionMeasurment = selectedArea[dimension];
-    const canvasMeasurment = canvas[dimension];
-    
-    if (coordMeasurment < 0) {
-        selectedArea[coord] = 0;
-    }
-    
-    if (coordMeasurment + dimensionMeasurment > canvasMeasurment) {
-        selectedArea[coord] = canvasMeasurment - dimensionMeasurment;
-    }
-    else if (coordMeasurment + dimensionMeasurment < 0) {
-        selectedArea[coord] = -dimensionMeasurment;
-    }
-    else if (coordMeasurment > canvasMeasurment) {
-        selectedArea[coord] = canvasMeasurment;
-    }
+function adjustSelectedAreaPosition(coordMeasurment, dimension) {
+    const dimensionMeasurment = selectedArea[dimension],
+        canvasMeasurment = canvas[dimension];
 
-    updatePointDisplay(selectedArea.x, selectedArea.y);
+    if (dimensionMeasurment < 0) {
+        if (coordMeasurment > canvasMeasurment) {
+            coordMeasurment = canvasMeasurment;
+        }
+
+        if (coordMeasurment + dimensionMeasurment < 0) {
+            coordMeasurment = -dimensionMeasurment;
+        }
+    }
+    else {
+        if (coordMeasurment < 0) {
+            coordMeasurment = 0;
+        }
+
+        if (coordMeasurment + dimensionMeasurment > canvasMeasurment) {
+            coordMeasurment = canvasMeasurment - dimensionMeasurment;
+        }
+    }
+    return coordMeasurment;
 }
 
 function getDistanceBetweenPoints(x, y) {
@@ -453,14 +456,14 @@ function getDistanceBetweenPoints(x, y) {
             return;
         }
         
-        const { x, y } = getMousePosition(event);
+        const { x, y } = getMousePosition(event),
+            newX = x - xDiff,
+            newY = y - yDiff;
 
-        selectedArea.x = x - xDiff;
-        selectedArea.y = y - yDiff;
+        selectedArea.x = adjustSelectedAreaPosition(newX, "width");
+        selectedArea.y = adjustSelectedAreaPosition(newY, "height");
 
-        adjustSelectedAreaPosition("x", "width");
-        adjustSelectedAreaPosition("y", "height");
-
+        updatePointDisplay(selectedArea.x, selectedArea.y);
         requestAnimationFrame(drawCanvas);
     };
 }
