@@ -130,7 +130,15 @@ function addMask() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function strokeRect() {
+function strokeRect(area) {
+    let x = area.x % 2 === 0 ? area.x : area.x + 0.5,
+        y = area.y % 2 === 0 ? area.y : area.y + 0.5;
+
+    ctx.strokeStyle = "#006494";
+    ctx.strokeRect(x, y, area.width - 0.5, area.height - 0.5);
+}
+
+function drawSelectedArea() {
     const area = selectedArea,
         hasArea = area.width && area.height;
     
@@ -157,14 +165,12 @@ function strokeRect() {
     if (imageData) {
         ctx.putImageData(imageData, x, y);
     }
-
-    ctx.strokeStyle = "#006494";
-    ctx.strokeRect(area.x + 0.5, area.y + 0.5, area.width, area.height);
+    strokeRect(area);
 }
 
 function drawCanvas() {
     drawImage();
-    strokeRect();
+    drawSelectedArea();
 }
 
 function drawInitialImage(uri) {
@@ -483,14 +489,14 @@ function onSelectionStart(event) {
     document.removeEventListener("keydown", changeCursorToMove, false);
     
     if (direction && hasArea) {
-        strokeRect();
+        drawSelectedArea();
         
         cropping.addEventListener("mousemove", resizeSelectedArea, false);
         cropping.addEventListener("mouseup", lockAdjustedArea, false);
     }
     else if (event.ctrlKey && isMouseInsideSelectedArea(x, y)) {
         moveSelectedArea = getDistanceBetweenPoints(x, y);
-        strokeRect();
+        drawSelectedArea();
         
         cropping.addEventListener("mousemove", moveSelectedArea, false);
         cropping.addEventListener("mouseup", lockMovedArea, false);
