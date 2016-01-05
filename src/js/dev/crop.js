@@ -20,6 +20,7 @@ const canvasImage = {
     withQuality: new Image()
 };
 
+let changeCanvasQuality = null;
 let selectedArea = {};
 let direction = "";
 let moveSelectedArea = "";
@@ -119,7 +120,7 @@ function updateMeasurmentDisplay(width, height) {
 function drawImage() {
     if (quality.useImageWithQuality()) {
         ctx.drawImage(canvasImage.withQuality, 0, 0, canvas.width, canvas.height);
-        return;
+        return false;
     }
 
     ctx.drawImage(canvasImage.original, 0, 0, canvas.width, canvas.height);
@@ -199,7 +200,7 @@ function drawInitialImage(uri) {
         canvas.width = width;
         canvas.height = height;
         ctx.drawImage(canvasImage.original, 0, 0, canvas.width, canvas.height);
-
+        changeCanvasQuality = loadCanvasWithQuality();
         ratio.setRatio("width", imageWidth / canvas.width);
         ratio.setRatio("height", imageHeight / canvas.height);
 
@@ -262,6 +263,7 @@ function sendImageToWorker(imageToCrop) {
         }
         else {
             quality.reset();
+            resetData();
         }
     });
 
@@ -654,7 +656,6 @@ function loadNextImage(image) {
     toggleButtons(true);
     
     if (process.images.length) {
-        resetData();
         updateRemainingImageIndicator();
         displayImageName(image.name.original);
 
@@ -688,6 +689,7 @@ function skipImage() {
     process.images.splice(0, 1);
 
     quality.reset();
+    resetData();
     loadNextImage(process.images[0]);
 }
 
@@ -747,18 +749,29 @@ function removeTransitionPrevention() {
     window.removeEventListener("load", removeTransitionPrevention, false);
 }
 
-function changeCanvasQuality(quality) {
-    const canvasWithQuality = document.createElement("canvas");
-    const ctx2 = canvasWithQuality.getContext("2d");
+function loadCanvasWithQuality() {
+    const canvasWithQuality = document.createElement("canvas"),
+        ctx2 = canvasWithQuality.getContext("2d"),
+        canvasOriginalImage = canvasImage.original;
+
+    let loading = false;
+
+    canvasWithQuality.width = canvasOriginalImage.width;
+    canvasWithQuality.height = canvasOriginalImage.height;
+    ctx2.drawImage(canvasOriginalImage, 0, 0, canvasWithQuality.width, canvasWithQuality.height);
 
     canvasImage.withQuality.addEventListener("load", () => {
-        requestAnimationFrame(drawCanvas);
+        requestAnimationFrame(() => {
+            loading = drawCanvas();
+        });
     });
 
-    canvasWithQuality.width = canvasImage.original.width;
-    canvasWithQuality.height = canvasImage.original.height;
-    ctx2.drawImage(canvasImage.original, 0, 0, canvasWithQuality.width, canvasWithQuality.height);
-    canvasImage.withQuality.src = canvasWithQuality.toDataURL("image/jpeg", quality);
+    return function(quality) {
+        if (!loading) {
+            loading = true;
+            canvasImage.withQuality.src = canvasWithQuality.toDataURL("image/jpeg", quality);
+        }
+    };
 }
 
 function insertChar(target, char) {
