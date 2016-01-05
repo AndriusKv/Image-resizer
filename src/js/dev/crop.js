@@ -66,14 +66,19 @@ function toggleSkipButton(imageCount) {
 }
 
 function updateRemainingImageIndicator(action) {
-    const remainingImageIndicator = document.getElementById("js-crop-remaining");
+    const remainingImageIndicator = document.getElementById("js-crop-remaining"),
+        remaining = process.images.length - 1;
     
     if (action === "remove") {
         remainingImageIndicator.textContent = "";
         return;
     }
     
-    remainingImageIndicator.textContent = `${process.images.length - 1} images remaining`;
+    if (remaining === 1) {
+        remainingImageIndicator.textContent = `${remaining} image remaining`;
+        return;
+    }
+    remainingImageIndicator.textContent = `${remaining} images remaining`;
 }
 
 function displayImageName(name) {
@@ -125,7 +130,15 @@ function addMask() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function strokeRect() {
+function strokeRect(area) {
+    let x = area.x % 2 === 0 ? area.x : area.x + 0.5,
+        y = area.y % 2 === 0 ? area.y : area.y + 0.5;
+
+    ctx.strokeStyle = "#006494";
+    ctx.strokeRect(x, y, area.width - 0.5, area.height - 0.5);
+}
+
+function drawSelectedArea() {
     const area = selectedArea,
         hasArea = area.width && area.height;
     
@@ -152,14 +165,12 @@ function strokeRect() {
     if (imageData) {
         ctx.putImageData(imageData, x, y);
     }
-
-    ctx.strokeStyle = "#006494";
-    ctx.strokeRect(area.x + 0.5, area.y + 0.5, area.width, area.height);
+    strokeRect(area);
 }
 
 function drawCanvas() {
     drawImage();
-    strokeRect();
+    drawSelectedArea();
 }
 
 function drawInitialImage(uri) {
@@ -417,26 +428,29 @@ function resizeSelectedArea(event) {
     updateMeasurmentDisplay(selectedArea.width, selectedArea.height);
 }
 
-function adjustSelectedAreaPosition(coord, dimension) {
-    const coordMeasurment = selectedArea[coord];
-    const dimensionMeasurment = selectedArea[dimension];
-    const canvasMeasurment = canvas[dimension];
-    
-    if (coordMeasurment < 0) {
-        selectedArea[coord] = 0;
-    }
-    
-    if (coordMeasurment + dimensionMeasurment > canvasMeasurment) {
-        selectedArea[coord] = canvasMeasurment - dimensionMeasurment;
-    }
-    else if (coordMeasurment + dimensionMeasurment < 0) {
-        selectedArea[coord] = -dimensionMeasurment;
-    }
-    else if (coordMeasurment > canvasMeasurment) {
-        selectedArea[coord] = canvasMeasurment;
-    }
+function adjustSelectedAreaPosition(coordMeasurment, dimension) {
+    const dimensionMeasurment = selectedArea[dimension],
+        canvasMeasurment = canvas[dimension];
 
-    updatePointDisplay(selectedArea.x, selectedArea.y);
+    if (dimensionMeasurment < 0) {
+        if (coordMeasurment > canvasMeasurment) {
+            coordMeasurment = canvasMeasurment;
+        }
+
+        if (coordMeasurment + dimensionMeasurment < 0) {
+            coordMeasurment = -dimensionMeasurment;
+        }
+    }
+    else {
+        if (coordMeasurment < 0) {
+            coordMeasurment = 0;
+        }
+
+        if (coordMeasurment + dimensionMeasurment > canvasMeasurment) {
+            coordMeasurment = canvasMeasurment - dimensionMeasurment;
+        }
+    }
+    return coordMeasurment;
 }
 
 function getDistanceBetweenPoints(x, y) {
@@ -448,14 +462,14 @@ function getDistanceBetweenPoints(x, y) {
             return;
         }
         
-        const { x, y } = getMousePosition(event);
+        const { x, y } = getMousePosition(event),
+            newX = x - xDiff,
+            newY = y - yDiff;
 
-        selectedArea.x = x - xDiff;
-        selectedArea.y = y - yDiff;
+        selectedArea.x = adjustSelectedAreaPosition(newX, "width");
+        selectedArea.y = adjustSelectedAreaPosition(newY, "height");
 
-        adjustSelectedAreaPosition("x", "width");
-        adjustSelectedAreaPosition("y", "height");
-
+        updatePointDisplay(selectedArea.x, selectedArea.y);
         requestAnimationFrame(drawCanvas);
     };
 }
@@ -475,14 +489,14 @@ function onSelectionStart(event) {
     document.removeEventListener("keydown", changeCursorToMove, false);
     
     if (direction && hasArea) {
-        strokeRect();
+        drawSelectedArea();
         
         cropping.addEventListener("mousemove", resizeSelectedArea, false);
         cropping.addEventListener("mouseup", lockAdjustedArea, false);
     }
     else if (event.ctrlKey && isMouseInsideSelectedArea(x, y)) {
         moveSelectedArea = getDistanceBetweenPoints(x, y);
-        strokeRect();
+        drawSelectedArea();
         
         cropping.addEventListener("mousemove", moveSelectedArea, false);
         cropping.addEventListener("mouseup", lockMovedArea, false);
