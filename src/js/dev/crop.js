@@ -20,6 +20,7 @@ const canvasImage = {
     withQuality: new Image()
 };
 
+let theta;
 let changeCanvasQuality = null;
 let selectedArea = {};
 let direction = "";
@@ -122,7 +123,6 @@ function drawImage() {
         ctx.drawImage(canvasImage.withQuality, 0, 0, canvas.width, canvas.height);
         return false;
     }
-
     ctx.drawImage(canvasImage.original, 0, 0, canvas.width, canvas.height);
 }
 
@@ -211,27 +211,37 @@ function drawInitialImage(uri) {
 
 function getScaledSelectedArea() {
     return {
-        x: xInput.value,
-        y: yInput.value,
-        width: widthInput.value,
-        height: heightInput.value
+        x: Number.parseInt(xInput.value, 10),
+        y: Number.parseInt(yInput.value, 10),
+        width: Number.parseInt(widthInput.value, 10),
+        height: Number.parseInt(heightInput.value, 10)
     };
 }
 
-function getCroppedImage(image, imageType = "image/jpeg") {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const area = getScaledSelectedArea();
+function getRotatedImageData(image) {
+    const canvas = document.createElement("canvas"),
+        ctx = canvas.getContext("2d"),
+        area = getScaledSelectedArea();
 
     canvas.width = image.width;
     canvas.height = image.height;
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-    const imageData = ctx.getImageData(area.x, area.y, area.width, area.height);
+    ctx.save();
+    ctx.translate(area.x + area.width / 2, area.y + area.height / 2);
+    ctx.rotate(-theta);
+    ctx.drawImage(image, -(area.x + area.width / 2), -(area.y + area.height / 2));
+    ctx.restore();
+
+    return ctx.getImageData(area.x, area.y, area.width, area.height);
+}
+
+function getCroppedImage(image, imageType = "image/jpeg") {
+    const imageData = getRotatedImageData(image),
+        canvas = document.createElement("canvas"),
+        ctx = canvas.getContext("2d");
 
     canvas.width = imageData.width;
     canvas.height = imageData.height;
-
     ctx.putImageData(imageData, 0, 0);
 
     return {
@@ -334,49 +344,37 @@ function getDirection(x, y) {
 }
 
 function isMouseInsideSelectedArea(x, y) {
-    const x2 = selectedArea.x;
-    const y2 = selectedArea.y;
-    const x3 = x2 + selectedArea.width;
-    const y3 = y2 + selectedArea.height;
-    const inXBound = x >= x2 && x <= x3 || x <= x2 && x >= x3;
-    const inYBound = y >= y2 && y <= y3 || y <= y2 && y >= y3;
+    const x2 = selectedArea.x,
+        y2 = selectedArea.y,
+        x3 = x2 + selectedArea.width,
+        y3 = y2 + selectedArea.height,
+        inXBound = x >= x2 && x <= x3 || x <= x2 && x >= x3,
+        inYBound = y >= y2 && y <= y3 || y <= y2 && y >= y3;
     
     return inXBound && inYBound;
 }
 
-function adjustOutsideCanvasXCoord(x) {
-    if (x < 0) {
+function adjustOutsideCanvasCoord(value, dimension) {
+    if (value < 0) {
         return 0;
     }
     
-    if (x > canvas.width) {
-        return canvas.width;
+    if (value > canvas[dimension]) {
+        return canvas[dimension];
     }
     
-    return x;
-}
-
-function adjustOutsideCanvasYCoord(y) {
-    if (y < 0) {
-        return 0;
-    }
-    
-    if (y > canvas.height) {
-        return canvas.height;
-    }
-    
-    return y;
+    return value;
 }
 
 function resizeSelectedArea(event) {
-    const area = selectedArea;
-    const adjustedSelectedArea = {};
+    const area = selectedArea,
+        adjustedSelectedArea = {};
     
-    let { x, y } = getMousePosition(event);
-    let selectedDirection = "";
-    
-    x = adjustOutsideCanvasXCoord(x);
-    y = adjustOutsideCanvasYCoord(y);
+    let { x, y } = getMousePosition(event),
+        selectedDirection = "";
+
+    x = adjustOutsideCanvasCoord(x, "width");
+    y = adjustOutsideCanvasCoord(y, "height");
     
     switch (direction) {
         case "nw":
@@ -480,10 +478,10 @@ function onSelectionStart(event) {
     if (event.which !== 1) {
         return;
     }
-    
+
     const { x, y } = getMousePosition(event),
         hasArea = selectedArea.width && selectedArea.height;
-    
+
     direction = getDirection(x, y);
     drawImage();
 
@@ -496,18 +494,26 @@ function onSelectionStart(event) {
         cropping.addEventListener("mousemove", resizeSelectedArea, false);
         cropping.addEventListener("mouseup", lockAdjustedArea, false);
     }
-    else if (event.ctrlKey && isMouseInsideSelectedArea(x, y)) {
-        moveSelectedArea = getDistanceBetweenPoints(x, y);
-        drawSelectedArea();
+    else if (event.ctrlKey) {
+        if (isMouseInsideSelectedArea(x, y)) {
+            moveSelectedArea = getDistanceBetweenPoints(x, y);
+            drawSelectedArea();
+
+            cropping.addEventListener("mousemove", moveSelectedArea, false);
+            cropping.addEventListener("mouseup", lockMovedArea, false);
+            return;
+        }
         
-        cropping.addEventListener("mousemove", moveSelectedArea, false);
-        cropping.addEventListener("mouseup", lockMovedArea, false);
+        drawRotatedRect(selectedArea, theta);
+        cropping.addEventListener("mousemove", rotateSelectedArea, false);
+        cropping.addEventListener("mouseup", lockRotatedArea, false);
     }
     else {
         if (hasArea) {
-            addMask();
+            drawSelectedArea();
         }
 
+        theta = 0;
         selectedArea.x = x;
         selectedArea.y = y;
         selectedArea.width = 0;
@@ -521,9 +527,9 @@ function onSelectionStart(event) {
 function selectArea(event) {
     let { x, y } = getMousePosition(event);
     
-    x = adjustOutsideCanvasXCoord(x);
-    y = adjustOutsideCanvasYCoord(y);
-    
+    x = adjustOutsideCanvasCoord(x, "width");
+    y = adjustOutsideCanvasCoord(y, "height");
+
     selectedArea.width = x - selectedArea.x;
     selectedArea.height = y - selectedArea.y;
 
@@ -622,6 +628,37 @@ function changeCursor(event) {
     canvas.style.cursor = direction ? direction + "-resize" : "default";
 }
 
+function getAngleInRadians(event) {
+    const area = selectedArea,
+        { x, y } = getMousePosition(event),
+        x2 = area.x + (area.width / 2),
+        y2 = area.y + (area.height / 2);
+
+    return Math.atan2(y2 - y, x2 - x);
+}
+
+function drawRotatedRect(area, radians) {
+    ctx.save();
+    ctx.translate(area.x + area.width / 2, area.y + area.height / 2);
+    ctx.rotate(radians);
+    ctx.strokeRect(-area.width / 2, -area.height / 2, area.width, area.height);
+
+    ctx.beginPath();
+    ctx.rect(-area.width / 2, -area.height / 2, area.width, area.height);
+    ctx.restore();
+    ctx.rect(canvas.width, 0, -canvas.width, canvas.height);
+    ctx.fillStyle = "rgba(0, 0, 0, .4)";
+    ctx.fill();
+}
+
+function rotateSelectedArea(event) {
+    if (event.ctrlKey) {
+        drawImage();
+        theta = getAngleInRadians(event);
+        drawRotatedRect(selectedArea, theta);
+    }
+}
+
 function lockAdjustedArea() {
     onMouseup(resizeSelectedArea, lockAdjustedArea);
 }
@@ -632,6 +669,10 @@ function lockMovedArea() {
 
 function lockSelectedArea() {
     onMouseup(selectArea, lockSelectedArea);
+}
+
+function lockRotatedArea() {
+    onMouseup(rotateSelectedArea, lockRotatedArea);
 }
 
 function init() {
