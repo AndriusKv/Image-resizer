@@ -661,13 +661,15 @@ function getAngleInDegrees(radians) {
 }
 
 function drawRotatedSelectedArea(area, radians) {
+    const width = area.width > 0 ? area.width : -area.width,
+        height = area.height > 0 ? area.height : -area.height;
+
     ctx.save();
     ctx.translate(area.x + area.width / 2, area.y + area.height / 2);
     ctx.rotate(radians);
     ctx.strokeRect(-area.width / 2, -area.height / 2, area.width, area.height);
-
     ctx.beginPath();
-    ctx.rect(-area.width / 2, -area.height / 2, area.width, area.height);
+    ctx.rect(-width / 2, -height / 2, width, height);
     ctx.restore();
     ctx.rect(canvas.width, 0, -canvas.width, canvas.height);
     ctx.fillStyle = "rgba(0, 0, 0, .4)";
