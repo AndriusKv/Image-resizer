@@ -4,28 +4,29 @@ import { toggleElement } from "./main.js";
 import * as process from "./process.js";
 import * as quality from "./crop-quality.js";
 
-const cropping = document.getElementById("js-crop");
-const canvas = document.getElementById("js-canvas");
-const ctx = canvas.getContext("2d");
-const closeButton = document.getElementById("js-crop-close");
-const cropPreview = document.getElementById("js-crop-preview");
-const xInput = document.getElementById("js-crop-x");
-const yInput = document.getElementById("js-crop-y");
-const widthInput = document.getElementById("js-crop-width");
-const heightInput = document.getElementById("js-crop-height");
-const cropData = document.getElementById("js-crop-data");
-const mousePosition = {};
-const canvasImage = {
-    original: new Image(),
-    withQuality: new Image()
-};
+const cropping = document.getElementById("js-crop"),
+    canvas = document.getElementById("js-canvas"),
+    ctx = canvas.getContext("2d"),
+    closeButton = document.getElementById("js-crop-close"),
+    cropPreview = document.getElementById("js-crop-preview"),
+    xInput = document.getElementById("js-crop-x"),
+    yInput = document.getElementById("js-crop-y"),
+    widthInput = document.getElementById("js-crop-width"),
+    heightInput = document.getElementById("js-crop-height"),
+    angleInput = document.getElementById("js-crop-angle"),
+    cropData = document.getElementById("js-crop-data"),
+    mousePosition = {},
+    canvasImage = {
+        original: new Image(),
+        withQuality: new Image()
+    };
 
-let theta;
-let changeCanvasQuality = null;
-let selectedArea = {};
-let direction = "";
-let moveSelectedArea = "";
-let isPreviewOpen = false;
+let changeCanvasQuality = null,
+    selectedArea = {},
+    direction = "",
+    moveSelectedArea = "",
+    isPreviewOpen = false,
+    theta = 0;
 
 const ratio = (function() {
     let ratio = {};
@@ -171,7 +172,13 @@ function drawSelectedArea() {
 
 function drawCanvas() {
     drawImage();
-    drawSelectedArea();
+
+    if (theta) {
+        drawRotatedSelectedArea(selectedArea, theta);
+    }
+    else {
+        drawSelectedArea();
+    }
 }
 
 function drawInitialImage(uri) {
@@ -489,6 +496,7 @@ function onSelectionStart(event) {
     document.removeEventListener("keydown", changeCursorToMove, false);
     
     if (direction && hasArea) {
+        theta = 0;
         drawSelectedArea();
         
         cropping.addEventListener("mousemove", resizeSelectedArea, false);
@@ -496,6 +504,7 @@ function onSelectionStart(event) {
     }
     else if (event.ctrlKey) {
         if (isMouseInsideSelectedArea(x, y)) {
+            theta = 0;
             moveSelectedArea = getDistanceBetweenPoints(x, y);
             drawSelectedArea();
 
@@ -504,13 +513,18 @@ function onSelectionStart(event) {
             return;
         }
         
-        drawRotatedRect(selectedArea, theta);
+        drawRotatedSelectedArea(selectedArea, theta);
         cropping.addEventListener("mousemove", rotateSelectedArea, false);
         cropping.addEventListener("mouseup", lockRotatedArea, false);
     }
     else {
         if (hasArea) {
-            drawSelectedArea();
+            if (theta) {
+                drawRotatedSelectedArea(selectedArea, theta);
+            }
+            else {
+                drawSelectedArea();
+            }
         }
 
         theta = 0;
@@ -637,7 +651,16 @@ function getAngleInRadians(event) {
     return Math.atan2(y2 - y, x2 - x);
 }
 
-function drawRotatedRect(area, radians) {
+function getAngleInDegrees(radians) {
+    let degrees = radians * 180 / Math.PI;
+
+    if (degrees < 0) {
+        degrees += 360;
+    }
+    return degrees.toFixed();
+}
+
+function drawRotatedSelectedArea(area, radians) {
     ctx.save();
     ctx.translate(area.x + area.width / 2, area.y + area.height / 2);
     ctx.rotate(radians);
@@ -655,7 +678,8 @@ function rotateSelectedArea(event) {
     if (event.ctrlKey) {
         drawImage();
         theta = getAngleInRadians(event);
-        drawRotatedRect(selectedArea, theta);
+        drawRotatedSelectedArea(selectedArea, theta);
+        angleInput.value = getAngleInDegrees(theta);
     }
 }
 
@@ -710,6 +734,7 @@ function resetData() {
     selectedArea = {};
     updatePointDisplay(0, 0);
     updateMeasurmentDisplay(0, 0);
+    angleInput.value = 0;
 }
 
 function resetCropper() {
@@ -837,7 +862,6 @@ function updateCanvasOnInput() {
     if (hasArea) {
         requestAnimationFrame(drawCanvas);
     }
-
     toggleButtons(!hasArea);
 }
 
@@ -897,6 +921,13 @@ function getKey(event) {
     }
 }
 
+function ConvertDegreesToRadians(degrees) {
+    if (degrees > 180) {
+        degrees -= 360;
+    }
+    return degrees * Math.PI / 180;
+}
+
 function updateCanvasWithCropData(event) {
     const target = event.target,
         key = getKey(event),
@@ -905,9 +936,16 @@ function updateCanvasWithCropData(event) {
         enter = key === "Enter" || key === 13;
 
     if (input && /\d/.test(key)) {
-        const inputRatio = ratio.getRatio(input);
-
         let inputValue = insertChar(target, key);
+
+        if (input === "angle") {
+            drawImage();
+            theta = ConvertDegreesToRadians(inputValue);
+            drawRotatedSelectedArea(selectedArea, theta);
+            return;
+        }
+
+        const inputRatio = ratio.getRatio(input);
 
         inputValue = inputValue / inputRatio;
 
@@ -940,6 +978,15 @@ function updateSelectedAreaWithCropData(event) {
         enter = key === "Enter" || key === 13;
 
     if (backspace || enter) {
+        let target = event.target,
+            input = target.getAttribute("data-input");
+
+        if (input === "angle") {
+            drawImage();
+            theta = ConvertDegreesToRadians(target.value);
+            drawRotatedSelectedArea(selectedArea, theta);
+            return;
+        }
         updateSelectedArea();
         updateCanvasOnInput();
     }
