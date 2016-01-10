@@ -350,11 +350,11 @@ function getDirection(x, y) {
     return "";
 }
 
-function isMouseInsideSelectedArea(x, y) {
-    const x2 = selectedArea.x,
-        y2 = selectedArea.y,
-        x3 = x2 + selectedArea.width,
-        y3 = y2 + selectedArea.height,
+function isMouseInsideSelectedArea(area, x, y) {
+    const x2 = area.x,
+        y2 = area.y,
+        x3 = x2 + area.width,
+        y3 = y2 + area.height,
         inXBound = x >= x2 && x <= x3 || x <= x2 && x >= x3,
         inYBound = y >= y2 && y <= y3 || y <= y2 && y >= y3;
     
@@ -487,7 +487,8 @@ function onSelectionStart(event) {
     }
 
     const { x, y } = getMousePosition(event),
-        hasArea = selectedArea.width && selectedArea.height;
+        area = selectedArea,
+        hasArea = area.width && area.height;
 
     direction = getDirection(x, y);
     drawImage();
@@ -495,32 +496,34 @@ function onSelectionStart(event) {
     canvas.removeEventListener("mousemove", changeCursor, false);
     document.removeEventListener("keydown", changeCursorToMove, false);
     
-    if (direction && hasArea) {
-        theta = 0;
-        drawSelectedArea();
-        
-        cropping.addEventListener("mousemove", resizeSelectedArea, false);
-        cropping.addEventListener("mouseup", lockAdjustedArea, false);
-    }
-    else if (event.ctrlKey) {
-        if (isMouseInsideSelectedArea(x, y)) {
-            theta = 0;
-            moveSelectedArea = getDistanceBetweenPoints(x, y);
-            drawSelectedArea();
+    if (event.ctrlKey) {
+        const isInsideArea = theta ? isMouseInsideRotatedSelectedArea : isMouseInsideSelectedArea;
 
+        if (isInsideArea(area, x, y)) {
+            if (theta) {
+                drawRotatedSelectedArea(area, theta);
+            }
+            else {
+                drawSelectedArea();
+            }
+            moveSelectedArea = getDistanceBetweenPoints(x, y);
             cropping.addEventListener("mousemove", moveSelectedArea, false);
             cropping.addEventListener("mouseup", lockMovedArea, false);
             return;
         }
-        
-        drawRotatedSelectedArea(selectedArea, theta);
+        drawRotatedSelectedArea(area, theta);
         cropping.addEventListener("mousemove", rotateSelectedArea, false);
         cropping.addEventListener("mouseup", lockRotatedArea, false);
+    }
+    else if (direction && hasArea && !theta) {
+        drawSelectedArea();
+        cropping.addEventListener("mousemove", resizeSelectedArea, false);
+        cropping.addEventListener("mouseup", lockAdjustedArea, false);
     }
     else {
         if (hasArea) {
             if (theta) {
-                drawRotatedSelectedArea(selectedArea, theta);
+                drawRotatedSelectedArea(area, theta);
             }
             else {
                 drawSelectedArea();
@@ -558,10 +561,15 @@ function removeMoveCursor() {
 }
 
 function changeCursorToMove(event) {
-    if (event.ctrlKey && isMouseInsideSelectedArea(mousePosition.x, mousePosition.y)) {
+    const isInsideArea = theta ? isMouseInsideRotatedSelectedArea : isMouseInsideSelectedArea,
+        area = selectedArea,
+        x = mousePosition.x,
+        y = mousePosition.y;
+
+    if (event.ctrlKey && isInsideArea(area, x, y)) {
         canvas.style.cursor = "move";
-        document.addEventListener("keyup", removeMoveCursor, false);
     }
+    document.addEventListener("keyup", removeMoveCursor, false);
 }
 
 function updateSelectedArea() {
@@ -589,7 +597,6 @@ function onMouseup(mousemoveCallback, mouseupCallback) {
         drawImage();
         canvas.style.cursor = "default";
     }
-
     toggleButtons(!hasArea);
 }
 
@@ -611,17 +618,7 @@ function getOppositeDirection(direction, oppositeDirection) {
     return direction;
 }
 
-function changeCursor(event) {
-    const { x, y } = getMousePosition(event);
-
-    mousePosition.x = x;
-    mousePosition.y = y;
-
-    if (event.ctrlKey && isMouseInsideSelectedArea(x, y)) {
-        canvas.style.cursor = "move";
-        return;
-    }
-    
+function changeResizeCursor(x, y) {
     let direction = getDirection(x, y);
     
     switch (direction) {
@@ -638,8 +635,45 @@ function changeCursor(event) {
             direction = getOppositeDirection("se", "sw");
             break;
     }
-    
     canvas.style.cursor = direction ? direction + "-resize" : "default";
+}
+
+function isMouseInsideRotatedSelectedArea(area, x, y) {
+    const transaltedX = x - (area.x + area.width / 2),
+        transaltedY = y - (area.y + area.height / 2),
+        newX = transaltedX * Math.cos(-theta) - transaltedY * Math.sin(-theta),
+        newY = transaltedX * Math.sin(-theta) + transaltedY * Math.cos(-theta),
+        translatedArea = {
+            x: -area.width / 2,
+            y: -area.height / 2,
+            width: area.width,
+            height: area.height
+        };
+
+    return isMouseInsideSelectedArea(translatedArea, newX, newY);
+}
+
+function changeCursor(event) {
+    const { x, y } = getMousePosition(event),
+        area = selectedArea;
+
+    mousePosition.x = x;
+    mousePosition.y = y;
+
+    if (event.ctrlKey) {
+        const isInsideArea = theta ? isMouseInsideRotatedSelectedArea : isMouseInsideSelectedArea;
+
+        if (isInsideArea(area, x, y)) {
+            canvas.style.cursor = "move";
+            return;
+        }
+        canvas.style.cursor = "default";
+        return;
+    }
+
+    if (!theta) {
+        changeResizeCursor(x, y);
+    }
 }
 
 function getAngleInRadians(event) {
@@ -678,9 +712,8 @@ function drawRotatedSelectedArea(area, radians) {
 
 function rotateSelectedArea(event) {
     if (event.ctrlKey) {
-        drawImage();
         theta = getAngleInRadians(event);
-        drawRotatedSelectedArea(selectedArea, theta);
+        requestAnimationFrame(drawCanvas);
         angleInput.value = getAngleInDegrees(theta);
     }
 }
@@ -941,9 +974,8 @@ function updateCanvasWithCropData(event) {
         let inputValue = insertChar(target, key);
 
         if (input === "angle") {
-            drawImage();
             theta = ConvertDegreesToRadians(inputValue);
-            drawRotatedSelectedArea(selectedArea, theta);
+            requestAnimationFrame(drawCanvas);
             return;
         }
 
@@ -984,9 +1016,8 @@ function updateSelectedAreaWithCropData(event) {
             input = target.getAttribute("data-input");
 
         if (input === "angle") {
-            drawImage();
             theta = ConvertDegreesToRadians(target.value);
-            drawRotatedSelectedArea(selectedArea, theta);
+            requestAnimationFrame(drawCanvas);
             return;
         }
         updateSelectedArea();
