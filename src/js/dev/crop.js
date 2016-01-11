@@ -629,21 +629,21 @@ function changeCursor(event) {
 }
 
 function getAngleInRadians(event) {
-    const area = selectedArea,
-        { x, y } = getMousePosition(event),
-        x2 = area.x + (area.width / 2),
-        y2 = area.y + (area.height / 2);
+    const { x, y } = getMousePosition(event),
+        area = selectedArea,
+        x2 = area.x + area.width / 2,
+        y2 = area.y + area.height / 2;
 
     return Math.atan2(y2 - y, x2 - x);
 }
 
 function getAngleInDegrees(radians) {
-    let degrees = radians * 180 / Math.PI;
+    let degrees = Math.round(radians * 180 / Math.PI);
 
     if (degrees < 0) {
         degrees += 360;
     }
-    return degrees.toFixed();
+    return degrees;
 }
 
 function drawRotatedSelectedArea(area, radians) {
@@ -663,11 +663,16 @@ function drawRotatedSelectedArea(area, radians) {
 }
 
 function rotateSelectedArea(event) {
-    if (event.ctrlKey) {
-        theta = getAngleInRadians(event);
-        requestAnimationFrame(drawCanvas);
-        angleInput.value = getAngleInDegrees(theta);
+    let degrees = 0;
+
+    theta = getAngleInRadians(event);
+    degrees = getAngleInDegrees(theta);
+    angleInput.value = degrees;
+
+    if (degrees === 0 || degrees === 360) {
+        theta = 0;
     }
+    requestAnimationFrame(drawCanvas);
 }
 
 function lockAdjustedArea() {
@@ -815,7 +820,8 @@ function loadCanvasWithQuality() {
 
     canvasImage.withQuality.addEventListener("load", () => {
         requestAnimationFrame(() => {
-            loading = drawCanvas();
+            loading = false;
+            drawCanvas();
         });
     });
 
@@ -867,7 +873,7 @@ function getKey(event) {
     }
 }
 
-function ConvertDegreesToRadians(degrees) {
+function convertDegreesToRadians(degrees) {
     if (degrees > 180) {
         degrees -= 360;
     }
@@ -883,6 +889,7 @@ function updateCanvasWithCropData(event) {
 
     if (input && /\d|-/.test(key)) {
         const hyphen = key === "-" || key === 45;
+
         if (hyphen && input !== "x" && input !== "y") {
             event.preventDefault();
             return;
@@ -892,7 +899,7 @@ function updateCanvasWithCropData(event) {
         let inputValue = insertChar(target, key);
 
         if (input === "angle") {
-            theta = ConvertDegreesToRadians(inputValue);
+            theta = convertDegreesToRadians(inputValue);
         }
         else {
             selectedArea[input] = inputValue / inputRatio || 0;
@@ -915,7 +922,7 @@ function updateSelectedAreaWithCropData(event) {
             input = target.getAttribute("data-input");
 
         if (input === "angle") {
-            theta = ConvertDegreesToRadians(target.value);
+            theta = convertDegreesToRadians(target.value);
         }
         else {
             updateSelectedArea();
