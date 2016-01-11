@@ -24,9 +24,9 @@ const cropping = document.getElementById("js-crop"),
 let changeCanvasQuality = null,
     selectedArea = {},
     direction = "",
-    moveSelectedArea = "",
     isPreviewOpen = false,
-    theta = 0;
+    theta = 0,
+    moveSelectedArea;
 
 const ratio = (function() {
     let ratio = {};
@@ -133,11 +133,8 @@ function addMask() {
 }
 
 function strokeRect(area) {
-    let x = area.x % 2 === 0 ? area.x : area.x + 0.5,
-        y = area.y % 2 === 0 ? area.y : area.y + 0.5;
-
     ctx.strokeStyle = "#006494";
-    ctx.strokeRect(x, y, area.width - 0.5, area.height - 0.5);
+    ctx.strokeRect(area.x, area.y, area.width, area.height);
 }
 
 function drawSelectedArea() {
@@ -361,18 +358,6 @@ function isMouseInsideSelectedArea(area, x, y) {
     return inXBound && inYBound;
 }
 
-function adjustOutsideCanvasCoord(value, dimension) {
-    if (value < 0) {
-        return 0;
-    }
-    
-    if (value > canvas[dimension]) {
-        return canvas[dimension];
-    }
-    
-    return value;
-}
-
 function resizeSelectedArea(event) {
     const area = selectedArea,
         adjustedSelectedArea = {};
@@ -380,9 +365,6 @@ function resizeSelectedArea(event) {
     let { x, y } = getMousePosition(event),
         selectedDirection = "";
 
-    x = adjustOutsideCanvasCoord(x, "width");
-    y = adjustOutsideCanvasCoord(y, "height");
-    
     switch (direction) {
         case "nw":
             adjustedSelectedArea.x = x;
@@ -435,31 +417,6 @@ function resizeSelectedArea(event) {
     updateMeasurmentDisplay(selectedArea.width, selectedArea.height);
 }
 
-function adjustSelectedAreaPosition(coordMeasurment, dimension) {
-    const dimensionMeasurment = selectedArea[dimension],
-        canvasMeasurment = canvas[dimension];
-
-    if (dimensionMeasurment < 0) {
-        if (coordMeasurment > canvasMeasurment) {
-            coordMeasurment = canvasMeasurment;
-        }
-
-        if (coordMeasurment + dimensionMeasurment < 0) {
-            coordMeasurment = -dimensionMeasurment;
-        }
-    }
-    else {
-        if (coordMeasurment < 0) {
-            coordMeasurment = 0;
-        }
-
-        if (coordMeasurment + dimensionMeasurment > canvasMeasurment) {
-            coordMeasurment = canvasMeasurment - dimensionMeasurment;
-        }
-    }
-    return coordMeasurment;
-}
-
 function getDistanceBetweenPoints(x, y) {
     const xDiff = x - selectedArea.x;
     const yDiff = y - selectedArea.y;
@@ -468,13 +425,11 @@ function getDistanceBetweenPoints(x, y) {
         if (!event.ctrlKey) {
             return;
         }
-        
-        const { x, y } = getMousePosition(event),
-            newX = x - xDiff,
-            newY = y - yDiff;
 
-        selectedArea.x = adjustSelectedAreaPosition(newX, "width");
-        selectedArea.y = adjustSelectedAreaPosition(newY, "height");
+        const { x, y } = getMousePosition(event);
+
+        selectedArea.x = x - xDiff;
+        selectedArea.y = y - yDiff;
 
         updatePointDisplay(selectedArea.x, selectedArea.y);
         requestAnimationFrame(drawCanvas);
@@ -543,9 +498,6 @@ function onSelectionStart(event) {
 
 function selectArea(event) {
     let { x, y } = getMousePosition(event);
-    
-    x = adjustOutsideCanvasCoord(x, "width");
-    y = adjustOutsideCanvasCoord(y, "height");
 
     selectedArea.width = x - selectedArea.x;
     selectedArea.height = y - selectedArea.y;
@@ -900,46 +852,6 @@ function updateCanvasOnInput() {
     toggleButtons(!hasArea);
 }
 
-function updateInput(target, value, input) {
-    const inputRatio = ratio.getRatio(input);
-
-    target.value = Math.round(value * inputRatio);
-}
-
-function updateSelectedAreaPoint(event, inputValue, dimension) {
-    if (selectedArea[dimension] < 0) {
-        if (inputValue - selectedArea[dimension] > canvas[dimension]) {
-            inputValue = canvas[dimension];
-            event.preventDefault();
-            updateInput(event.target, canvas[dimension] + selectedArea[dimension], dimension);
-        }
-        else {
-            inputValue = inputValue - selectedArea[dimension];
-        }
-    }
-    else if (inputValue + selectedArea[dimension] > canvas[dimension]) {
-        inputValue = canvas[dimension] - selectedArea[dimension];
-        event.preventDefault();
-        updateInput(event.target, inputValue, dimension);
-    }
-
-    return inputValue;
-}
-
-function updateSelectedAreaDimension(event, inputValue, dimension, point) {
-    if (selectedArea[dimension] < 0) {
-        selectedArea[point] = selectedArea[dimension] + selectedArea[point];
-    }
-
-    if (selectedArea[point] + inputValue > canvas[dimension]) {
-        inputValue = canvas[dimension] - selectedArea[point];
-        event.preventDefault();
-        updateInput(event.target, inputValue, dimension);
-    }
-
-    return inputValue;
-}
-
 function getKey(event) {
     if (event.key) {
         return event.key;
@@ -951,7 +863,6 @@ function getKey(event) {
         if (code === 8 || code === 13) {
             return code;
         }
-
         return String.fromCharCode(code);
     }
 }
@@ -970,34 +881,22 @@ function updateCanvasWithCropData(event) {
         backspace = key === "Backspace" || key === 8,
         enter = key === "Enter" || key === 13;
 
-    if (input && /\d/.test(key)) {
-        let inputValue = insertChar(target, key);
-
-        if (input === "angle") {
-            theta = ConvertDegreesToRadians(inputValue);
-            requestAnimationFrame(drawCanvas);
+    if (input && /\d|-/.test(key)) {
+        const hyphen = key === "-" || key === 45;
+        if (hyphen && input !== "x" && input !== "y") {
+            event.preventDefault();
             return;
         }
 
         const inputRatio = ratio.getRatio(input);
+        let inputValue = insertChar(target, key);
 
-        inputValue = inputValue / inputRatio;
-
-        switch (input) {
-            case "x":
-                selectedArea[input] = updateSelectedAreaPoint(event, inputValue, "width");
-                break;
-            case "y":
-                selectedArea[input] = updateSelectedAreaPoint(event, inputValue, "height");
-                break;
-            case "width":
-                selectedArea[input] = updateSelectedAreaDimension(event, inputValue, input, "x");
-                break;
-            case "height":
-                selectedArea[input] = updateSelectedAreaDimension(event, inputValue, input, "y");
-                break;
+        if (input === "angle") {
+            theta = ConvertDegreesToRadians(inputValue);
         }
-
+        else {
+            selectedArea[input] = inputValue / inputRatio || 0;
+        }
         updateCanvasOnInput();
         return;
     }
@@ -1017,10 +916,10 @@ function updateSelectedAreaWithCropData(event) {
 
         if (input === "angle") {
             theta = ConvertDegreesToRadians(target.value);
-            requestAnimationFrame(drawCanvas);
-            return;
         }
-        updateSelectedArea();
+        else {
+            updateSelectedArea();
+        }
         updateCanvasOnInput();
     }
 }
