@@ -29,7 +29,7 @@ let changeCanvasQuality = null,
     moveSelectedArea;
 
 const ratio = (function() {
-    let ratio = {};
+    const ratio = {};
 
     function getRatio(name) {
         if (name === "x") {
@@ -137,9 +137,8 @@ function strokeRect(area) {
     ctx.strokeRect(area.x, area.y, area.width, area.height);
 }
 
-function drawSelectedArea() {
-    const area = selectedArea,
-        hasArea = area.width && area.height;
+function drawSelectedArea(area) {
+    const hasArea = area.width && area.height;
     
     let x = area.x,
         y = area.y,
@@ -174,7 +173,7 @@ function drawCanvas() {
         drawRotatedSelectedArea(selectedArea, theta);
     }
     else {
-        drawSelectedArea();
+        drawSelectedArea(selectedArea);
     }
 }
 
@@ -222,14 +221,13 @@ function getScaledSelectedArea() {
     };
 }
 
-function getRotatedImageData(image) {
-    const canvas = document.createElement("canvas"),
-        ctx = canvas.getContext("2d"),
-        area = getScaledSelectedArea();
+function getImageData(image, area, ctx) {
+    ctx.drawImage(image, 0, 0, image.width, image.height);
 
-    canvas.width = image.width;
-    canvas.height = image.height;
+    return ctx.getImageData(area.x, area.y, area.width, area.height);
+}
 
+function getRotatedImageData(image, area, ctx) {
     ctx.save();
     ctx.translate(area.x + area.width / 2, area.y + area.height / 2);
     ctx.rotate(-theta);
@@ -240,9 +238,14 @@ function getRotatedImageData(image) {
 }
 
 function getCroppedImage(image, imageType = "image/jpeg") {
-    const imageData = getRotatedImageData(image),
-        canvas = document.createElement("canvas"),
-        ctx = canvas.getContext("2d");
+    const canvas = document.createElement("canvas"),
+        ctx = canvas.getContext("2d"),
+        area = getScaledSelectedArea();
+
+    canvas.width = image.width;
+    canvas.height = image.height;
+
+    const imageData = theta ? getRotatedImageData(image, area, ctx) : getImageData(image, area, ctx);
 
     canvas.width = imageData.width;
     canvas.height = imageData.height;
@@ -359,11 +362,11 @@ function isMouseInsideSelectedArea(area, x, y) {
 }
 
 function resizeSelectedArea(event) {
-    const area = selectedArea,
+    const { x, y } = getMousePosition(event),
+        area = selectedArea,
         adjustedSelectedArea = {};
-    
-    let { x, y } = getMousePosition(event),
-        selectedDirection = "";
+
+    let selectedDirection = "";
 
     switch (direction) {
         case "nw":
@@ -411,7 +414,6 @@ function resizeSelectedArea(event) {
     }
     
     Object.assign(selectedArea, adjustedSelectedArea);
-
     requestAnimationFrame(drawCanvas);
     updatePointDisplay(selectedArea.x, selectedArea.y);
     updateMeasurmentDisplay(selectedArea.width, selectedArea.height);
@@ -450,7 +452,7 @@ function onSelectionStart(event) {
 
     canvas.removeEventListener("mousemove", changeCursor, false);
     document.removeEventListener("keydown", changeCursorToMove, false);
-    
+
     if (event.ctrlKey) {
         const isInsideArea = theta ? isMouseInsideRotatedSelectedArea : isMouseInsideSelectedArea;
 
@@ -459,7 +461,7 @@ function onSelectionStart(event) {
                 drawRotatedSelectedArea(area, theta);
             }
             else {
-                drawSelectedArea();
+                drawSelectedArea(area);
             }
             moveSelectedArea = getDistanceBetweenPoints(x, y);
             cropping.addEventListener("mousemove", moveSelectedArea, false);
@@ -471,7 +473,7 @@ function onSelectionStart(event) {
         cropping.addEventListener("mouseup", lockRotatedArea, false);
     }
     else if (direction && hasArea && !theta) {
-        drawSelectedArea();
+        drawSelectedArea(area);
         cropping.addEventListener("mousemove", resizeSelectedArea, false);
         cropping.addEventListener("mouseup", lockAdjustedArea, false);
     }
@@ -481,7 +483,7 @@ function onSelectionStart(event) {
                 drawRotatedSelectedArea(area, theta);
             }
             else {
-                drawSelectedArea();
+                drawSelectedArea(area);
             }
         }
 
@@ -497,7 +499,7 @@ function onSelectionStart(event) {
 }
 
 function selectArea(event) {
-    let { x, y } = getMousePosition(event);
+    const { x, y } = getMousePosition(event);
 
     selectedArea.width = x - selectedArea.x;
     selectedArea.height = y - selectedArea.y;
@@ -637,7 +639,7 @@ function getAngleInRadians(event) {
     return Math.atan2(y2 - y, x2 - x);
 }
 
-function getAngleInDegrees(radians) {
+function convertRadiansToDegrees(radians) {
     let degrees = Math.round(radians * 180 / Math.PI);
 
     if (degrees < 0) {
@@ -666,7 +668,7 @@ function rotateSelectedArea(event) {
     let degrees = 0;
 
     theta = getAngleInRadians(event);
-    degrees = getAngleInDegrees(theta);
+    degrees = convertRadiansToDegrees(theta);
     angleInput.value = degrees;
 
     if (degrees === 0 || degrees === 360) {
@@ -768,32 +770,32 @@ function closeCropping() {
 }
 
 function showPreview() {
-    const croppedImage = getCroppedImage(canvasImage.original);
-    const img = new Image();
+    const croppedImage = getCroppedImage(canvasImage.original),
+        img = new Image();
 
     isPreviewOpen = true;
 
     img.classList.add("crop-preview-image");
     img.addEventListener("load", () => {
-        const maxWidth = window.innerWidth - 8;
-        const maxHeight = window.innerHeight - 40;
+        let width = croppedImage.width,
+            height = croppedImage.height;
 
-        let width = croppedImage.width;
-        let height = croppedImage.height;
-        let ratio = width / height;
+        const maxWidth = window.innerWidth - 8,
+            maxHeight = window.innerHeight - 40,
+            ratio = width / height;
 
         if (width > maxWidth) {
             width = maxWidth;
-            height = width / ratio;
+            height = Math.floor(width / ratio);
         }
 
         if (height > maxHeight) {
             height = maxHeight;
-            width = height * ratio;
+            width = Math.floor(height * ratio);
         }
 
-        img.style.width = Math.floor(width) + "px";
-        img.style.height = Math.floor(height) + "px";
+        img.style.width = width + "px";
+        img.style.height = height + "px";
 
         cropPreview.appendChild(img);
         toggleElement("add", cropPreview);
@@ -820,8 +822,8 @@ function loadCanvasWithQuality() {
 
     canvasImage.withQuality.addEventListener("load", () => {
         requestAnimationFrame(() => {
-            loading = false;
             drawCanvas();
+            loading = false;
         });
     });
 
@@ -895,8 +897,8 @@ function updateCanvasWithCropData(event) {
             return;
         }
 
-        const inputRatio = ratio.getRatio(input);
-        let inputValue = insertChar(target, key);
+        const inputRatio = ratio.getRatio(input),
+            inputValue = insertChar(target, key);
 
         if (input === "angle") {
             theta = convertDegreesToRadians(inputValue);
@@ -918,7 +920,7 @@ function updateSelectedAreaWithCropData(event) {
         enter = key === "Enter" || key === 13;
 
     if (backspace || enter) {
-        let target = event.target,
+        const target = event.target,
             input = target.getAttribute("data-input");
 
         if (input === "angle") {
