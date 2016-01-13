@@ -1,7 +1,8 @@
 "use strict";
 
 import "./dropbox.js";
-import "./selections.js";
+import "./tools.js";
+import "./resizer-selections.js";
 import "./read.js";
 import "./process.js";
 

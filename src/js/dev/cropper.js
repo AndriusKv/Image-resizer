@@ -2,7 +2,7 @@
 
 import { toggleElement } from "./main.js";
 import * as process from "./process.js";
-import * as quality from "./crop-quality.js";
+import * as quality from "./cropper-quality.js";
 
 const cropping = document.getElementById("js-crop"),
     canvas = document.getElementById("js-canvas"),

@@ -1,13 +1,3 @@
-.selections {
-    @extend %container;
-    
-	width: 500px;
-    margin-top: 8px;
-	padding: 8px;
-    background-color: #003459;
-    box-shadow: 0 0 5px rgba(0,0,0,0.4);
-    color: $light-color;
-}
 .selections-mask {
     position: absolute;
     top: 0;
@@ -22,14 +12,9 @@
         background-color: rgba(0, 52, 89, .8);
     }
 }
-.font-button {
+.selections-btn {
     float: right;
-    padding: 0 2px;
     margin-bottom: 6px;
-    border: none;
-    background-color: transparent;
-    
-    &:active { transform: scale(.96); }
 }
 .selections-container {
     display: none;
@@ -54,9 +39,7 @@
 }
 .input-container {
 	display: inline-block;
-	width: calc(50% - 6px);
-
-    &:first-child { margin-right: 6px; }
+	width: calc(50% - 3px);
 }
 .image-input {
 	@extend %primary-input-styles;
@@ -82,16 +65,12 @@
 
 .setting-label { vertical-align: middle; }
 
-.setting-checkbox {
-    float: right;
-    margin-top: 3px;
-}
 .setting-slider {
+    @extend %slider;
+    
     float: right;
     width: 200px;
     margin-top: 8px;
-
-    @extend %slider;
 }
 .setting-input {
     @extend %primary-input-styles;

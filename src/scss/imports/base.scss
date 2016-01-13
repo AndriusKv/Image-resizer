@@ -2,9 +2,9 @@ $light-color: #ddd;
 $dark-color: #222;
 
 %container {
-	position: relative;
-	margin-left: auto;
-	margin-right: auto;
+    margin: 8px auto 0 auto;
+    padding: 4px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.4);
 }
 %primary-input-styles {
 	border: none;
@@ -40,22 +40,21 @@ body { background-color: $light-color; }
 
 .title {
 	margin-top: 0;
-	margin-bottom: 8px;
-    padding-top: 8px;
+	margin-bottom: 0;
     padding-bottom: 8px;
     background-color: #003459;
     box-shadow: 0 0 5px rgba(0,0,0,0.4);
 	text-align: center;
 	color: $light-color;
-	font-size: 54px;
+	font-size: 48px;
 	font-weight: 200;
-    line-height: 1;
 }
 .btn {
-    padding: 2px 10px;
+    padding: 0 10px 2px 10px;
     border: 0;
     background-color: #003459;
     color: $light-color;
+    font-size: 14px;
     
     &:hover { background-color: #003C64; }
     
@@ -66,4 +65,13 @@ body { background-color: $light-color; }
     color: #003C64;
 
     &:hover { background-color: #ccc; }
+}
+.font-btn {
+    padding: 0 2px;
+    border: none;
+    background-color: transparent;
+    color: $light-color;
+    font-size: 14px;
+    
+    &:active { transform: scale(.96); }
 }

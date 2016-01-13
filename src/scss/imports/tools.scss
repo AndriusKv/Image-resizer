@@ -1,0 +1,31 @@
+.tools {
+    width: 480px;
+    margin: 0 auto;
+}
+.tool-selection {
+    @extend %container;
+    
+    padding: 4px;
+    background-color: #003459;
+    text-align: center;
+}
+.tool-selection-btn {
+    vertical-align: top;
+    opacity: .4;
+    transition: opacity .2s;
+    
+    &.active { opacity: 1; } 
+}
+.tool-selections {
+    @extend %container;
+    
+    position: relative;
+    display: none;
+	padding: 4px;
+    background-color: #003459;
+    color: $light-color;
+    
+    &.active {
+        display: block;
+    }
+}

@@ -3,7 +3,7 @@
 "use strict";
 
 import * as dropbox from "./dropbox.js";
-import * as select from "./selections.js";
+import * as select from "./resizer-selections.js";
 import { toggleElement } from "./main.js";
 
 let images = [],

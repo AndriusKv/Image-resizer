@@ -3,7 +3,8 @@
 import { changeClass, toggleElement } from "./main.js";
 import * as dropbox from "./dropbox.js";
 import * as process from "./process.js";
-import * as crop from "./crop.js";
+import * as tools from "./tools.js";
+import * as crop from "./cropper.js";
 
 let dropboxElement = document.getElementById("js-dropbox"),
     counter = 0;
@@ -19,8 +20,8 @@ function doneReadingFiles() {
             dropbox.showMessage("No images to process.");
             return;
         }
-
-        if (document.getElementById("js-crop-checkbox").checked) {
+        
+        if (tools.cropperEnabled) {
             dropbox.resetDropbox();
             crop.init();
         }

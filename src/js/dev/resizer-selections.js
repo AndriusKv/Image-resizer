@@ -84,7 +84,7 @@ function appendInputs(element, num) {
     let totalChildren = element.children.length;
 
     if (totalChildren < num) {
-        let toAppend = num - totalChildren;
+        const toAppend = num - totalChildren;
         
         element.appendChild(createInputs(toAppend));
     }
@@ -114,19 +114,11 @@ function toggleSettings(event) {
     toggleElement("toggle", document.getElementById("js-settings"));
 }
 
-function onInput(event) {
-    if (event.target.classList.contains("image-input") && document.getElementById("js-crop-checkbox").checked) {
-        showMessage("Disable image cropping to change input values");
-        event.preventDefault();
-    }
-}
-
 function updateImageQuality(event) {
     showMessage(`Image quality set to: ${event.target.value}%`);
 }
 
 select.addEventListener("click", onSelection, false);
-document.getElementById("js-input-container").addEventListener("keydown", onInput, false);
 document.getElementById("js-settings-toggle").addEventListener("click", toggleSettings, false);
 qualitySlider.addEventListener("input", updateImageQuality, false);
 
