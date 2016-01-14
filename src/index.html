@@ -21,18 +21,29 @@
             <button id="js-cancel" class="btn dropbox-btn">Cancel</button>
         </div>
 	</label>
-	<input type="file" id="js-image-select" class="image-select-input">
+	<input type="file" id="js-image-select" class="image-select-input" multiple>
 	<div class="tools">
         <div id="js-tools-btns" class="tool-selection">
             <button class="font-btn tool-selection-btn active" data-tool="resizer">Resizer</button>
             <button class="font-btn tool-selection-btn" data-tool="cropper">Cropper</button>
         </div>
-        <div id="js-resizer-selections" class="tool-selections active">
-            <div id ="js-selections-mask" class="selections-mask"></div>
-            <button id="js-settings-toggle" class="font-btn selections-btn">Settings</button>
-            <div id="js-selections" class="selections-container show">
-                <label for="select">Number of sizes</label>
-                <select id="js-select" class="select">
+        <div id="js-resizer-settings" class="tool-settings active preload">
+            <div id ="js-mask" class="mask"></div>
+            <div class="setting">
+                <label for="js-image-name" class="setting-label">Image name</label>
+                <input type="text" id="js-image-name" class="setting-action setting-input">
+            </div>
+            <div class="setting">
+                <label for="js-image-name-seperator" class="setting-label">Image name seperator</label>
+                <input type="text" id="js-image-name-seperator" class="setting-action setting-input">
+            </div>
+            <div class="setting">
+                <label for="js-image-quality" class="setting-label">Image quality</label>
+                <input type="range" id="js-image-quality" class="setting-action setting-slider" step="1" min="0" max="100" value="92">
+            </div>
+            <div class="setting">
+                <label for="js-select">Number of sizes</label>
+                <select id="js-select" class="setting-select select">
                     <option>1</option>
                     <option>2</option>
                     <option>3</option>
@@ -55,20 +66,6 @@
                     <div id="js-height-input-container" class="input-container">
                         <input type="text" class="image-input">
                     </div>
-                </div>
-            </div>
-            <div id="js-settings" class="settings">
-                <div class="setting">
-                    <label for="js-image-name" class="setting-label">Image name</label>
-                    <input type="text" id="js-image-name" class="setting-input">
-                </div>
-                <div class="setting">
-                    <label for="js-image-name-seperator" class="setting-label">Image name seperator</label>
-                    <input type="text" id="js-image-name-seperator" class="setting-input">
-                </div>
-                <div class="setting">
-                    <label for="js-image-quality" class="setting-label">Image quality</label>
-                    <input type="range" id="js-image-quality" class="setting-slider" step="1" min="0" max="100" value="92">
                 </div>
             </div>
         </div>

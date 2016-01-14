@@ -1,4 +1,5 @@
 .tools {
+    position: relative;
     width: 480px;
     margin: 0 auto;
 }
@@ -16,16 +17,24 @@
     
     &.active { opacity: 1; } 
 }
-.tool-selections {
+.tool-settings {
     @extend %container;
-    
-    position: relative;
-    display: none;
+
+    position: absolute;
+    width: 100%;
+    visibility: collapse;
+    opacity: 0;
 	padding: 4px;
     background-color: #003459;
     color: $light-color;
+    transform: translateY(-20px) scale(0.9);
+    transition: all .2s;
     
     &.active {
-        display: block;
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
+
+    &.preload { transition: none; }
 }

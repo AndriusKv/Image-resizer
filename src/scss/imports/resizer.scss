@@ -1,4 +1,4 @@
-.selections-mask {
+.mask {
     position: absolute;
     top: 0;
     right: 0;
@@ -7,19 +7,10 @@
     visibility: collapse;
     transition: all .2s;
     
-    &.mask {
+    &.show {
         visibility: visible;
         background-color: rgba(0, 52, 89, .8);
     }
-}
-.selections-btn {
-    float: right;
-    margin-bottom: 6px;
-}
-.selections-container {
-    display: none;
-    
-    &.show { display: block; }
 }
 .select {
 	@extend %primary-input-styles;
@@ -50,32 +41,31 @@
 
 	&:last-child { margin-bottom: 0; }
 }
-.settings {
-    display: none;
-    
-    &.show { display: block; }
-}
 .setting {
-    clear: right;
     overflow: hidden;
     padding-top: 4px;
     padding-bottom: 4px;
     border-bottom: 1px solid #ddd;
+
+    &:nth-of-type(2) { padding-top: 0; }
 }
 
 .setting-label { vertical-align: middle; }
 
+.setting-action {
+    float: right;
+    width: 200px;
+}
 .setting-slider {
     @extend %slider;
     
-    float: right;
-    width: 200px;
     margin-top: 8px;
 }
 .setting-input {
     @extend %primary-input-styles;
     
-    float: right;
-    width: 200px;
     padding: 2px 4px;
+}
+.setting-select {
+    float: right;
 }

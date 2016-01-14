@@ -804,11 +804,6 @@ function showPreview() {
     img.src = croppedImage.uri;
 }
 
-function removeTransitionPrevention() {
-    cropping.classList.remove("preload");
-    window.removeEventListener("load", removeTransitionPrevention, false);
-}
-
 function loadCanvasWithQuality() {
     const canvasWithQuality = document.createElement("canvas"),
         ctx2 = canvasWithQuality.getContext("2d"),
@@ -953,6 +948,5 @@ closeButton.addEventListener("click", closeCropping, false);
 cropData.addEventListener("keypress", updateCanvasWithCropData, false);
 cropData.addEventListener("keyup", updateSelectedAreaWithCropData, false);
 document.getElementById("js-crop-data-btns").addEventListener("click", onSidebarBtnClick, false);
-window.addEventListener("load", removeTransitionPrevention, false);
 
 export { init, changeCanvasQuality };

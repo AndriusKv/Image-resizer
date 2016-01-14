@@ -1,6 +1,5 @@
 "use strict";
 
-import { toggleElement } from "./main.js";
 import { showMessage } from "./dropbox.js";
 
 const widthInputCointaner = document.getElementById("js-width-input-container");
@@ -105,21 +104,11 @@ function onSelection(event) {
     appendInputs(heightInputContainer, numberOfInputs);
 }
 
-function toggleSettings(event) {
-    const button = event.target;
-    
-    button.innerHTML = button.innerHTML === "Settings" ? "Selections" : "Settings";
-    
-    toggleElement("toggle", document.getElementById("js-selections"));
-    toggleElement("toggle", document.getElementById("js-settings"));
-}
-
 function updateImageQuality(event) {
     showMessage(`Image quality set to: ${event.target.value}%`);
 }
 
 select.addEventListener("click", onSelection, false);
-document.getElementById("js-settings-toggle").addEventListener("click", toggleSettings, false);
 qualitySlider.addEventListener("input", updateImageQuality, false);
 
 export { widthInputCointaner, heightInputContainer, saveToLocalStorage, verifyValue };

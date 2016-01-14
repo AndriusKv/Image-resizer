@@ -10,23 +10,23 @@ function removeActiveTool() {
     
     btns.forEach(btn => {
         if (btn.classList.contains("active")) {
-            const toolSelections = document.getElementById(`js-${btn.getAttribute("data-tool")}-selections`);
+            const toolSettings = document.getElementById(`js-${btn.getAttribute("data-tool")}-settings`);
 
             changeClass("remove", btn, "active");
-            if (toolSelections) {
-                changeClass("remove", toolSelections, "active");
+            if (toolSettings) {
+                changeClass("remove", toolSettings, "active");
             }
         }
     });
 }
 
 function enableTool(target, tool) {
-    const toolSelections = document.getElementById(`js-${tool}-selections`);
+    const toolSettings = document.getElementById(`js-${tool}-settings`);
     
     changeClass("add", target, "active");
     
-    if (toolSelections) {
-        changeClass("add", toolSelections, "active");
+    if (toolSettings) {
+        changeClass("add", toolSettings, "active");
     }
 }
 

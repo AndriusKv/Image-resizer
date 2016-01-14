@@ -16,7 +16,18 @@ function toggleElement(action, element) {
 
 function toggleMasks(action) {
     changeClass(action, document.getElementById("js-dropbox-label"), "mask");
-    changeClass(action, document.getElementById("js-selections-mask"), "mask");
+    changeClass(action, document.getElementById("js-mask"), "show");
 }
+
+function removeTransitionPrevention() {
+    const elems = [...document.querySelectorAll(".preload")];
+
+    elems.forEach(elem => {
+        if (elem.classList.remove("preload"));
+    });
+    window.removeEventListener("load", removeTransitionPrevention, false);
+}
+
+window.addEventListener("load", removeTransitionPrevention, false);
 
 export { toggleMasks, changeClass, toggleElement };
