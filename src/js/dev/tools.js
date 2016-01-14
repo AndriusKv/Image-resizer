@@ -7,7 +7,7 @@ let cropperEnabled = false;
 
 function removeActiveTool() {
     const btns = [...document.querySelectorAll(".tool-selection-btn")];
-    
+
     btns.forEach(btn => {
         if (btn.classList.contains("active")) {
             const toolSettings = document.getElementById(`js-${btn.getAttribute("data-tool")}-settings`);
@@ -22,9 +22,9 @@ function removeActiveTool() {
 
 function enableTool(target, tool) {
     const toolSettings = document.getElementById(`js-${tool}-settings`);
-    
+
     changeClass("add", target, "active");
-    
+
     if (toolSettings) {
         changeClass("add", toolSettings, "active");
     }
@@ -33,7 +33,7 @@ function enableTool(target, tool) {
 function toggleTool(event) {
     const target = event.target,
         tool = target.getAttribute("data-tool");
-    
+
     if (!tool) {
         return;
     }

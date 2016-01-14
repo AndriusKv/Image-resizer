@@ -5,7 +5,7 @@
 }
 .tool-selection {
     @extend %container;
-    
+
     padding: 4px;
     background-color: #003459;
     text-align: center;
@@ -14,8 +14,8 @@
     vertical-align: top;
     opacity: .4;
     transition: opacity .2s;
-    
-    &.active { opacity: 1; } 
+
+    &.active { opacity: 1; }
 }
 .tool-settings {
     @extend %container;
@@ -27,9 +27,9 @@
 	padding: 4px;
     background-color: #003459;
     color: $light-color;
-    transform: translateY(-20px) scale(0.9);
+    transform: translateY(-14px) scale(0.9);
     transition: all .2s;
-    
+
     &.active {
         visibility: visible;
         opacity: 1;

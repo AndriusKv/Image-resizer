@@ -2,7 +2,7 @@
 
 import "./dropbox.js";
 import "./tools.js";
-import "./resizer-selections.js";
+import "./resizer-settings.js";
 import "./read.js";
 import "./process.js";
 
@@ -23,7 +23,7 @@ function removeTransitionPrevention() {
     const elems = [...document.querySelectorAll(".preload")];
 
     elems.forEach(elem => {
-        if (elem.classList.remove("preload"));
+        elem.classList.remove("preload");
     });
     window.removeEventListener("load", removeTransitionPrevention, false);
 }
