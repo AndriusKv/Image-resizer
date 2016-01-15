@@ -199,7 +199,6 @@ function processImage(images, measurments) {
                 if (dropbox.isCanceled) {
                     return;
                 }
-
                 process();
             }, delay);
         }
@@ -220,9 +219,8 @@ function verifyValues(values) {
     return values;
 }
 
-function getInputValues() {
-    const inputs = settings.dimensionInputContainer.children,
-        values = [];
+function getInputValues(inputs) {
+    const values = [];
 
     for (let i = 0, l = inputs.length; i < l; i += 2) {
         const width = inputs[i].value,
@@ -232,24 +230,25 @@ function getInputValues() {
             values.push({ width, height });
         }
     }
-
-    return verifyValues(values);
+    return values;
 }
 
 function processImages() {
-    const inputValues = getInputValues();
+    let inputValues = getInputValues(settings.dimensionInputContainer.children);
+
+    inputValues = verifyValues(inputValues);
 
     if (!inputValues.length) {
         dropbox.resetDropbox();
         return;
     }
 
-    initWorker();
-    dropbox.beforeWork();
     const process = processImage(images, inputValues);
 
+    initWorker();
+    dropbox.beforeWork();
     process();
-    settings.saveToLocalStorage();
+    settings.saveToLocalStorage(inputValues);
 }
 
 function downloadImages() {
@@ -268,4 +267,4 @@ dropbox.processBtn.addEventListener("click", processImages, false);
 dropbox.downloadBtn.addEventListener("click", downloadImages, false);
 dropbox.cancelBtn.addEventListener("click", cancelWork, false);
 
-export { zip, images, worker, processImages, initWorker, generateZip };
+export { zip, images, worker, processImages, initWorker, generateZip, getInputValues };

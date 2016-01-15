@@ -8,30 +8,39 @@ const dimensionInputContainer = document.getElementById("js-dimension-inputs"),
     qualitySlider = document.getElementById("js-image-quality");
 
 (function loadFromLocalStorage() {
-    let selections = localStorage.getItem("selections");
+    let settings = localStorage.getItem("settings");
 
-    if (!selections) {
+    if (!settings) {
         return;
     }
-    selections = JSON.parse(selections);
+    settings = JSON.parse(settings);
 
-    appendInputs(dimensionInputContainer, selections.dimensionInputValues.length);
-    assignValuesToInputs(dimensionInputContainer.children, selections.dimensionInputValues);
+    const inputValues = flattenInputValues(settings.dimensionInputValues);
 
-    imageName.value = selections.imageName;
-    imageNameSeperator.value = selections.imageNameSeperator;
-    qualitySlider.value = selections.imageQuality;
+    appendInputs(dimensionInputContainer, inputValues.length);
+    assignValuesToInputs(dimensionInputContainer.children, inputValues);
+
+    imageName.value = settings.imageName;
+    imageNameSeperator.value = settings.imageNameSeperator;
+    qualitySlider.value = settings.imageQuality;
 })();
 
-function saveToLocalStorage() {
-    const selections = {
-        dimensionInputValues: getInputValues(dimensionInputContainer.children),
+function saveToLocalStorage(inputValues) {
+    const settings = {
+        dimensionInputValues: inputValues,
         imageName: imageName.value || "",
         imageNameSeperator: imageNameSeperator.value || "",
         imageQuality: qualitySlider.value
     };
 
-    localStorage.setItem("selections", JSON.stringify(selections));
+    localStorage.setItem("settings", JSON.stringify(settings));
+}
+
+function flattenInputValues(values) {
+    return values.reduce((arr, value) => {
+        arr.push(value.width, value.height);
+        return arr;
+    }, []);
 }
 
 function verifyValues(width, height) {
@@ -46,11 +55,6 @@ function assignValuesToInputs(inputs, values) {
     Array.prototype.forEach.call(inputs, (input, index) => {
         input.value = values[index];
     });
-}
-
-function getInputValues(inputs) {
-    return Array.prototype.map.call(inputs, input => input.value)
-        .filter(value => value);
 }
 
 function createInput() {
