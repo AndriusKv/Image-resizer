@@ -3,7 +3,7 @@
 "use strict";
 
 import * as dropbox from "./dropbox.js";
-import * as select from "./selections.js";
+import * as settings from "./resizer-settings.js";
 import { toggleElement } from "./main.js";
 
 let images = [],
@@ -37,12 +37,12 @@ function saveZip(data) {
         saveAs(data, "images.zip");
     }
     catch (error) {
-        let script = document.createElement("script");
-        
+        const script = document.createElement("script");
+
         script.setAttribute("src", "js/libs/FileSaver.min.js");
-        
+
         document.getElementsByTagName("body")[0].appendChild(script);
-        
+
         script.onload = function() {
             saveAs(data, "images.zip");
         };
@@ -57,7 +57,7 @@ function convertMeasurement(dimension, measurement, originalMeasurement) {
     const dimension2 = getSecondDimension(dimension);
     const value = measurement[dimension] === "same" ? measurement[dimension2] : measurement[dimension];
     const originalValue = originalMeasurement[dimension];
-    
+
     if (value.includes("%")) {
         return originalValue * (Number.parseInt(value, 10) / 100);
     }
@@ -67,7 +67,7 @@ function convertMeasurement(dimension, measurement, originalMeasurement) {
     else if (value === dimension2) {
         return Number.parseInt(originalMeasurement[dimension2], 10);
     }
-    
+
     return Number.parseInt(value, 10);
 }
 
@@ -76,10 +76,10 @@ function convertMeasurements(measurement, originalMeasurement) {
 
     let newWidth = 0;
     let newHeight = 0;
-    
+
     if (measurement.width) {
         newWidth = convertMeasurement("width", measurement, originalMeasurement);
-        
+
         if (!measurement.height) {
             newHeight = newWidth / ratio;
         }
@@ -87,7 +87,7 @@ function convertMeasurements(measurement, originalMeasurement) {
             newHeight = newWidth;
         }
     }
-    
+
     if (!newHeight && measurement.height) {
         newHeight = convertMeasurement("height", measurement, originalMeasurement);
 
@@ -98,7 +98,7 @@ function convertMeasurements(measurement, originalMeasurement) {
             newWidth = newHeight;
         }
     }
-    
+
     return {
         width: newWidth,
         height: newHeight
@@ -112,7 +112,7 @@ function getUri(image, type, { width: width, height: height }) {
     canvas.width = width;
     canvas.height = height;
     canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-    
+
     return canvas.toDataURL(type, quality);
 }
 
@@ -126,7 +126,7 @@ function doneResizing() {
         if (dropbox.isCanceled) {
             return;
         }
-		
+
         toggleElement("remove", dropbox.progressBar);
         toggleElement("remove", dropbox.cancelBtn);
         dropbox.resetProgress();
@@ -155,7 +155,7 @@ function resizeImage(image, imageToResize) {
 
         if (dimensions.length) {
             const delay = imageToResize.size * dimension.width * dimension.height / 2000 + 100;
-            
+
             setTimeout(() => {
                 if (dropbox.isCanceled) {
                     return;
@@ -211,48 +211,45 @@ function verifyValues(values) {
         showMessageWithButton("No dimensions specified", dropbox.processBtn);
     }
     else {
-        values = values.filter(value => select.verifyValue(value.width, value.height) ||
-                                        select.verifyValue(value.height, value.width));
-        
+        values = values.filter(value => settings.verifyValues(value.width, value.height));
+
         if (!values.length) {
             showMessageWithButton("No valid values", dropbox.processBtn);
         }
     }
-    
     return values;
 }
 
 function getInputValues() {
-    let widths = select.widthInputCointaner.children,
-        heights = select.heightInputContainer.children,
+    const inputs = settings.dimensionInputContainer.children,
         values = [];
-    
-    for (let i = 0, l = widths.length; i < l; i++) {
-        const width = widths[i].value,
-            height = heights[i].value;
-        
+
+    for (let i = 0, l = inputs.length; i < l; i += 2) {
+        const width = inputs[i].value,
+            height = inputs[i + 1].value;
+
         if (width || height) {
             values.push({ width, height });
         }
     }
-    
+
     return verifyValues(values);
 }
 
 function processImages() {
     const inputValues = getInputValues();
-    
+
     if (!inputValues.length) {
         dropbox.resetDropbox();
         return;
     }
-    
+
     initWorker();
     dropbox.beforeWork();
     const process = processImage(images, inputValues);
-    
+
     process();
-    select.saveToLocalStorage();
+    settings.saveToLocalStorage();
 }
 
 function downloadImages() {

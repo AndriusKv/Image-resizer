@@ -1,6 +1,6 @@
 "use strict";
 
-import { changeCanvasQuality } from "./crop.js";
+import { changeCanvasQuality } from "./cropper.js";
 
 const qualitySlider = document.getElementById("js-crop-quality");
 
