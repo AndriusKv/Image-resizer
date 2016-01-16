@@ -11,7 +11,7 @@
     cursor: default;
     transform: scale(.8);
     transition: all .4s;
-    
+
     &.preload { transition: none; }
 
     &.show {
@@ -142,7 +142,7 @@
 
     &:disabled {
         color: rgba(0, 52, 89, .2);
-        
+
         &:hover { background-color: $light-color; }
     }
 }
