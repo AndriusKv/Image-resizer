@@ -54,6 +54,7 @@ const sidebarPreview = (function() {
     const ctx = preview.getContext("2d");
     const maxWidth = 192;
     const maxHeight = 150;
+    let updating = false;
 
     preview.width = maxWidth;
     preview.height = maxHeight;
@@ -65,26 +66,29 @@ const sidebarPreview = (function() {
     function draw(image) {
         const area = getScaledSelectedArea();
 
-        if (!area.width || !area.height) {
+        if (updating || !area.width || !area.height) {
             return;
         }
+        updating = true;
+        requestAnimationFrame(() => {
+            const croppedCanvas = getCroppedCanvas(image, area);
+            let width = croppedCanvas.width;
+            let height = croppedCanvas.height;
+            const ratio = width / height;
 
-        const croppedCanvas = getCroppedCanvas(image, area);
-        const ratio = croppedCanvas.width / croppedCanvas.height;
-        let width = croppedCanvas.width;
-        let height = croppedCanvas.height;
+            if (width > maxWidth) {
+                width = maxWidth;
+                height = width / ratio;
+            }
 
-        if (width > maxWidth) {
-            width = maxWidth;
-            height = width / ratio;
-        }
-
-        if (height > maxHeight) {
-            height = maxHeight;
-            width = height * ratio;
-        }
-        clean();
-        ctx.drawImage(croppedCanvas, (maxWidth - width) / 2, (maxHeight - height) / 2, width, height);
+            if (height > maxHeight) {
+                height = maxHeight;
+                width = height * ratio;
+            }
+            clean();
+            ctx.drawImage(croppedCanvas, (maxWidth - width) / 2, (maxHeight - height) / 2, width, height);
+            updating = false;
+        });
     }
 
     return {
