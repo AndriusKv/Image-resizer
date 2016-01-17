@@ -3,10 +3,9 @@
 import { changeCanvasQuality } from "./cropper.js";
 
 const qualitySlider = document.getElementById("js-crop-quality");
-
-let defaultQuality = 0.92,
-    customQuality = false,
-    quality = defaultQuality;
+const defaultQuality = 0.92;
+let customQuality = false;
+let quality = defaultQuality;
 
 function updateQualityDisplay(quality) {
     document.getElementById("js-quality-value").textContent = quality;

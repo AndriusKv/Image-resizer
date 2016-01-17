@@ -6,8 +6,8 @@ import * as process from "./process.js";
 import * as tools from "./tools.js";
 import * as crop from "./cropper.js";
 
-let dropboxElement = document.getElementById("js-dropbox"),
-    counter = 0;
+const dropboxElement = document.getElementById("js-dropbox");
+let counter = 0;
 
 function doneReadingFiles() {
     setTimeout(() => {
@@ -20,7 +20,7 @@ function doneReadingFiles() {
             dropbox.showMessage("No images to process.");
             return;
         }
-        
+
         if (tools.cropperEnabled) {
             dropbox.resetDropbox();
             crop.init();
@@ -41,14 +41,14 @@ function removeFileType(fileName) {
 }
 
 function setImageName(name) {
-    let imageName = document.getElementById("js-image-name").value || removeFileType(name),
-        imageNameSeperator = document.getElementById("js-image-name-seperator").value || "-";
+    const imageName = document.getElementById("js-image-name").value || removeFileType(name);
+    const imageNameSeperator = document.getElementById("js-image-name-seperator").value || "-";
 
     return imageName + imageNameSeperator;
 }
 
 function readImage(image) {
-    let reader = new FileReader();
+    const reader = new FileReader();
 
     reader.readAsDataURL(image);
     reader.onloadend = function(event) {
@@ -65,7 +65,7 @@ function readImage(image) {
 }
 
 function readFiles(files, inc) {
-    let file = files[0];
+    const file = files[0];
 
     dropbox.setProgressLabel(`Reading: ${file.name}`);
 
@@ -83,7 +83,7 @@ function readFiles(files, inc) {
 
     if (files.length) {
         const delay = file.size / 1e6 * 100 + 100;
-        
+
         setTimeout(() => {
             if (dropbox.isCanceled) {
                 return;
@@ -96,11 +96,11 @@ function readFiles(files, inc) {
 
 function onFiles(files) {
     const inc = 100 / files.length;
-    
+
     if (process.worker) {
         process.worker.postMessage({ action: "remove" });
     }
-    
+
     if (process.images.length) {
         process.images.length = 0;
     }
@@ -113,8 +113,8 @@ function onFiles(files) {
 }
 
 function onUpload(event) {
-    let files = event.target.files;
-    
+    const files = event.target.files;
+
     event.preventDefault();
 
     if (files.length) {
@@ -125,15 +125,15 @@ function onUpload(event) {
 function onDrop(event) {
     counter = 0;
     changeClass("remove", event.target, "over");
-    
+
     event.stopPropagation();
     event.preventDefault();
-    
+
     if (dropbox.isWorking) {
         event.dataTransfer.dropEffect = "none";
         return;
     }
-    
+
     event.dataTransfer.dropEffect = "copy";
     onFiles(event.dataTransfer.files);
 }
@@ -149,7 +149,7 @@ function onDragenter(event) {
     if (dropbox.isWorking) {
         return;
     }
-    
+
     counter += 1;
     changeClass("add", event.target, "over");
 }
@@ -158,7 +158,7 @@ function onDragleave(event) {
     if (dropbox.isWorking) {
         return;
     }
-    
+
     counter -= 1;
 
     if (!counter) {

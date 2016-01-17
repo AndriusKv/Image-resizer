@@ -6,9 +6,9 @@ import * as dropbox from "./dropbox.js";
 import * as settings from "./resizer-settings.js";
 import { toggleElement } from "./main.js";
 
-let images = [],
-    worker,
-    zip;
+const images = [];
+let worker;
+let zip;
 
 function showMessageWithButton(message, button) {
     dropbox.showMessage(message);
@@ -40,7 +40,6 @@ function saveZip(data) {
         const script = document.createElement("script");
 
         script.setAttribute("src", "js/libs/FileSaver.min.js");
-
         document.getElementsByTagName("body")[0].appendChild(script);
 
         script.onload = function() {
@@ -73,7 +72,6 @@ function convertMeasurement(dimension, measurement, originalMeasurement) {
 
 function convertMeasurements(measurement, originalMeasurement) {
     const ratio = originalMeasurement.width / originalMeasurement.height;
-
     let newWidth = 0;
     let newHeight = 0;
 
@@ -223,8 +221,8 @@ function getInputValues(inputs) {
     const values = [];
 
     for (let i = 0, l = inputs.length; i < l; i += 2) {
-        const width = inputs[i].value,
-            height = inputs[i + 1].value;
+        const width = inputs[i].value;
+        const height = inputs[i + 1].value;
 
         if (width || height) {
             values.push({ width, height });

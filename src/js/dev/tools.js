@@ -3,8 +3,8 @@
 import { changeClass } from "./main.js";
 import { showMessage } from "./dropbox.js";
 
-let cropperEnabled = false,
-    activeTool = "resizer";
+let cropperEnabled = false;
+let activeTool = "resizer";
 
 function removeActiveTool() {
     const btns = [...document.querySelectorAll(".tool-selection-btn")];
@@ -32,8 +32,8 @@ function enableTool(target, tool) {
 }
 
 function toggleTool(event) {
-    const target = event.target,
-        tool = target.getAttribute("data-tool");
+    const target = event.target;
+    const tool = target.getAttribute("data-tool");
 
     if (!tool || tool === activeTool) {
         return;

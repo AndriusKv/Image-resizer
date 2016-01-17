@@ -2,10 +2,10 @@
 
 import { showMessage } from "./dropbox.js";
 
-const dimensionInputContainer = document.getElementById("js-dimension-inputs"),
-    imageName = document.getElementById("js-image-name"),
-    imageNameSeperator = document.getElementById("js-image-name-seperator"),
-    qualitySlider = document.getElementById("js-image-quality");
+const dimensionInputContainer = document.getElementById("js-dimension-inputs");
+const imageName = document.getElementById("js-image-name");
+const imageNameSeperator = document.getElementById("js-image-name-seperator");
+const qualitySlider = document.getElementById("js-image-quality");
 
 (function loadFromLocalStorage() {
     let settings = localStorage.getItem("settings");
@@ -44,9 +44,9 @@ function flattenInputValues(values) {
 }
 
 function verifyValues(width, height) {
-    const regex = /^\d+(px|%)?$|^same$|^original$|^width$|^height$/,
-        isWidthValid = regex.test(width) && !(width === "same" && (!height || height === "same")),
-        isHeightValid = regex.test(height) && !(height === "same" && (!width || width === "same"));
+    const regex = /^\d+(px|%)?$|^same$|^original$|^width$|^height$/;
+    const isWidthValid = regex.test(width) && !(width === "same" && (!height || height === "same"));
+    const isHeightValid = regex.test(height) && !(height === "same" && (!width || width === "same"));
 
     return isWidthValid || isHeightValid;
 }
@@ -90,10 +90,10 @@ function updateImageQuality(event) {
 }
 
 function onDimensionInputFocus(event) {
-    const children = [...dimensionInputContainer.children],
-        targetInputIndex = children.indexOf(event.target),
-        isWidthInput = targetInputIndex % 2 === 0 && !children[targetInputIndex + 2],
-        isHeightInput = targetInputIndex % 2 !== 0 && !children[targetInputIndex + 1];
+    const children = [...dimensionInputContainer.children];
+    const targetInputIndex = children.indexOf(event.target);
+    const isWidthInput = targetInputIndex % 2 === 0 && !children[targetInputIndex + 2];
+    const isHeightInput = targetInputIndex % 2 !== 0 && !children[targetInputIndex + 1];
 
     if (isWidthInput || isHeightInput) {
         dimensionInputContainer.appendChild(createInputs(2));

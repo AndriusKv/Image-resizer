@@ -9,13 +9,12 @@ const cancelBtn = document.getElementById("js-cancel");
 
 let isCanceled = false;
 let isWorking = false;
-let timeout;
+let timeout = 0;
 
 function hideMessageAfter(delay) {
     if (timeout) {
         clearTimeout(timeout);
     }
-    
     timeout = setTimeout(() => {
         showMessage();
     }, delay);
@@ -25,11 +24,10 @@ function showMessage(message = "") {
     requestAnimationFrame(() => {
         document.getElementById("js-msg").innerHTML = message;
     });
-    
+
     if (!message) {
         return;
     }
-
     hideMessageAfter(2000);
 }
 
