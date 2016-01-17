@@ -124,7 +124,7 @@ function onUpload(event) {
 
 function onDrop(event) {
     counter = 0;
-    changeClass("remove", event.target, "over");
+    changeClass("remove", dropboxElement, "over");
 
     event.stopPropagation();
     event.preventDefault();
@@ -151,10 +151,10 @@ function onDragenter(event) {
     }
 
     counter += 1;
-    changeClass("add", event.target, "over");
+    changeClass("add", dropboxElement, "over");
 }
 
-function onDragleave(event) {
+function onDragleave() {
     if (dropbox.isWorking) {
         return;
     }
@@ -162,7 +162,7 @@ function onDragleave(event) {
     counter -= 1;
 
     if (!counter) {
-        changeClass("remove", event.target, "over");
+        changeClass("remove", dropboxElement, "over");
     }
 }
 
