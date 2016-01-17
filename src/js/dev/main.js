@@ -30,4 +30,12 @@ function removeTransitionPrevention() {
 
 window.addEventListener("load", removeTransitionPrevention, false);
 
+// prevent file drop outside dropbox
+window.addEventListener("drop", event => {
+    event.preventDefault();
+}, false);
+window.addEventListener("dragover", event => {
+    event.preventDefault();
+}, false);
+
 export { toggleMasks, changeClass, toggleElement };
