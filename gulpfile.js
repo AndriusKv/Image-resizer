@@ -55,7 +55,7 @@ gulp.task("watch", function() {
     gulp.watch(["src/scss/*.scss", "src/scss/imports/*.scss"], ["sass"]);
 });
 
-gulp.task("build", ["build:html", "build:css", "build:js", "build:libs", "build:workers"], function() {
+gulp.task("build", ["build:html", "build:css", "build:js", "build:libs", "build:images", "build:workers"], function() {
     return del([
         "src/css",
         "src/js/tmp",
