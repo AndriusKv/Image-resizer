@@ -9,6 +9,7 @@ const canvas = document.getElementById("js-canvas");
 const ctx = canvas.getContext("2d");
 const closeButton = document.getElementById("js-crop-close");
 const cropPreview = document.getElementById("js-crop-preview");
+const resetButton = document.getElementById("js-crop-reset");
 const xInput = document.getElementById("js-crop-x");
 const yInput = document.getElementById("js-crop-y");
 const widthInput = document.getElementById("js-crop-width");
@@ -92,7 +93,7 @@ const sidebarPreview = (function() {
             updating = false;
         });
     }
-    
+
     return {
         clean,
         draw
@@ -299,7 +300,7 @@ function getScaledSelectedArea() {
 }
 
 function getImageData(image, area, ctx) {
-    const xform = canvasTransform.getTransforms();
+    const xform = canvasTransform.getTransform();
     const translatedX = xform.e * ratio.getRatio("width");
     const translatedY = xform.f * ratio.getRatio("height");
 
@@ -313,7 +314,7 @@ function getImageData(image, area, ctx) {
 }
 
 function getRotatedImageData(image, area, ctx) {
-    const xform = canvasTransform.getTransforms();
+    const xform = canvasTransform.getTransform();
     const translatedX = xform.e * ratio.getRatio("width");
     const translatedY = xform.f * ratio.getRatio("height");
     const centerX = (area.x + area.width / 2);
@@ -1033,31 +1034,11 @@ function onSidebarBtnClick(event) {
     }
 }
 
-function handleScroll(event) {
-    const { x, y } = getMousePosition(event);
-    const scaleFactor = 1.1;
-    const delta = event.deltaY > 0 ? -3 : 3;
-    const factor = Math.pow(scaleFactor, delta);
-    const pt = canvasTransform.getTransformedPoint(x, y);
-
-    canvasTransform.translate(pt.x, pt.y);
-    canvasTransform.scale(factor, factor);
-    canvasTransform.translate(-pt.x, -pt.y);
-
-    requestAnimationFrame(drawCanvas);
-}
-
-closeButton.addEventListener("click", closeCropping, false);
-cropData.addEventListener("keypress", updateCanvasWithCropData, false);
-cropData.addEventListener("keyup", updateSelectedAreaWithCropData, false);
-document.getElementById("js-crop-data-btns").addEventListener("click", onSidebarBtnClick, false);
-canvas.addEventListener("wheel", handleScroll, false);
-
 function trackTransforms(ctx) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     let xform = svg.createSVGMatrix();
 
-    function getTransforms() {
+    function getTransform() {
         return xform;
     }
 
@@ -1079,12 +1060,52 @@ function trackTransforms(ctx) {
         return pt.matrixTransform(xform.inverse());
     }
 
+    function resetTransform() {
+        xform.a = 1;
+        xform.b = 0;
+        xform.c = 0;
+        xform.d = 1;
+        xform.e = 0;
+        xform.f = 0;
+        ctx.resetTransform();
+    }
+
     return {
-        getTransforms,
+        getTransform,
         scale,
         translate,
-        getTransformedPoint
+        getTransformedPoint,
+        resetTransform
     };
 }
+
+function handleScroll(event) {
+    const { x, y } = getMousePosition(event);
+    const scaleFactor = 1.1;
+    const delta = event.deltaY > 0 ? -3 : 3;
+    const factor = Math.pow(scaleFactor, delta);
+    const pt = canvasTransform.getTransformedPoint(x, y);
+
+    canvasTransform.translate(pt.x, pt.y);
+    canvasTransform.scale(factor, factor);
+    canvasTransform.translate(-pt.x, -pt.y);
+
+    requestAnimationFrame(drawCanvas);
+}
+
+function resetCanvas() {
+    theta = 0;
+    canvasTransform.resetTransform();
+    quality.reset();
+    resetData();
+    drawImage();
+}
+
+closeButton.addEventListener("click", closeCropping, false);
+cropData.addEventListener("keypress", updateCanvasWithCropData, false);
+cropData.addEventListener("keyup", updateSelectedAreaWithCropData, false);
+document.getElementById("js-crop-data-btns").addEventListener("click", onSidebarBtnClick, false);
+canvas.addEventListener("wheel", handleScroll, false);
+resetButton.addEventListener("click", resetCanvas, false);
 
 export { init, changeCanvasQuality };
