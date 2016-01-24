@@ -85,6 +85,11 @@ gulp.task("build:libs", function() {
 		.pipe(gulp.dest("dist/js/libs"));
 });
 
+gulp.task("build:images", function() {
+    return gulp.src("src/images/*.*")
+		.pipe(gulp.dest("dist/images"));
+});
+
 gulp.task("build:workers", function() {
     return gulp.src("src/js/workers/*.js")
         .pipe(babel({
