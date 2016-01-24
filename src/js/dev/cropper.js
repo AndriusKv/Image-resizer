@@ -26,7 +26,10 @@ let selectedArea = {};
 let direction = "";
 let isPreviewOpen = false;
 let theta = 0;
+let dragStartPos = null;
 let moveSelectedArea;
+let canvasTransform;
+let addBackground;
 
 const ratio = (function() {
     const ratio = {};
@@ -89,7 +92,7 @@ const sidebarPreview = (function() {
             updating = false;
         });
     }
-
+    
     return {
         clean,
         draw
@@ -177,6 +180,25 @@ function drawImage(image) {
     ctx.drawImage(canvasImage.original, 0, 0, canvas.width, canvas.height);
 }
 
+function getPattern() {
+    const image = new Image();
+    let pattern;
+
+    image.addEventListener("load", () => {
+        pattern = ctx.createPattern(image, "repeat");
+    });
+    image.src = "images/pattern.png";
+
+    return function() {
+        ctx.fillStyle = pattern;
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        addMask();
+        ctx.restore();
+    };
+}
+
 function addMask() {
     ctx.fillStyle = "rgba(0, 0, 0, .4)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -218,7 +240,11 @@ function drawSelectedArea(area) {
 function drawCanvas() {
     const image = quality.useImageWithQuality() ? canvasImage.withQuality : canvasImage.original;
 
+    addBackground();
     drawImage(image);
+
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     if (theta) {
         drawRotatedSelectedArea(selectedArea, theta);
@@ -226,6 +252,7 @@ function drawCanvas() {
     else {
         drawSelectedArea(selectedArea);
     }
+    ctx.restore();
     sidebarPreview.draw(image);
 }
 
@@ -272,16 +299,33 @@ function getScaledSelectedArea() {
 }
 
 function getImageData(image, area, ctx) {
+    const xform = canvasTransform.getTransforms();
+    const translatedX = xform.e * ratio.getRatio("width");
+    const translatedY = xform.f * ratio.getRatio("height");
+
+    ctx.save();
+    ctx.translate(translatedX, translatedY);
+    ctx.scale(xform.a, xform.a);
     ctx.drawImage(image, 0, 0, image.width, image.height);
+    ctx.restore();
 
     return ctx.getImageData(area.x, area.y, area.width, area.height);
 }
 
 function getRotatedImageData(image, area, ctx) {
+    const xform = canvasTransform.getTransforms();
+    const translatedX = xform.e * ratio.getRatio("width");
+    const translatedY = xform.f * ratio.getRatio("height");
+    const centerX = (area.x + area.width / 2);
+    const centerY = (area.y + area.height / 2);
+
     ctx.save();
-    ctx.translate(area.x + area.width / 2, area.y + area.height / 2);
+    ctx.translate(centerX, centerY);
     ctx.rotate(-theta);
-    ctx.drawImage(image, -(area.x + area.width / 2), -(area.y + area.height / 2));
+    ctx.translate(-centerX, -centerY);
+    ctx.translate(translatedX, translatedY);
+    ctx.scale(xform.a, xform.a);
+    ctx.drawImage(image, 0, 0, image.width, image.height);
     ctx.restore();
 
     return ctx.getImageData(area.x, area.y, area.width, area.height);
@@ -492,21 +536,19 @@ function onSelectionStart(event) {
     const hasArea = area.width && area.height;
 
     direction = getDirection(x, y);
-    drawImage();
-
+    requestAnimationFrame(drawCanvas);
     canvas.removeEventListener("mousemove", changeCursor, false);
     document.removeEventListener("keydown", changeCursorToMove, false);
 
-    if (event.ctrlKey) {
+    if (event.shiftKey) {
+        dragStartPos = canvasTransform.getTransformedPoint(x, y);
+        cropping.addEventListener("mousemove", dragImage, false);
+        cropping.addEventListener("mouseup", lockDraggedImage, false);
+    }
+    else if (event.ctrlKey) {
         const isInsideArea = theta ? isMouseInsideRotatedSelectedArea : isMouseInsideSelectedArea;
 
         if (isInsideArea(area, x, y)) {
-            if (theta) {
-                drawRotatedSelectedArea(area, theta);
-            }
-            else {
-                drawSelectedArea(area);
-            }
             moveSelectedArea = getDistanceBetweenPoints(x, y);
             cropping.addEventListener("mousemove", moveSelectedArea, false);
             cropping.addEventListener("mouseup", lockMovedArea, false);
@@ -517,20 +559,10 @@ function onSelectionStart(event) {
         cropping.addEventListener("mouseup", lockRotatedArea, false);
     }
     else if (direction && hasArea && !theta) {
-        drawSelectedArea(area);
         cropping.addEventListener("mousemove", resizeSelectedArea, false);
         cropping.addEventListener("mouseup", lockAdjustedArea, false);
     }
     else {
-        if (hasArea) {
-            if (theta) {
-                drawRotatedSelectedArea(area, theta);
-            }
-            else {
-                drawSelectedArea(area);
-            }
-        }
-
         theta = 0;
         selectedArea.x = x;
         selectedArea.y = y;
@@ -592,6 +624,7 @@ function onMouseup(mousemoveCallback, mouseupCallback) {
     }
     else {
         resetData();
+        addBackground();
         drawImage();
         canvas.style.cursor = "default";
     }
@@ -698,6 +731,7 @@ function drawRotatedSelectedArea(area, radians) {
     ctx.save();
     ctx.translate(area.x + area.width / 2, area.y + area.height / 2);
     ctx.rotate(radians);
+    ctx.strokeStyle = "#006494";
     ctx.strokeRect(-area.width / 2, -area.height / 2, area.width, area.height);
     ctx.beginPath();
     ctx.rect(-width / 2, -height / 2, width, height);
@@ -720,6 +754,16 @@ function rotateSelectedArea(event) {
     requestAnimationFrame(drawCanvas);
 }
 
+function dragImage(event) {
+    if (dragStartPos) {
+        const { x, y } = getMousePosition(event);
+        const pt = canvasTransform.getTransformedPoint(x, y);
+
+        canvasTransform.translate(pt.x - dragStartPos.x, pt.y - dragStartPos.y);
+        requestAnimationFrame(drawCanvas);
+    }
+}
+
 function lockAdjustedArea() {
     onMouseup(resizeSelectedArea, lockAdjustedArea);
 }
@@ -736,10 +780,17 @@ function lockRotatedArea() {
     onMouseup(rotateSelectedArea, lockRotatedArea);
 }
 
+function lockDraggedImage() {
+    dragStartPos = null;
+    onMouseup(dragImage, lockDraggedImage);
+}
+
 function init() {
     const image = process.images[0];
 
     process.initWorker();
+    canvasTransform = trackTransforms(ctx);
+    addBackground = getPattern();
     displayImageName(image.name.original);
     drawInitialImage(image.uri);
     toggleButtons(true);
@@ -982,9 +1033,58 @@ function onSidebarBtnClick(event) {
     }
 }
 
+function handleScroll(event) {
+    const { x, y } = getMousePosition(event);
+    const scaleFactor = 1.1;
+    const delta = event.deltaY > 0 ? -3 : 3;
+    const factor = Math.pow(scaleFactor, delta);
+    const pt = canvasTransform.getTransformedPoint(x, y);
+
+    canvasTransform.translate(pt.x, pt.y);
+    canvasTransform.scale(factor, factor);
+    canvasTransform.translate(-pt.x, -pt.y);
+
+    requestAnimationFrame(drawCanvas);
+}
+
 closeButton.addEventListener("click", closeCropping, false);
 cropData.addEventListener("keypress", updateCanvasWithCropData, false);
 cropData.addEventListener("keyup", updateSelectedAreaWithCropData, false);
 document.getElementById("js-crop-data-btns").addEventListener("click", onSidebarBtnClick, false);
+canvas.addEventListener("wheel", handleScroll, false);
+
+function trackTransforms(ctx) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    let xform = svg.createSVGMatrix();
+
+    function getTransforms() {
+        return xform;
+    }
+
+    function scale(sx, sy) {
+        xform = xform.scaleNonUniform(sx, sy);
+        ctx.scale(sx, sy);
+    }
+
+    function translate(dx, dy) {
+        xform = xform.translate(dx, dy);
+        ctx.translate(dx, dy);
+    }
+
+    function getTransformedPoint(x, y) {
+        const pt = svg.createSVGPoint();
+
+        pt.x = x;
+        pt.y = y;
+        return pt.matrixTransform(xform.inverse());
+    }
+
+    return {
+        getTransforms,
+        scale,
+        translate,
+        getTransformedPoint
+    };
+}
 
 export { init, changeCanvasQuality };
