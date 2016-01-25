@@ -15,6 +15,7 @@ const yInput = document.getElementById("js-crop-y");
 const widthInput = document.getElementById("js-crop-width");
 const heightInput = document.getElementById("js-crop-height");
 const angleInput = document.getElementById("js-crop-angle");
+const scaleInput = document.getElementById("js-crop-scale");
 const cropData = document.getElementById("js-crop-data");
 const mousePosition = {};
 const canvasImage = {
@@ -827,6 +828,7 @@ function resetData() {
 }
 
 function resetCropper() {
+    scaleInput.value = 100;
     quality.reset();
     resetData();
     updateRemainingImageIndicator("remove");
@@ -982,13 +984,19 @@ function updateCanvasWithCropData(event) {
             return;
         }
 
-        const inputRatio = ratio.getRatio(input);
         const inputValue = insertChar(target, key);
+
+        if (input === "scale") {
+            scaleImage(canvas.width / 2, canvas.height / 2, inputValue);
+            requestAnimationFrame(drawCanvas);
+            return;
+        }
 
         if (input === "angle") {
             theta = convertDegreesToRadians(inputValue);
         }
         else {
+            const inputRatio = ratio.getRatio(input);
             selectedArea[input] = inputValue / inputRatio || 0;
         }
         updateCanvasOnInput();
@@ -1007,6 +1015,12 @@ function updateSelectedAreaWithCropData(event) {
     if (backspace || enter) {
         const target = event.target;
         const input = target.getAttribute("data-input");
+
+        if (input === "scale") {
+            scaleImage(canvas.width / 2, canvas.height / 2, target.value);
+            requestAnimationFrame(drawCanvas);
+            return;
+        }
 
         if (input === "angle") {
             theta = convertDegreesToRadians(target.value);
@@ -1042,9 +1056,11 @@ function trackTransforms(ctx) {
         return xform;
     }
 
-    function scale(sx, sy) {
-        xform = xform.scaleNonUniform(sx, sy);
-        ctx.scale(sx, sy);
+    function scale(scale) {
+        xform.a = 1;
+        xform.d = 1;
+        xform = xform.scale(scale, scale);
+        ctx.setTransform(xform.a, 0, 0, xform.a, xform.e, xform.f);
     }
 
     function translate(dx, dy) {
@@ -1079,22 +1095,31 @@ function trackTransforms(ctx) {
     };
 }
 
+function scaleImage(x, y, scale) {
+    canvasTransform.translate(x, y);
+    canvasTransform.scale(scale / 100);
+    canvasTransform.translate(-x, -y);
+}
+
 function handleScroll(event) {
     const { x, y } = getMousePosition(event);
-    const scaleFactor = 1.1;
-    const delta = event.deltaY > 0 ? -3 : 3;
-    const factor = Math.pow(scaleFactor, delta);
     const pt = canvasTransform.getTransformedPoint(x, y);
+    let scale = scaleInput.value;
 
-    canvasTransform.translate(pt.x, pt.y);
-    canvasTransform.scale(factor, factor);
-    canvasTransform.translate(-pt.x, -pt.y);
-
+    if (event.deltaY > 0) {
+        scale *= 0.8;
+    }
+    else {
+        scale /= 0.8;
+    }
+    scaleImage(pt.x, pt.y, scale);
     requestAnimationFrame(drawCanvas);
+    scaleInput.value = Math.round(scale);
 }
 
 function resetCanvas() {
     theta = 0;
+    scaleInput.value = 100;
     canvasTransform.resetTransform();
     quality.reset();
     resetData();
