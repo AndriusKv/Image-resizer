@@ -213,29 +213,26 @@ function strokeRect(area) {
 
 function drawSelectedArea(area) {
     const hasArea = area.width && area.height;
+
+    if (!hasArea) {
+        return;
+    }
     let x = area.x;
     let y = area.y;
-    let imageData = null;
+    const imageData = ctx.getImageData(x, y, area.width, area.height);
 
-    if (hasArea) {
-        imageData = ctx.getImageData(x, y, area.width, area.height);
-
-        if (area.width < 0) {
-            x = x + area.width;
-        }
-
-        if (area.height < 0) {
-            y = y + area.height;
-        }
+    if (area.width < 0) {
+        x = x + area.width;
     }
 
-    if (x || y || hasArea) {
+    if (area.height < 0) {
+        y = y + area.height;
+    }
+
+    if (x || y) {
         addMask();
     }
-
-    if (imageData) {
-        ctx.putImageData(imageData, x, y);
-    }
+    ctx.putImageData(imageData, x, y);
     strokeRect(area);
 }
 
@@ -547,7 +544,7 @@ function onSelectionStart(event) {
         cropping.addEventListener("mousemove", dragImage, false);
         cropping.addEventListener("mouseup", lockDraggedImage, false);
     }
-    else if (event.ctrlKey) {
+    else if (event.ctrlKey && hasArea) {
         const isInsideArea = theta ? isMouseInsideRotatedSelectedArea : isMouseInsideSelectedArea;
 
         if (isInsideArea(area, x, y)) {
@@ -556,7 +553,6 @@ function onSelectionStart(event) {
             cropping.addEventListener("mouseup", lockMovedArea, false);
             return;
         }
-        drawRotatedSelectedArea(area, theta);
         cropping.addEventListener("mousemove", rotateSelectedArea, false);
         cropping.addEventListener("mouseup", lockRotatedArea, false);
     }
@@ -565,6 +561,7 @@ function onSelectionStart(event) {
         cropping.addEventListener("mouseup", lockAdjustedArea, false);
     }
     else {
+        resetData();
         theta = 0;
         selectedArea.x = x;
         selectedArea.y = y;
@@ -625,7 +622,6 @@ function onMouseup(mousemoveCallback, mouseupCallback) {
         document.addEventListener("keydown", changeCursorToMove, false);
     }
     else {
-        resetData();
         addBackground();
         drawImage();
         canvas.style.cursor = "default";
