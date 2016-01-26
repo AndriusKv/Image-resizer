@@ -561,6 +561,7 @@ function onSelectionStart(event) {
         cropping.addEventListener("mouseup", lockAdjustedArea, false);
     }
     else {
+        resetData();
         theta = 0;
         selectedArea.x = x;
         selectedArea.y = y;
@@ -621,7 +622,6 @@ function onMouseup(mousemoveCallback, mouseupCallback) {
         document.addEventListener("keydown", changeCursorToMove, false);
     }
     else {
-        resetData();
         addBackground();
         drawImage();
         canvas.style.cursor = "default";
