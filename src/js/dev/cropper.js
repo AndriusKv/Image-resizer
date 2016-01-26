@@ -544,7 +544,7 @@ function onSelectionStart(event) {
         cropping.addEventListener("mousemove", dragImage, false);
         cropping.addEventListener("mouseup", lockDraggedImage, false);
     }
-    else if (event.ctrlKey) {
+    else if (event.ctrlKey && hasArea) {
         const isInsideArea = theta ? isMouseInsideRotatedSelectedArea : isMouseInsideSelectedArea;
 
         if (isInsideArea(area, x, y)) {
