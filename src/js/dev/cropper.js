@@ -21,7 +21,6 @@ const canvasImage = {
     original: new Image(),
     withQuality: new Image()
 };
-
 let changeCanvasQuality = null;
 let selectedArea = {};
 let direction = "";
@@ -155,7 +154,6 @@ function updatePointDisplay(x, y) {
 
     x = getPointToUpdate(x, "x", "width");
     y = getPointToUpdate(y, "y", "height");
-
     xInput.value = Math.round(x * widthRatio);
     yInput.value = Math.round(y * heightRatio);
 }
@@ -163,7 +161,6 @@ function updatePointDisplay(x, y) {
 function updateMeasurmentDisplay(width, height) {
     width = Math.round(width * ratio.getRatio("width"));
     height = Math.round(height * ratio.getRatio("height"));
-
     widthInput.value = width < 0 ? -width : width;
     heightInput.value = height < 0 ? -height : height;
 }
@@ -206,8 +203,10 @@ function addMask() {
 }
 
 function strokeRect(area) {
-    ctx.strokeStyle = "#006494";
-    ctx.strokeRect(area.x, area.y, area.width, area.height);
+
+    // +0.5 to get line width of 1px
+    ctx.strokeRect(area.x + 0.5, area.y + 0.5, area.width, area.height);
+
 }
 
 function drawSelectedArea(area) {
@@ -235,6 +234,24 @@ function drawSelectedArea(area) {
     strokeRect(area);
 }
 
+function drawRotatedSelectedArea(area, radians) {
+    const width = area.width > 0 ? area.width : -area.width;
+    const height = area.height > 0 ? area.height : -area.height;
+
+    ctx.save();
+
+    // +0.5 to get line width of 1px
+    ctx.translate(area.x + 0.5 + area.width / 2, area.y + 0.5 + area.height / 2);
+    ctx.rotate(radians);
+    ctx.strokeRect(-area.width / 2, -area.height / 2, area.width, area.height);
+    ctx.beginPath();
+    ctx.rect(-width / 2, -height / 2, width, height);
+    ctx.restore();
+    ctx.rect(canvas.width, 0, -canvas.width, canvas.height);
+    ctx.fillStyle = "rgba(0, 0, 0, .4)";
+    ctx.fill();
+}
+
 function drawCanvas() {
     const image = quality.useImageWithQuality() ? canvasImage.withQuality : canvasImage.original;
 
@@ -242,6 +259,8 @@ function drawCanvas() {
     drawImage(image);
 
     ctx.save();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#006494";
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     if (theta) {
@@ -325,7 +344,6 @@ function getRotatedImageData(image, area, ctx) {
     ctx.scale(xform.a, xform.a);
     ctx.drawImage(image, 0, 0, image.width, image.height);
     ctx.restore();
-
     return ctx.getImageData(area.x, area.y, area.width, area.height);
 }
 
@@ -341,7 +359,6 @@ function getCroppedCanvas(image, area) {
     canvas.width = imageData.width;
     canvas.height = imageData.height;
     ctx.putImageData(imageData, 0, 0);
-
     return canvas;
 }
 
@@ -719,23 +736,6 @@ function convertRadiansToDegrees(radians) {
         degrees += 360;
     }
     return degrees;
-}
-
-function drawRotatedSelectedArea(area, radians) {
-    const width = area.width > 0 ? area.width : -area.width;
-    const height = area.height > 0 ? area.height : -area.height;
-
-    ctx.save();
-    ctx.translate(area.x + area.width / 2, area.y + area.height / 2);
-    ctx.rotate(radians);
-    ctx.strokeStyle = "#006494";
-    ctx.strokeRect(-area.width / 2, -area.height / 2, area.width, area.height);
-    ctx.beginPath();
-    ctx.rect(-width / 2, -height / 2, width, height);
-    ctx.restore();
-    ctx.rect(canvas.width, 0, -canvas.width, canvas.height);
-    ctx.fillStyle = "rgba(0, 0, 0, .4)";
-    ctx.fill();
 }
 
 function rotateSelectedArea(event) {
