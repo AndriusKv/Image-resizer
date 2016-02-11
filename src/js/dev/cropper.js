@@ -1,6 +1,5 @@
 "use strict";
 
-import { toggleElement } from "./main.js";
 import * as process from "./process.js";
 import * as quality from "./cropper-quality.js";
 
@@ -265,7 +264,7 @@ function drawInitialImage(uri) {
         let width = imageWidth;
         let height = imageHeight;
 
-        toggleElement("add", cropping);
+        cropping.classList.add("show");
 
         if (width > maxWidth) {
             width = maxWidth;
@@ -828,7 +827,7 @@ function resetCropper() {
     quality.reset();
     resetData();
     updateRemainingImageIndicator("remove");
-    toggleElement("remove", cropping);
+    cropping.classList.remove("show");
 }
 
 function cropImage() {
@@ -849,7 +848,7 @@ function skipImage() {
 function closeCropping() {
     if (isPreviewOpen) {
         isPreviewOpen = false;
-        toggleElement("remove", cropPreview);
+        cropPreview.classList.remove("show");
 
         // remove preview image after animation finished running.
         setTimeout(()=> {
@@ -890,7 +889,7 @@ function showPreview() {
         image.style.height = height + "px";
 
         cropPreview.appendChild(image);
-        toggleElement("add", cropPreview);
+        cropPreview.classList.add("show");
     });
     image.src = croppedCanvas.toDataURL("image/jpeg", quality.get());
 }

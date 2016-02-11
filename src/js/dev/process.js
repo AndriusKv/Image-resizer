@@ -4,7 +4,6 @@
 
 import * as dropbox from "./dropbox.js";
 import * as settings from "./resizer-settings.js";
-import { toggleElement } from "./main.js";
 
 const images = [];
 let worker;
@@ -12,7 +11,7 @@ let zip;
 
 function showMessageWithButton(message, button) {
     dropbox.showMessage(message);
-    toggleElement("add", button);
+    button.classList.add("show");
 }
 
 function initWorker() {
@@ -21,7 +20,7 @@ function initWorker() {
 
         worker.onmessage = function(event) {
             zip = event.data;
-            dropbox.isWorking = false;
+            dropbox.setWorking(false);
             dropbox.removeMasksAndLabel();
             showMessageWithButton("Images are ready for downloading.", dropbox.downloadBtn);
             worker.postMessage({ action: "remove" });
@@ -66,7 +65,6 @@ function convertMeasurement(dimension, measurement, originalMeasurement) {
     else if (value === dimension2) {
         return Number.parseInt(originalMeasurement[dimension2], 10);
     }
-
     return Number.parseInt(value, 10);
 }
 
@@ -96,7 +94,6 @@ function convertMeasurements(measurement, originalMeasurement) {
             newWidth = newHeight;
         }
     }
-
     return {
         width: newWidth,
         height: newHeight
@@ -110,7 +107,6 @@ function getUri(image, type, { width: width, height: height }) {
     canvas.width = width;
     canvas.height = height;
     canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-
     return canvas.toDataURL(type, quality);
 }
 
@@ -124,9 +120,8 @@ function doneResizing() {
         if (dropbox.isCanceled) {
             return;
         }
-
-        toggleElement("remove", dropbox.progressBar);
-        toggleElement("remove", dropbox.cancelBtn);
+        dropbox.progressBar.classList.remove("show");
+        dropbox.cancelBtn.classList.remove("show");
         dropbox.resetProgress();
         generateZip();
     }, 1000);
@@ -137,7 +132,6 @@ function resizeImage(image, imageToResize) {
         const dimension = dimensions.splice(0, 1)[0];
 
         dropbox.updateProgress(inc);
-
         worker.postMessage({
             action: "add",
             image: {
@@ -158,7 +152,6 @@ function resizeImage(image, imageToResize) {
                 if (dropbox.isCanceled) {
                     return;
                 }
-
                 resize(dimensions, inc);
             }, delay);
         }
@@ -182,14 +175,14 @@ function processImage(images, measurments) {
                 width: image.width,
                 height: image.height
             };
-            const adjustedDimensions = measurments.map(measurment => convertMeasurements(measurment, imageMeasurment));
+            const adjustedDimensions = measurments
+                .map(measurment => convertMeasurements(measurment, imageMeasurment));
 
             dropbox.setProgressLabel(`Processing: ${imageToResize.name.original}`);
             resize(adjustedDimensions, inc);
         };
 
         image.src = imageToResize.uri;
-
         if (images.length) {
             const delay = imageToResize.size * 400 + 100;
 
@@ -209,7 +202,6 @@ function verifyValues(values) {
     }
     else {
         values = values.filter(value => settings.verifyValues(value.width, value.height));
-
         if (!values.length) {
             showMessageWithButton("No valid values", dropbox.processBtn);
         }
@@ -235,7 +227,6 @@ function processImages() {
     let inputValues = getInputValues(settings.dimensionInputContainer.children);
 
     inputValues = verifyValues(inputValues);
-
     if (!inputValues.length) {
         dropbox.resetDropbox();
         return;
