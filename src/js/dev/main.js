@@ -1,23 +1,9 @@
 "use strict";
 
-import "./dropbox.js";
-import "./tools.js";
-import "./resizer-settings.js";
-import "./read.js";
 import "./process.js";
-
-function changeClass(action, target, classToChange) {
-    target.classList[action](classToChange);
-}
-
-function toggleElement(action, element) {
-    changeClass(action, element, "show");
-}
-
-function toggleMasks(action) {
-    changeClass(action, document.getElementById("js-dropbox-label"), "mask");
-    changeClass(action, document.getElementById("js-mask"), "show");
-}
+import "./resizer-settings.js";
+import "./tools.js";
+import "./dropbox.js";
 
 function removeTransitionPrevention() {
     const elems = [...document.querySelectorAll(".preload")];
@@ -37,5 +23,3 @@ window.addEventListener("drop", event => {
 window.addEventListener("dragover", event => {
     event.preventDefault();
 }, false);
-
-export { toggleMasks, changeClass, toggleElement };

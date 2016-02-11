@@ -1,37 +1,32 @@
 "use strict";
 
-import { changeClass } from "./main.js";
 import { showMessage } from "./dropbox.js";
 
 let cropperEnabled = false;
 let activeTool = "resizer";
+
+function toggleTool(tool, elem) {
+    const toolSettings = document.getElementById(`js-${tool}-settings`);
+
+    elem.classList.toggle("active");
+    if (toolSettings) {
+        toolSettings.classList.toggle("active");
+    }
+}
 
 function removeActiveTool() {
     const btns = [...document.querySelectorAll(".tool-selection-btn")];
 
     btns.forEach(btn => {
         if (btn.classList.contains("active")) {
-            const toolSettings = document.getElementById(`js-${btn.getAttribute("data-tool")}-settings`);
+            const tool = btn.getAttribute("data-tool");
 
-            changeClass("remove", btn, "active");
-            if (toolSettings) {
-                changeClass("remove", toolSettings, "active");
-            }
+            toggleTool(tool, btn);
         }
     });
 }
 
-function enableTool(target, tool) {
-    const toolSettings = document.getElementById(`js-${tool}-settings`);
-
-    changeClass("add", target, "active");
-
-    if (toolSettings) {
-        changeClass("add", toolSettings, "active");
-    }
-}
-
-function toggleTool(event) {
+function switchTool(event) {
     const target = event.target;
     const tool = target.getAttribute("data-tool");
 
@@ -40,11 +35,11 @@ function toggleTool(event) {
     }
     activeTool = tool;
     removeActiveTool();
-    enableTool(target, tool);
+    toggleTool(tool, target);
     showMessage(`${tool} enabled`);
     cropperEnabled = tool === "cropper";
 }
 
-document.getElementById("js-tools-btns").addEventListener("click", toggleTool, false);
+document.getElementById("js-tools-btns").addEventListener("click", switchTool, false);
 
 export { cropperEnabled };
