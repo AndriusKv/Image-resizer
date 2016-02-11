@@ -206,7 +206,6 @@ function strokeRect(area) {
 
     // +0.5 to get line width of 1px
     ctx.strokeRect(area.x + 0.5, area.y + 0.5, area.width, area.height);
-
 }
 
 function drawSelectedArea(area) {
@@ -315,33 +314,23 @@ function getScaledSelectedArea() {
     };
 }
 
-function getImageData(image, area, ctx) {
+function getImageData(image, area, ctx, rotated) {
     const xform = canvasTransform.getTransform();
     const translatedX = xform.e * ratio.getRatio("width");
     const translatedY = xform.f * ratio.getRatio("height");
+    const scale = xform.a;
 
     ctx.save();
+    if (rotated) {
+        const centerX = area.x + area.width / 2;
+        const centerY = area.y + area.height / 2;
+
+        ctx.translate(centerX, centerY);
+        ctx.rotate(-theta);
+        ctx.translate(-centerX, -centerY);
+    }
     ctx.translate(translatedX, translatedY);
-    ctx.scale(xform.a, xform.a);
-    ctx.drawImage(image, 0, 0, image.width, image.height);
-    ctx.restore();
-
-    return ctx.getImageData(area.x, area.y, area.width, area.height);
-}
-
-function getRotatedImageData(image, area, ctx) {
-    const xform = canvasTransform.getTransform();
-    const translatedX = xform.e * ratio.getRatio("width");
-    const translatedY = xform.f * ratio.getRatio("height");
-    const centerX = (area.x + area.width / 2);
-    const centerY = (area.y + area.height / 2);
-
-    ctx.save();
-    ctx.translate(centerX, centerY);
-    ctx.rotate(-theta);
-    ctx.translate(-centerX, -centerY);
-    ctx.translate(translatedX, translatedY);
-    ctx.scale(xform.a, xform.a);
+    ctx.scale(scale, scale);
     ctx.drawImage(image, 0, 0, image.width, image.height);
     ctx.restore();
     return ctx.getImageData(area.x, area.y, area.width, area.height);
@@ -354,7 +343,7 @@ function getCroppedCanvas(image, area) {
     canvas.width = image.width;
     canvas.height = image.height;
 
-    const imageData = theta ? getRotatedImageData(image, area, ctx) : getImageData(image, area, ctx);
+    const imageData = getImageData(image, area, ctx, theta);
 
     canvas.width = imageData.width;
     canvas.height = imageData.height;
@@ -450,7 +439,6 @@ function getDirection(x, y) {
             return "w";
         }
     }
-
     return "";
 }
 
@@ -515,7 +503,6 @@ function resizeSelectedArea(event) {
     if (selectedDirection) {
         canvas.style.cursor = selectedDirection + "-resize";
     }
-
     Object.assign(selectedArea, adjustedSelectedArea);
     requestAnimationFrame(drawCanvas);
     updatePointDisplay(selectedArea.x, selectedArea.y);
@@ -591,13 +578,14 @@ function onSelectionStart(event) {
 
 function selectArea(event) {
     const { x, y } = getMousePosition(event);
+    const width = x - selectedArea.x;
+    const height = y - selectedArea.y;
 
-    selectedArea.width = x - selectedArea.x;
-    selectedArea.height = y - selectedArea.y;
-
+    selectedArea.width = width;
+    selectedArea.height = height;
     requestAnimationFrame(drawCanvas);
     updatePointDisplay(x, y);
-    updateMeasurmentDisplay(selectedArea.width, selectedArea.height);
+    updateMeasurmentDisplay(width, height);
 }
 
 function removeMoveCursor() {

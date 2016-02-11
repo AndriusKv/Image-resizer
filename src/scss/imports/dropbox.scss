@@ -13,7 +13,7 @@
     transition: .2s all;
 
     &.over {
-        background-color: #003459;
+        background-color: $brand-color2;
         color: $light-color;
 
         .dropbox-btn {
@@ -53,7 +53,7 @@
 
 	&::-webkit-progress-bar { background-color: inherit; }
 
-	&::-webkit-progress-value { background-color: #003459; }
+	&::-webkit-progress-value { background-color: $brand-color2; }
 
     &.show { display: block; }
 }
