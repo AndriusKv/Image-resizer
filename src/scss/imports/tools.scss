@@ -7,7 +7,7 @@
     @extend %container;
 
     padding: 4px;
-    background-color: #003459;
+    background-color: $brand-color2;
     text-align: center;
 }
 .tool-selection-btn {
@@ -25,7 +25,7 @@
     visibility: collapse;
     opacity: 0;
 	padding: 4px;
-    background-color: #003459;
+    background-color: $brand-color2;
     color: $light-color;
     transform: translateY(-14px) scale(0.9);
     transition: all .2s;
