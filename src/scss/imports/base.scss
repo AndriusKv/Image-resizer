@@ -12,8 +12,6 @@
     appearance: none;
     cursor: pointer;
 
-    &:focus { outline: none; }
-
     &::-webkit-slider-thumb {
         appearance: none;
         width: 8px;
