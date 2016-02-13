@@ -38,6 +38,7 @@
     }
 }
 .crop-info {
+    user-select: none;
     z-index: 1;
     position: relative;
     display: flex;
@@ -81,6 +82,7 @@
     box-shadow: 0 0 5px rgba(0, 0, 0, .8);
 }
 .crop-sidebar {
+    user-select: none;
     float: right;
     width: 200px;
     padding: 4px;
