@@ -30,7 +30,7 @@ let theta = 0;
 let dragStartPos = null;
 let moveSelectedArea;
 let canvasTransform;
-let addBackground;
+const addBackground = getPattern();
 
 const ratio = (function() {
     const ratio = {};
@@ -78,19 +78,9 @@ const sidebarPreview = (function() {
         updating = true;
         requestAnimationFrame(() => {
             const croppedCanvas = getCroppedCanvas(image, area);
-            let width = croppedCanvas.width;
-            let height = croppedCanvas.height;
-            const ratio = width / height;
+            const ratio = croppedCanvas.width / croppedCanvas.height;
+            const { width, height } = getImageSize(croppedCanvas, maxWidth, maxHeight, ratio);
 
-            if (width > maxWidth) {
-                width = maxWidth;
-                height = width / ratio;
-            }
-
-            if (height > maxHeight) {
-                height = maxHeight;
-                width = height * ratio;
-            }
             clean();
             ctx.drawImage(croppedCanvas, (maxWidth - width) / 2, (maxHeight - height) / 2, width, height);
             updating = false;
@@ -142,36 +132,41 @@ function displayImageName(name) {
     document.getElementById("js-crop-image-name").textContent = name;
 }
 
-function getCoordToUpdate(pointValue, point, dimension) {
+function getCoordToUpdate(coordValue, coord, dimension) {
     const area = transformedSelectedArea;
+    const dimensionValue = area[dimension];
 
-    if (pointValue) {
-        if (area[dimension] > 0) {
-            return area[point];
+    if (coordValue && dimensionValue) {
+        if (dimensionValue > 0) {
+            return coordValue;
         }
-        return area[point] + area[dimension];
+        return dimensionValue + coordValue;
     }
     return 0;
 }
 
-function updatePointDisplay(x, y) {
-    const pt = canvasTransform.getTransformedPoint(x, y);
-
-    x = getCoordToUpdate(pt.x, "x", "width");
-    y = getCoordToUpdate(pt.y, "y", "height");
-    xInput.value = Math.round(x * ratio.get("width"));
-    yInput.value = Math.round(y * ratio.get("height"));
-    transformedSelectedArea.y = pt.y;
-    transformedSelectedArea.x = pt.x;
-}
-
-function updateMeasurmentDisplay(x, y) {
-    const pt = canvasTransform.getTransformedPoint(x, y);
-    let width = pt.x - transformedSelectedArea.x;
-    let height = pt.y - transformedSelectedArea.y;
+function updateTransformedArea(area) {
+    const pt = canvasTransform.getTransformedPoint(area.x, area.y);
+    const pt2 = canvasTransform.getTransformedPoint(area.x + area.width, area.y + area.height);
+    const width = pt2.x - pt.x;
+    const height = pt2.y - pt.y;
 
     transformedSelectedArea.width = width;
     transformedSelectedArea.height = height;
+    updatePointDisplay(pt.x, pt.y);
+    updateMeasurmentDisplay(width, height);
+}
+
+function updatePointDisplay(x, y) {
+    transformedSelectedArea.x = x;
+    transformedSelectedArea.y = y;
+    x = getCoordToUpdate(x, "x", "width");
+    y = getCoordToUpdate(y, "y", "height");
+    xInput.value = Math.round(x * ratio.get("width"));
+    yInput.value = Math.round(y * ratio.get("height"));
+}
+
+function updateMeasurmentDisplay(width, height) {
     width = Math.round(width * ratio.get("width"));
     height = Math.round(height * ratio.get("height"));
     widthInput.value = width < 0 ? -width : width;
@@ -179,16 +174,19 @@ function updateMeasurmentDisplay(x, y) {
 }
 
 function drawImage(image) {
+    const width = canvasImage.width;
+    const height = canvasImage.height;
+
     if (image) {
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0, width, height);
         return;
     }
 
     if (quality.useImageWithQuality()) {
-        ctx.drawImage(canvasImage.withQuality, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(canvasImage.withQuality, 0, 0, width, height);
         return;
     }
-    ctx.drawImage(canvasImage.original, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(canvasImage.original, 0, 0, width, height);
 }
 
 function getPattern() {
@@ -285,34 +283,39 @@ function drawCanvas() {
     sidebarPreview.draw(image);
 }
 
+function getImageSize({ width, height }, maxWidth, maxHeight, ratio) {
+    if (width > maxWidth) {
+        width = maxWidth;
+        height = width / ratio;
+    }
+    if (height > maxHeight) {
+        height = maxHeight;
+        width = height * ratio;
+    }
+    return { width, height };
+}
+
 function drawInitialImage(uri) {
     canvasImage.original.addEventListener("load", () => {
-        const imageWidth = canvasImage.original.width;
-        const imageHeight = canvasImage.original.height;
+        const { width: imageWidth, height: imageHeight } = canvasImage.original;
         const imageRatio = imageWidth / imageHeight;
         const maxWidth = window.innerWidth - 212;
         const maxHeight = window.innerHeight - 40;
-        let width = imageWidth;
-        let height = imageHeight;
+        const { width, height } = getImageSize(canvasImage.original, maxWidth, maxHeight, imageRatio);
 
-        cropping.classList.add("show");
-
-        if (width > maxWidth) {
-            width = maxWidth;
-            height = width / imageRatio;
-        }
-
-        if (height > maxHeight) {
-            height = maxHeight;
-            width = height * imageRatio;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(canvasImage.original, 0, 0, canvas.width, canvas.height);
+        canvas.width = maxWidth;
+        canvas.height = maxHeight;
+        canvasImage.width = width;
+        canvasImage.height = height;
+        canvasTransform.translatedWidth = (maxWidth - width) / 2;
+        canvasTransform.translatedHeight = (maxHeight - height) / 2;
+        addBackground();
+        canvasTransform.resetTransform();
+        canvasTransform.translate(canvasTransform.translatedWidth, canvasTransform.translatedHeight);
+        ctx.drawImage(canvasImage.original, 0, 0, width, height);
         changeCanvasQuality = loadCanvasWithQuality();
-        ratio.set("width", imageWidth / canvas.width);
-        ratio.set("height", imageHeight / canvas.height);
+        ratio.set("width", imageWidth / width);
+        ratio.set("height", imageHeight / height);
         canvas.classList.add("show");
     });
     canvasImage.original.src = uri;
@@ -343,7 +346,7 @@ function getImageData(image, area, ctx, rotated) {
         const centerY = area.y + area.height / 2;
 
         ctx.translate(centerX, centerY);
-        ctx.rotate(-theta);
+        ctx.rotate(-rotated);
         ctx.translate(-centerX, -centerY);
     }
     ctx.translate(translatedX, translatedY);
@@ -356,9 +359,11 @@ function getImageData(image, area, ctx, rotated) {
 function getCroppedCanvas(image, area) {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
+    const translatedWidth = canvasTransform.translatedWidth * ratio.get("width");
+    const traslatedHeight = canvasTransform.translatedHeight * ratio.get("height");
 
-    canvas.width = image.width;
-    canvas.height = image.height;
+    canvas.width = image.width + translatedWidth * 2;
+    canvas.height = image.height + traslatedHeight * 2;
 
     const imageData = getImageData(image, area, ctx, theta);
 
@@ -521,13 +526,8 @@ function resizeSelectedArea(event) {
         canvas.style.cursor = selectedDirection + "-resize";
     }
     Object.assign(selectedArea, adjustedSelectedArea);
-
-    const widthXCoord = selectedArea.x + selectedArea.width;
-    const heightYCoord = selectedArea.y + selectedArea.height;
-
     requestAnimationFrame(drawCanvas);
-    updatePointDisplay(selectedArea.x, selectedArea.y);
-    updateMeasurmentDisplay(widthXCoord, heightYCoord);
+    updateTransformedArea(selectedArea);
 }
 
 function getDistanceBetweenPoints(x, y) {
@@ -544,7 +544,10 @@ function getDistanceBetweenPoints(x, y) {
         selectedArea.x = x - xDiff;
         selectedArea.y = y - yDiff;
         requestAnimationFrame(drawCanvas);
-        updatePointDisplay(selectedArea.x, selectedArea.y);
+
+        const pt = canvasTransform.getTransformedPoint(selectedArea.x, selectedArea.y);
+
+        updatePointDisplay(pt.x, pt.y);
     };
 }
 
@@ -599,8 +602,7 @@ function selectArea(event) {
     selectedArea.width = x - selectedArea.x;
     selectedArea.height = y - selectedArea.y;
     requestAnimationFrame(drawCanvas);
-    updatePointDisplay(selectedArea.x, selectedArea.y);
-    updateMeasurmentDisplay(x, y);
+    updateTransformedArea(selectedArea);
 }
 
 function removeMoveCursor() {
@@ -752,7 +754,9 @@ function dragImage(event) {
         canvasTransform.translate(pt.x - dragStartPos.x, pt.y - dragStartPos.y);
         requestAnimationFrame(drawCanvas);
         if (selectedArea.width && selectedArea.height) {
-            updatePointDisplay(selectedArea.x, selectedArea.y);
+            const pt = canvasTransform.getTransformedPoint(selectedArea.x, selectedArea.y);
+
+            updatePointDisplay(pt.x, pt.y);
         }
     }
 }
@@ -783,12 +787,12 @@ function init() {
 
     process.initWorker();
     canvasTransform = trackTransforms(ctx);
-    addBackground = getPattern();
     displayImageName(image.name.original);
     drawInitialImage(image.uri);
     toggleButtons(true);
     toggleSkipButton(process.images.length);
     canvas.addEventListener("mousedown", onSelectionStart, false);
+    cropping.classList.add("show");
 
     if (process.images.length > 1) {
         updateRemainingImageIndicator();
@@ -818,16 +822,17 @@ function resetData() {
     transformedSelectedArea = Object.assign({}, selectedArea);
     angleInput.value = 0;
     sidebarPreview.clean();
-    updatePointDisplay(0, 0);
-    updateMeasurmentDisplay(0, 0);
+    updateTransformedArea(selectedArea);
 }
 
 function resetCanvas() {
     theta = 0;
     scaleInput.value = 100;
     canvasTransform.resetTransform();
+    canvasTransform.translate(canvasTransform.translatedWidth, canvasTransform.translatedHeight);
     quality.reset();
     resetData();
+    addBackground();
     drawImage();
 }
 
@@ -1112,16 +1117,14 @@ function trackTransforms(ctx) {
 }
 
 function scaleImage(x, y, scale) {
+    const area = selectedArea;
+
     canvasTransform.translate(x, y);
     canvasTransform.scale(scale / 100);
     canvasTransform.translate(-x, -y);
 
-    if (selectedArea.width && selectedArea.height) {
-        const widthXCoord = selectedArea.x + selectedArea.width;
-        const heightYCoord = selectedArea.y + selectedArea.height;
-
-        updatePointDisplay(selectedArea.x, selectedArea.y);
-        updateMeasurmentDisplay(widthXCoord, heightYCoord);
+    if (area.width && area.height) {
+        updateTransformedArea(area);
     }
 }
 
