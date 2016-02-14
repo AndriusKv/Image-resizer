@@ -236,10 +236,7 @@ function drawSelectedArea(area) {
     if (area.height < 0) {
         y = y + area.height;
     }
-
-    if (x || y) {
-        addMask();
-    }
+    addMask();
     ctx.putImageData(imageData, x, y);
     strokeRect(area);
 }
