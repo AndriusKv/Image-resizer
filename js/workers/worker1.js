@@ -20,11 +20,10 @@ function truncateUri(uri, type) {
     if (type.length === 4) {
         return uri.slice(23);
     }
-
     return uri.slice(22);
 }
 
-onmessage = function (event) {
+onmessage = function onmessage(event) {
     var data = event.data;
 
     switch (data.action) {
