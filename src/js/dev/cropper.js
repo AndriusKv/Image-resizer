@@ -236,10 +236,7 @@ function drawSelectedArea(area) {
     if (area.height < 0) {
         y = y + area.height;
     }
-
-    if (x || y) {
-        addMask();
-    }
+    addMask();
     ctx.putImageData(imageData, x, y);
     strokeRect(area);
 }
@@ -633,6 +630,10 @@ function onMouseup(mousemoveCallback, mouseupCallback) {
         document.addEventListener("keydown", changeCursorToMove, false);
     }
     else {
+        const transform = canvasTransform.getTransform();
+
+        selectedArea.x = transform.e;
+        selectedArea.y = transform.f;
         addBackground();
         drawImage();
         canvas.style.cursor = "default";
@@ -953,11 +954,10 @@ function updateSelectedArea(input, inputValue) {
     const scale = transform.a;
 
     transformedSelectedArea[input] = inputValue / inputRatio * scale || 0;
-    selectedArea[input] = transformedSelectedArea[input];
     if (input === "x") {
         const translatedX = transform.e;
 
-        selectedArea[input] += translatedX;
+        selectedArea[input] = translatedX;
         if (selectedArea.width < 0) {
             selectedArea.width = -selectedArea.width;
         }
@@ -965,11 +965,24 @@ function updateSelectedArea(input, inputValue) {
     else if (input === "y") {
         const translatedY = transform.f;
 
-        selectedArea[input] += translatedY;
+        selectedArea[input] = translatedY;
         if (selectedArea.height < 0) {
             selectedArea.height = -selectedArea.height;
         }
     }
+    else if (input === "width") {
+        if (selectedArea[input] < 0) {
+            selectedArea.x = selectedArea.x + selectedArea[input];
+        }
+        selectedArea[input] = 0;
+    }
+    else if (input === "height") {
+        if (selectedArea[input] < 0) {
+            selectedArea.y = selectedArea.y + selectedArea[input];
+        }
+        selectedArea[input] = 0;
+    }
+    selectedArea[input] += transformedSelectedArea[input];
 }
 
 function updateCanvasOnInput(input, inputValue) {
