@@ -4,32 +4,39 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "js": "browserify -d src/js/dev/main.js -t babelify --outfile src/js/main.js",
+    "js": "browserify -d src/js/dev/main.js -o src/js/main.js",
     "scss": "node-sass src/scss/main.scss --source-map-embed src/css/main.css && npm run autoprefixer",
-    "watch-js": "nodemon -e js -w src/js/dev -x 'npm run js'",
-    "watch-scss": "nodemon -e scss -w src/scss -x 'npm run scss'",
-    "watch": "npm run watch-js & npm run watch-scss",
-    "build-html": "cp src/index.html dist",
-    "build-css": "npm run scss && csso src/css/main.css dist/css/main.css",
-    "build-js": "npm run js && uglifyjs src/js/main.js -mco dist/js/main.js",
-    "build-lib": "cp -R src/js/libs dist/js",
-    "build-worker": "cp -R src/js/workers dist/js",
-    "build-img": "cp -R src/images dist/images",
+    "autoprefixer": "postcss --use autoprefixer src/css/main.css -d src/css",
+    "watch:scss": "onchange 'src/scss/*.scss' 'src/scss/imports/*.scss' -- npm run scss",
+    "watch:js": "onchange 'src/js/dev/*.js' -- npm run js",
+    "watch": "npm run watch:js & npm run watch:scss",
+    "start": "live-server & npm run watch",
+    "build:html": "cp src/index.html dist",
+    "build:css": "npm run scss && csso src/css/main.css dist/css/main.css",
+    "build:js": "npm run js && uglifyjs src/js/main.js -mco dist/js/main.js",
+    "build:lib": "cp -R src/js/libs dist/js",
+    "build:worker": "cp -R src/js/workers dist/js",
+    "build:img": "cp -R src/images dist/images",
     "prebuild": "rm -rf dist && mkdir dist dist/css dist/js dist/js/libs dist/js/workers",
-    "build": "npm run build-html && npm run build-css && npm run build-js && npm run build-img && npm run build-lib && npm run build-worker",
-    "postbuild": "rm -rf src/css & rm src/js/main.js",
-    "autoprefixer": "postcss --use autoprefixer src/css/main.css -d src/css"
+    "build": "npm run build:html && npm run build:css && npm run build:js && npm run build:img && npm run build:lib && npm run build:worker",
+    "postbuild": "rm -rf src/css & rm src/js/main.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "babel-eslint": "^5.0.0-beta6",
-    "babel-preset-es2015": "^6.5.0",
+    "babel-eslint": "^5.0.0",
+    "babel-preset-es2015": "^6.6.0",
     "babelify": "^7.2.0",
     "browserify": "^13.0.0",
+    "eslint": "^2.3.0",
     "node-sass": "^3.4.2"
   },
   "dependencies": {
     "jszip": "^2.5.0"
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
   }
 }

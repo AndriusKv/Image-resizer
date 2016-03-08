@@ -1,9 +1,9 @@
 "use strict";
 
-import "./process.js";
-import "./resizer-settings.js";
-import "./tools.js";
 import "./dropbox.js";
+import "./resizer.js";
+import "./resizer.dashboard.js";
+import "./tools.js";
 
 function removeTransitionPrevention() {
     const elems = [...document.querySelectorAll(".preload")];

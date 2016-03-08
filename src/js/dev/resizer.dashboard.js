@@ -1,6 +1,6 @@
 "use strict";
 
-import { showMessage } from "./dropbox.js";
+import * as dropbox from "./dropbox.js";
 
 const dimensionInputContainer = document.getElementById("js-dimension-inputs");
 const imageName = document.getElementById("js-image-name");
@@ -8,32 +8,32 @@ const imageNameSeperator = document.getElementById("js-image-name-seperator");
 const qualitySlider = document.getElementById("js-image-quality");
 
 (function loadFromLocalStorage() {
-    let settings = localStorage.getItem("settings");
+    let selections = localStorage.getItem("selections");
 
-    if (!settings) {
+    if (!selections) {
         return;
     }
-    settings = JSON.parse(settings);
+    selections = JSON.parse(selections);
 
-    const inputValues = flattenInputValues(settings.dimensionInputValues);
+    const inputValues = flattenInputValues(selections.dimensionInputValues);
 
     appendInputs(dimensionInputContainer, inputValues.length);
     assignValuesToInputs(dimensionInputContainer.children, inputValues);
 
-    imageName.value = settings.imageName;
-    imageNameSeperator.value = settings.imageNameSeperator;
-    qualitySlider.value = settings.imageQuality;
+    imageName.value = selections.imageName;
+    imageNameSeperator.value = selections.imageNameSeperator;
+    qualitySlider.value = selections.imageQuality;
 })();
 
 function saveToLocalStorage(inputValues) {
-    const settings = {
+    const selections = {
         dimensionInputValues: inputValues,
         imageName: imageName.value || "",
         imageNameSeperator: imageNameSeperator.value || "",
         imageQuality: qualitySlider.value
     };
 
-    localStorage.setItem("settings", JSON.stringify(settings));
+    localStorage.setItem("selections", JSON.stringify(selections));
 }
 
 function flattenInputValues(values) {
@@ -43,7 +43,37 @@ function flattenInputValues(values) {
     }, []);
 }
 
-function verifyValues(width, height) {
+function getInputValues() {
+    const inputs = dimensionInputContainer.children;
+    const values = [];
+
+    for (let i = 0, l = inputs.length; i < l; i += 2) {
+        const width = inputs[i].value;
+        const height = inputs[i + 1].value;
+
+        if (width || height) {
+            values.push({ width, height });
+        }
+    }
+    return verifyValues(values);
+}
+
+function verifyValues(values) {
+    if (!values.length) {
+        dropbox.showMessage("No dimensions specified");
+        dropbox.processBtn.classList.add("show");
+    }
+    else {
+        values = values.filter(value => isDimensionsValid(value.width, value.height));
+        if (!values.length) {
+            dropbox.showMessage("No valid values");
+            dropbox.processBtn.classList.add("show");
+        }
+    }
+    return values;
+}
+
+function isDimensionsValid(width, height) {
     const regex = /^\d+(px|%)?$|^same$|^original$|^width$|^height$/;
     const isWidthValid = regex.test(width) && !(width === "same" && (!height || height === "same"));
     const isHeightValid = regex.test(height) && !(height === "same" && (!width || width === "same"));
@@ -86,7 +116,7 @@ function appendInputs(element, num) {
 }
 
 function updateImageQuality(event) {
-    showMessage(`Image quality set to: ${event.target.value}%`);
+    dropbox.showMessage(`Image quality set to: ${event.target.value}%`);
 }
 
 function onDimensionInputFocus(event) {
@@ -103,4 +133,4 @@ function onDimensionInputFocus(event) {
 qualitySlider.addEventListener("input", updateImageQuality, false);
 dimensionInputContainer.addEventListener("focus", onDimensionInputFocus, true);
 
-export { dimensionInputContainer, saveToLocalStorage, verifyValues };
+export { saveToLocalStorage, getInputValues };
