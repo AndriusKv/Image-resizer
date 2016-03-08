@@ -92,8 +92,7 @@ function doneResizing() {
     if (dropbox.state.get() === 0) {
         return;
     }
-    dropbox.progressBar.classList.remove("show");
-    dropbox.cancelBtn.classList.remove("show");
+    dropbox.button.hide("cancel");
     dropbox.resetProgress();
     dropbox.generateZip();
 }

@@ -6,9 +6,6 @@ import * as crop from "./cropper.js";
 
 const dropboxElem = document.getElementById("js-dropbox");
 const progressBar = document.getElementById("js-progress");
-const processBtn = document.getElementById("js-process");
-const downloadBtn = document.getElementById("js-download");
-const cancelBtn = document.getElementById("js-cancel");
 let timeout = 0;
 let counter = 0;
 
@@ -87,7 +84,7 @@ const worker = (function() {
                 state.set(-1);
                 removeMasksAndLabel();
                 showMessage("Images are ready for downloading");
-                downloadBtn.classList.add("show");
+                button.show("download");
             }
         };
         worker.onerror = function(event) {
@@ -107,6 +104,25 @@ const worker = (function() {
         init: initWorker,
         post: postMessage,
         isInited: isWorkerInitialized
+    };
+})();
+
+const button = (function() {
+    function toggleButton(action, button) {
+        document.getElementById("js-" + button).classList[action]("show");
+    }
+
+    function showButton(button) {
+        toggleButton("add", button);
+    }
+
+    function hideButton(button) {
+        toggleButton("remove", button);
+    }
+
+    return {
+        show: showButton,
+        hide: hideButton
     };
 })();
 
@@ -154,6 +170,7 @@ function updateProgress(value) {
 }
 
 function resetProgress() {
+    progressBar.classList.remove("show");
     progressBar.value = 0;
 }
 
@@ -166,14 +183,13 @@ function beforeWork() {
     toggleMasks("add");
     state.set(1);
     progressBar.classList.add("show");
-    processBtn.classList.remove("show");
-    cancelBtn.classList.add("show");
+    button.hide("process");
+    button.show("cancel");
 }
 
-function resetDropbox() {
-    state.set(-1);
-    progressBar.classList.remove("show");
-    cancelBtn.classList.remove("show");
+function resetDropbox(newState = -1) {
+    state.set(newState);
+    button.hide("cancel");
     resetProgress();
     removeMasksAndLabel();
 }
@@ -259,14 +275,9 @@ function readFiles(files, inc) {
     }, delay);
 }
 
-function downloadImages() {
-    worker.post({ action: "download" });
-}
-
 function cancelWork() {
-    state.set(0);
     images.reset();
-    resetDropbox();
+    resetDropbox(0);
     showMessage("Work canceled");
 }
 
@@ -282,9 +293,23 @@ function onFiles(files) {
     }
 
     state.set(-1);
-    downloadBtn.classList.remove("show");
+    button.hide("download");
     beforeWork();
     readFiles([...files], inc);
+}
+
+function onBtnClick(event) {
+    const btn = event.target.getAttribute("data-btn");
+
+    if (btn === "process") {
+        resizer.processImages();
+    }
+    else if (btn === "download") {
+        worker.post({ action: "download" });
+    }
+    else if (btn === "cancel") {
+        cancelWork();
+    }
 }
 
 function onUpload(event) {
@@ -335,9 +360,7 @@ function onDragleave() {
     }
 }
 
-processBtn.addEventListener("click", resizer.processImages, false);
-downloadBtn.addEventListener("click", downloadImages, false);
-cancelBtn.addEventListener("click", cancelWork, false);
+document.getElementById("js-dropbox-btns").addEventListener("click", onBtnClick, false);
 document.getElementById("js-image-select").addEventListener("change", onUpload, false);
 dropboxElem.addEventListener("dragover", onDragover, false);
 dropboxElem.addEventListener("dragenter", onDragenter, false);
@@ -347,16 +370,15 @@ dropboxElem.addEventListener("click", event => {
     if (state.get() === 1) {
         event.preventDefault();
     }
-});
+}, false);
 
 export {
+    state,
     images,
     worker,
-	cancelBtn,
+    button,
 	beforeWork,
-	processBtn,
     progressBar,
-	downloadBtn,
     generateZip,
     showMessage,
 	resetDropbox,

@@ -61,13 +61,13 @@ function getInputValues() {
 function verifyValues(values) {
     if (!values.length) {
         dropbox.showMessage("No dimensions specified");
-        dropbox.processBtn.classList.add("show");
+        dropbox.button.show("process");
     }
     else {
         values = values.filter(value => isDimensionsValid(value.width, value.height));
         if (!values.length) {
             dropbox.showMessage("No valid values");
-            dropbox.processBtn.classList.add("show");
+            dropbox.button.show("process");
         }
     }
     return values;
