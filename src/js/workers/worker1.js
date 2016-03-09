@@ -5,7 +5,7 @@
 importScripts("../libs/jszip.min.js");
 
 const zip = new JSZip();
-
+let content = null;
 let i = 0;
 
 function zipImages(name, uri, type) {
@@ -20,34 +20,39 @@ function truncateUri(uri, type) {
     if (type.length === 4) {
         return uri.slice(23);
     }
-
     return uri.slice(22);
 }
 
 onmessage = function(event) {
     const data = event.data;
-    
+
     switch (data.action) {
         case "add":
-			const image = data.image;
+            const image = data.image;
             const type = changeFileType(image.type);
             const uri = truncateUri(image.uri, type);
-            
-			zipImages(image.name + i, uri, type);
+
+            zipImages(image.name + i, uri, type);
             i += 1;
-
-			break;
-		case "generate":
+            break;
+        case "generate":
             i = 0;
-
             if (Object.keys(zip.files).length) {
-                postMessage(zip.generate({type: "blob"}));
+                content = zip.generate({type: "blob"});
+                postMessage({ action: "notify" });
             }
-
-			break;
-		case "remove":
-			zip.remove("images");
-
-			break;
+            break;
+        case "download":
+            if (content) {
+                postMessage({
+                    action: "download",
+                    content
+                });
+            }
+            break;
+        case "remove":
+            content = null;
+            zip.remove("images");
+            break;
     }
 };

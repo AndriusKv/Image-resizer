@@ -1,6 +1,6 @@
 "use strict";
 
-import * as process from "./process.js";
+import * as dropbox from "./dropbox.js";
 import * as quality from "./cropper-quality.js";
 
 const cropping = document.getElementById("js-crop");
@@ -114,7 +114,8 @@ function toggleSkipButton(imageCount) {
 
 function updateRemainingImageIndicator(action) {
     const remainingImageIndicator = document.getElementById("js-crop-remaining");
-    const remaining = process.images.length - 1;
+    const imageCount = dropbox.images.getCount();
+    const remaining = imageCount - 1;
 
     if (action === "remove") {
         remainingImageIndicator.textContent = "";
@@ -377,7 +378,7 @@ function sendImageToWorker(imageToCrop) {
         const area = getScaledSelectedArea();
         const croppedCanvas = getCroppedCanvas(image, area);
 
-        process.worker.postMessage({
+        dropbox.worker.post({
             action: "add",
             image: {
                 name: imageToCrop.name.setByUser,
@@ -386,9 +387,9 @@ function sendImageToWorker(imageToCrop) {
             }
         });
 
-        if (!process.images.length) {
+        if (!dropbox.images.getCount()) {
             resetCropper();
-            process.generateZip();
+            dropbox.generateZip();
             canvas.removeEventListener("mousedown", onSelectionStart, false);
         }
         else {
@@ -784,28 +785,32 @@ function lockDraggedImage() {
 }
 
 function init() {
-    const image = process.images[0];
+    const images = dropbox.images;
+    const imageCount = images.getCount();
+    const image = images.getFirst();;
 
-    process.initWorker();
+    dropbox.worker.init();
     canvasTransform = trackTransforms(ctx);
     displayImageName(image.name.original);
     drawInitialImage(image.uri);
     toggleButtons(true);
-    toggleSkipButton(process.images.length);
+    toggleSkipButton(imageCount);
     canvas.addEventListener("mousedown", onSelectionStart, false);
     cropping.classList.add("show");
 
-    if (process.images.length > 1) {
+    if (imageCount > 1) {
         updateRemainingImageIndicator();
     }
 }
 
 function loadNextImage(image) {
+    const imageCount = dropbox.images.getCount();
+
     canvas.classList.remove("show");
-    toggleSkipButton(process.images.length);
+    toggleSkipButton(imageCount);
     toggleButtons(true);
 
-    if (process.images.length) {
+    if (imageCount) {
         updateRemainingImageIndicator();
         displayImageName(image.name.original);
 
@@ -846,18 +851,20 @@ function resetCropper() {
 }
 
 function cropImage() {
-    const image = process.images.splice(0, 1)[0];
+    const images = dropbox.images;
+    const image = images.remove(0);
 
     sendImageToWorker(image);
-    loadNextImage(process.images[0]);
+    loadNextImage(images.getFirst());
 }
 
 function skipImage() {
-    process.images.splice(0, 1);
+    const images = dropbox.images;
 
+    images.remove(0);
     quality.reset();
     resetData();
-    loadNextImage(process.images[0]);
+    loadNextImage(images.getFirst());
 }
 
 function closeCropping() {
@@ -872,7 +879,7 @@ function closeCropping() {
         return;
     }
     resetCropper();
-    process.worker.postMessage({ action: "generate" });
+    dropbox.worker.post({ action: "generate" });
 }
 
 function showPreview() {
