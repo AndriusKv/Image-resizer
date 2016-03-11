@@ -1,8 +1,8 @@
-"use strict";
+/* global saveAs */
 
 import * as resizer from "./resizer.js";
 import * as tools from "./tools.js";
-import * as crop from "./cropper.js";
+import * as cropper from "./cropper.js";
 
 const dropboxElem = document.getElementById("js-dropbox");
 const progressBar = document.getElementById("js-progress");
@@ -27,7 +27,7 @@ const state = (function() {
     return {
         get: getCurrentState,
         set: setState
-    }
+    };
 })();
 
 const images = (function() {
@@ -207,7 +207,7 @@ function doneReadingFiles() {
 
     if (tools.cropperEnabled) {
         resetDropbox();
-        crop.init();
+        cropper.init();
     }
     else {
         resetProgress();

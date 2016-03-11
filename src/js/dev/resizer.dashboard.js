@@ -1,5 +1,3 @@
-"use strict";
-
 import * as dropbox from "./dropbox.js";
 
 const dimensionInputContainer = document.getElementById("js-dimension-inputs");

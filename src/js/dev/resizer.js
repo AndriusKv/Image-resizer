@@ -1,5 +1,3 @@
-"use strict";
-
 import * as dropbox from "./dropbox.js";
 import * as dashboard from "./resizer.dashboard.js";
 
