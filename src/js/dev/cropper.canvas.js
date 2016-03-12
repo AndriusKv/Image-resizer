@@ -408,55 +408,34 @@ function isMouseInsideSelectedArea(area, x, y) {
 function resizeSelectedArea(event) {
     const { x, y } = getMousePosition(event);
     const newDirection = direction.get();
-    const adjustedSelectedArea = {};
-    let area = selectedArea.get();
-    let selectedDirection = "";
+    const area = selectedArea.get();
+    let oppositeDirection = "";
 
-    switch (newDirection) {
-        case "nw":
-            adjustedSelectedArea.x = x;
-            adjustedSelectedArea.y = y;
-            adjustedSelectedArea.width = area.x - x + area.width;
-            adjustedSelectedArea.height = area.y - y + area.height;
-            selectedDirection = direction.reverse(newDirection, "ne", area);
-            break;
-        case "ne":
-            adjustedSelectedArea.y = y;
-            adjustedSelectedArea.height = area.y - y + area.height;
-            adjustedSelectedArea.width = x - area.x;
-            selectedDirection = direction.reverse(newDirection, "nw", area);
-            break;
-        case "se":
-            adjustedSelectedArea.width = x - area.x;
-            adjustedSelectedArea.height = y - area.y;
-            selectedDirection = direction.reverse(newDirection, "sw", area);
-            break;
-        case "sw":
-            adjustedSelectedArea.x = x;
-            adjustedSelectedArea.width = area.x - x + area.width;
-            adjustedSelectedArea.height = y - area.y;
-            selectedDirection = direction.reverse(newDirection, "se", area);
-            break;
-        case "n":
-            adjustedSelectedArea.y = y;
-            adjustedSelectedArea.height = area.y - y + area.height;
-            break;
-        case "e":
-            adjustedSelectedArea.width = x - area.x;
-            break;
-        case "s":
-            adjustedSelectedArea.height = y - area.y;
-            break;
-        case "w":
-            adjustedSelectedArea.x = x;
-            adjustedSelectedArea.width = area.x - x + area.width;
-            break;
+    if (newDirection.indexOf("n") !== -1) {
+        selectedArea.setProp("height", area.y - y + area.height);
+        selectedArea.setProp("y", y);
+        oppositeDirection = "n";
+    }
+    else if (newDirection.indexOf("s") !== -1) {
+        selectedArea.setProp("height", y - area.y);
+        oppositeDirection = "s";
     }
 
-    if (selectedDirection) {
+    if (newDirection.indexOf("w") !== -1) {
+        selectedArea.setProp("width", area.x - x + area.width);
+        selectedArea.setProp("x", x);
+        oppositeDirection += "e";
+    }
+    else if (newDirection.indexOf("e") !== -1) {
+        selectedArea.setProp("width", x - area.x);
+        oppositeDirection += "w";
+    }
+
+    if (oppositeDirection.length > 1) {
+        const selectedDirection = direction.reverse(newDirection, oppositeDirection, area);
+
         canvas.style.cursor = selectedDirection + "-resize";
     }
-    area = selectedArea.set(adjustedSelectedArea);
     requestAnimationFrame(drawCanvas);
     updateTransformedArea(area);
 }
