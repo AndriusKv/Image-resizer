@@ -1,5 +1,3 @@
-"use strict";
-
 import "./dropbox.js";
 import "./resizer.js";
 import "./resizer.dashboard.js";

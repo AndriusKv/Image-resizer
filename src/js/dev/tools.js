@@ -1,5 +1,3 @@
-"use strict";
-
 import { showMessage } from "./dropbox.js";
 
 let cropperEnabled = false;
