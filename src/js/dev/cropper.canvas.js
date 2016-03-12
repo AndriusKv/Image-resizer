@@ -231,14 +231,20 @@ const selectedArea = (function() {
 function updateTransformedArea(area) {
     const pt = canvasTransform.getTransformedPoint(area.x, area.y);
     const pt2 = canvasTransform.getTransformedPoint(area.x + area.width, area.y + area.height);
-    const transformedArea = selectedArea.set({
+    const width = pt2.x - pt.x;
+    const height = pt2.y - pt.y;
+
+    selectedArea.set({
         x: pt.x,
         y: pt.y,
-        width: pt2.x - pt.x,
-        height: pt2.y - pt.y
+        width: width,
+        height: height
     }, true);
 
-    sidebar.updateDataDisplay(transformedArea);
+    if (width && height) {
+        sidebar.updatePointDisplay(pt.x, pt.y);
+    }
+    sidebar.updateMeasurmentDisplay(width, height);
 }
 
 function drawImage(image) {
@@ -285,24 +291,25 @@ function strokeRect(area) {
 }
 
 function drawArea(area) {
-    const hasArea = area.width && area.height;
-
-    if (!hasArea) {
-        return;
-    }
+    const width = area.width;
+    const height = area.height;
     let x = area.x;
     let y = area.y;
-    const imageData = ctx.getImageData(x, y, area.width, area.height);
+    let imageData;
 
-    if (area.width < 0) {
-        x = x + area.width;
-    }
-
-    if (area.height < 0) {
-        y = y + area.height;
+    if (width && height) {
+        imageData = ctx.getImageData(x, y, width, height);
+        if (width < 0) {
+            x = x + width;
+        }
+        if (height < 0) {
+            y = y + height;
+        }
     }
     addMask();
-    ctx.putImageData(imageData, x, y);
+    if (imageData) {
+        ctx.putImageData(imageData, x, y);
+    }
     strokeRect(area);
 }
 
@@ -499,6 +506,7 @@ function onSelectionStart(event) {
         sidebar.angle.reset();
         selectedArea.setProp("x", x);
         selectedArea.setProp("y", y);
+        sidebar.updatePointDisplay(x, y);
         cropper.cropping.toggleEventListeners("add", selectArea, lockSelectedArea);
     }
 }
@@ -542,7 +550,9 @@ function onMouseup(mousemoveCallback, mouseupCallback) {
     }
     else {
         const transform = canvasTransform.getTransform();
+        const area = selectedArea.reset();
 
+        sidebar.updateDataDisplay(area);
         selectedArea.setProp("x", transform.e);
         selectedArea.setProp("y", transform.f);
         addBackground();

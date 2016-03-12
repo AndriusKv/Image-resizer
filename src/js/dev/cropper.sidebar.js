@@ -59,7 +59,11 @@ const preview = (function() {
     function draw(image) {
         const area = cropperCanvas.selectedArea.getScaled();
 
-        if (updating || !area.width || !area.height) {
+        if (updating) {
+            return;
+        }
+        if (!area.width || !area.height) {
+            clean();
             return;
         }
         updating = true;
@@ -165,7 +169,7 @@ function getCroppedCanvas(image, area) {
 }
 
 function getCoordToUpdate(coordValue, dimensionValue) {
-    if (coordValue && dimensionValue) {
+    if (coordValue) {
         if (dimensionValue > 0) {
             return coordValue;
         }
@@ -177,8 +181,10 @@ function getCoordToUpdate(coordValue, dimensionValue) {
 function updatePointDisplay(x, y) {
     const area = cropperCanvas.selectedArea.get(true);
 
-    x = getCoordToUpdate(x, area.width);
-    y = getCoordToUpdate(y, area.height);
+    if (area.width && area.height) {
+        x = getCoordToUpdate(x, area.width);
+        y = getCoordToUpdate(y, area.height);
+    }
 
     cropDataInputs.setValue("x", Math.round(x * cropperCanvas.ratio.get("width")));
     cropDataInputs.setValue("y", Math.round(y * cropperCanvas.ratio.get("height")));
