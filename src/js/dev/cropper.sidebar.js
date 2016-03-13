@@ -81,7 +81,7 @@ const preview = (function() {
     return { clean, draw };
 })();
 
-function sendImageToWorker(imageToCrop) {
+function sendImageToWorker(imageToCrop, cb) {
     const image = new Image();
 
     image.addEventListener("load", () => {
@@ -100,11 +100,9 @@ function sendImageToWorker(imageToCrop) {
         if (!dropbox.images.getCount()) {
             cropperCanvas.resetCropper();
             dropbox.generateZip();
+            return;
         }
-        else {
-            quality.reset();
-            cropperCanvas.resetData();
-        }
+        cb();
     });
     image.src = imageToCrop.uri;
 }
@@ -203,16 +201,20 @@ function updateDataDisplay(area) {
     updateMeasurmentDisplay(area.width, area.height);
 }
 
+function resetCropData() {
+    quality.reset();
+    cropDataInputs.setValue("scale", 100);
+    cropperCanvas.selectedArea.setHasArea(false);
+    cropperCanvas.resetData(true);
+}
+
 function resetCanvas() {
     const translated = cropperCanvas.canvasTransform.getTranslated();
 
     angle.reset();
-    quality.reset();
-    cropDataInputs.setValue("scale", 100);
-    cropperCanvas.selectedArea.setHasArea(false);
+    resetCropData();
     cropperCanvas.canvasTransform.resetTransform();
     cropperCanvas.canvasTransform.translate(translated.width, translated.height);
-    cropperCanvas.resetData(true);
     cropperCanvas.addBackground();
     cropperCanvas.drawImage();
 }
@@ -336,7 +338,7 @@ function cropImage() {
     const images = dropbox.images;
     const image = images.remove(0);
 
-    sendImageToWorker(image);
+    sendImageToWorker(image, resetCropData);
     loadNextImage(images.getFirst());
 }
 
@@ -376,9 +378,8 @@ function showPreview() {
 function skipImage() {
     const images = dropbox.images;
 
+    resetCropData();
     images.remove(0);
-    quality.reset();
-    cropperCanvas.resetData();
     loadNextImage(images.getFirst());
 }
 

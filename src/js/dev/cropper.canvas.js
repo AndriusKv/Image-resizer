@@ -533,6 +533,7 @@ function selectArea(event) {
 
     selectedArea.setProp("width", x - area.x);
     selectedArea.setProp("height", y - area.y);
+    selectedArea.setHasArea(true);
     requestAnimationFrame(drawCanvas);
     updateTransformedArea(area);
 }
