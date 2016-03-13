@@ -209,9 +209,10 @@ function resetCanvas() {
     angle.reset();
     quality.reset();
     cropDataInputs.setValue("scale", 100);
+    cropperCanvas.selectedArea.setHasArea(false);
     cropperCanvas.canvasTransform.resetTransform();
     cropperCanvas.canvasTransform.translate(translated.width, translated.height);
-    cropperCanvas.resetData();
+    cropperCanvas.resetData(true);
     cropperCanvas.addBackground();
     cropperCanvas.drawImage();
 }

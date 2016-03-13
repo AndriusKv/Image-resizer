@@ -132,6 +132,7 @@ const direction = (function() {
 const selectedArea = (function() {
     const area = {};
     const transformedArea = {};
+    let hasArea;
 
     function getArea(transformed) {
         return transformed ? transformedArea : area;
@@ -217,6 +218,14 @@ const selectedArea = (function() {
         area[input] = areaValue + transformedArea[input];
     }
 
+    function setHasArea(area) {
+        hasArea = area;
+        return hasArea;
+    }
+    function getHasArea() {
+        return hasArea;
+    }
+
     return {
         get: getArea,
         getScaled: getScaledArea,
@@ -224,26 +233,30 @@ const selectedArea = (function() {
         getProp: getAreaProp,
         setProp: setAreaProp,
         reset: resetArea,
-        update: updateAreaFromInput
+        update: updateAreaFromInput,
+        setHasArea: setHasArea,
+        getHasArea: getHasArea
     };
 })();
 
-function updateTransformedArea(area) {
-    const pt = canvasTransform.getTransformedPoint(area.x, area.y);
+function updateTransformedArea(area, canvasReset) {
+    let { x, y } = canvasTransform.getTransformedPoint(area.x, area.y);
     const pt2 = canvasTransform.getTransformedPoint(area.x + area.width, area.y + area.height);
-    const width = pt2.x - pt.x;
-    const height = pt2.y - pt.y;
+    const width = pt2.x - x;
+    const height = pt2.y - y;
 
     selectedArea.set({
-        x: pt.x,
-        y: pt.y,
+        x: x,
+        y: y,
         width: width,
         height: height
     }, true);
 
-    if (width && height) {
-        sidebar.updatePointDisplay(pt.x, pt.y);
+    if (canvasReset) {
+        x = 0;
+        y = 0;
     }
+    sidebar.updatePointDisplay(x, y);
     sidebar.updateMeasurmentDisplay(width, height);
 }
 
@@ -293,11 +306,12 @@ function strokeRect(area) {
 function drawArea(area) {
     const width = area.width;
     const height = area.height;
+    const hasArea = width && height;
     let x = area.x;
     let y = area.y;
     let imageData;
 
-    if (width && height) {
+    if (hasArea) {
         imageData = ctx.getImageData(x, y, width, height);
         if (width < 0) {
             x = x + width;
@@ -306,7 +320,9 @@ function drawArea(area) {
             y = y + height;
         }
     }
-    addMask();
+    if (hasArea || selectedArea.getHasArea()) {
+        addMask();
+    }
     if (imageData) {
         ctx.putImageData(imageData, x, y);
     }
@@ -480,7 +496,6 @@ function onSelectionStart(event) {
     const angle = sidebar.angle.get();
     const newDirection = direction.set(x, y, area);
 
-    requestAnimationFrame(drawCanvas);
     canvas.removeEventListener("mousemove", changeCursor, false);
     window.removeEventListener("keydown", changeCursorToMove, false);
 
@@ -509,6 +524,7 @@ function onSelectionStart(event) {
         sidebar.updatePointDisplay(x, y);
         cropper.cropping.toggleEventListeners("add", selectArea, lockSelectedArea);
     }
+    requestAnimationFrame(drawCanvas);
 }
 
 function selectArea(event) {
@@ -559,6 +575,7 @@ function onMouseup(mousemoveCallback, mouseupCallback) {
         drawImage();
         canvas.style.cursor = "default";
     }
+    selectedArea.setHasArea(hasArea);
     sidebar.toggleButtons(!hasArea);
 }
 
@@ -684,12 +701,12 @@ function init(image) {
     canvas.addEventListener("mousedown", onSelectionStart, false);
 }
 
-function resetData() {
+function resetData(canvasReset) {
     const area = selectedArea.reset();
 
     sidebar.cropDataInputs.setValue("angle", 0);
     sidebar.preview.clean();
-    updateTransformedArea(area);
+    updateTransformedArea(area, canvasReset);
 }
 
 function resetCropper() {
