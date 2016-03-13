@@ -126,19 +126,19 @@ function toggleSkipButton(imageCount) {
     toggleButton(skipButton, !hasImages);
 }
 
-function getImageData(image, area, ctx, rotated) {
+function getImageData(image, area, ctx, angle) {
     const xform = cropperCanvas.canvasTransform.getTransform();
     const translatedX = xform.e * cropperCanvas.ratio.get("width");
     const translatedY = xform.f * cropperCanvas.ratio.get("height");
     const scale = xform.a;
 
     ctx.save();
-    if (rotated) {
+    if (angle) {
         const centerX = area.x + area.width / 2;
         const centerY = area.y + area.height / 2;
 
         ctx.translate(centerX, centerY);
-        ctx.rotate(-rotated);
+        ctx.rotate(-angle);
         ctx.translate(-centerX, -centerY);
     }
     ctx.translate(translatedX, translatedY);

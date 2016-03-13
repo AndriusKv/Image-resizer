@@ -713,7 +713,7 @@ function resetData(canvasReset) {
 function resetCropper() {
     sidebar.cropDataInputs.setValue("scale", 100);
     quality.reset();
-    resetData();
+    resetData(true);
     cropper.updateRemainingImageIndicator("remove");
     cropper.cropping.hide();
     canvas.removeEventListener("mousedown", onSelectionStart, false);
