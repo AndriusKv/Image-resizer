@@ -1,4 +1,5 @@
 .crop {
+    user-select: none;
     opacity: 0;
     visibility: collapse;
     position: absolute;
@@ -6,35 +7,18 @@
     bottom: 0;
     left: 0;
     right: 0;
+    height: 100%;
+    padding: 4px;
     background-color: $light-color;
-    user-select: none;
     cursor: default;
     transform: scale(.8);
     transition: all .4s;
 
     &.preload { transition: none; }
-
     &.show {
         opacity: 1;
         visibility: visible;
         transform: scale(1);
-    }
-}
-.crop-container {
-    position: relative;
-    height: 100%;
-    padding: 4px;
-}
-.crop-canvas {
-    vertical-align: top;
-    box-shadow: 0 0 5px rgba(0,0,0,0.4);
-    opacity: 0;
-    transform: scale(.94);
-    transition: all .2s;
-
-    &.show {
-        transform: scale(1);
-        opacity: 1;
     }
 }
 .crop-info {
@@ -53,38 +37,27 @@
 
 .crop-info-name { line-height: 1.428; }
 
-.crop-preview-container {
+.crop-main {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+.crop-canvas {
+    vertical-align: top;
+    box-shadow: 0 0 5px rgba(0,0,0,0.4);
     opacity: 0;
-    position: absolute;
-    top: -4%;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    visibility: collapse;
-    height: 104%;
-    padding: 36px 4px 4px 4px;
-    background-color: rgba(0, 0, 0, 0);
-    text-align: center;
+    transform: scale(.94);
     transition: all .2s;
 
     &.show {
-        top: 0;
-        height: 100%;
+        transform: scale(1);
         opacity: 1;
-        visibility: visible;
-        background-color: rgba(0, 0, 0, .4);
     }
-}
-.crop-preview-image {
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);
-    box-shadow: 0 0 5px rgba(0, 0, 0, .8);
 }
 .crop-sidebar {
     user-select: none;
-    float: right;
     width: 200px;
+    margin-left: 4px;
     padding: 4px;
     background-color: $brand-color2;
     box-shadow: 0 0 5px rgba(0,0,0,0.4);
@@ -141,7 +114,6 @@
         border-right: 1px solid #ccc;
 
         &:last-of-type { border: 0; }
-
         &:active { transform: scale(1); }
     }
 }
@@ -153,4 +125,32 @@
 
         &:hover { background-color: $light-color; }
     }
+}
+.crop-preview-container {
+    opacity: 0;
+    position: absolute;
+    top: -4%;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    visibility: collapse;
+    height: 104%;
+    padding: 36px 4px 4px 4px;
+    background-color: rgba(0, 0, 0, 0);
+    text-align: center;
+    transition: all .2s;
+
+    &.show {
+        top: 0;
+        height: 100%;
+        opacity: 1;
+        visibility: visible;
+        background-color: rgba(0, 0, 0, .4);
+    }
+}
+.crop-preview-image {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    box-shadow: 0 0 5px rgba(0, 0, 0, .8);
 }
