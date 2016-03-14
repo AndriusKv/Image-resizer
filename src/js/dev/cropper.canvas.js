@@ -130,7 +130,12 @@ const direction = (function() {
 })();
 
 const selectedArea = (function() {
-    const area = {};
+    const area = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+    };
     const transformedArea = {};
     let hasArea;
 
@@ -171,6 +176,11 @@ const selectedArea = (function() {
             area[key] = value;
         }
         return value;
+    }
+
+    function setDefaultPos(x, y) {
+        setAreaProp("x", x);
+        setAreaProp("y", y);
     }
 
     function resetArea() {
@@ -222,6 +232,7 @@ const selectedArea = (function() {
         hasArea = area;
         return hasArea;
     }
+
     function getHasArea() {
         return hasArea;
     }
@@ -232,6 +243,7 @@ const selectedArea = (function() {
         set: setArea,
         getProp: getAreaProp,
         setProp: setAreaProp,
+        setDefaultPos: setDefaultPos,
         reset: resetArea,
         update: updateAreaFromInput,
         setHasArea: setHasArea,
@@ -404,6 +416,7 @@ function drawInitialImage(uri) {
         ratio.set("width", imageWidth / width);
         ratio.set("height", imageHeight / height);
         canvas.classList.add("show");
+        selectedArea.setDefaultPos(translatedWidth, translatedHeight);
     });
     canvasImage.original.src = uri;
 }

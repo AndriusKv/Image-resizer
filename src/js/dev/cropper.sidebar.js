@@ -215,6 +215,7 @@ function resetCanvas() {
     resetCropData();
     cropperCanvas.canvasTransform.resetTransform();
     cropperCanvas.canvasTransform.translate(translated.width, translated.height);
+    cropperCanvas.selectedArea.setDefaultPos(translated.width, translated.height);
     cropperCanvas.addBackground();
     cropperCanvas.drawImage();
 }
