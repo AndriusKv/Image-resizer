@@ -835,6 +835,12 @@ function scaleImage(x, y, scale) {
     if (area.width && area.height) {
         updateTransformedArea(area);
     }
+    else {
+        const transform = canvasTransform.getTransform();
+
+        selectedArea.setProp("x", transform.e);
+        selectedArea.setProp("y", transform.f);
+    }
 }
 
 function handleScroll(event) {
