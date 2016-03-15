@@ -152,11 +152,11 @@ function getCroppedCanvas(image, area) {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const translated = cropperCanvas.canvasTransform.getTranslated();
-    const translatedWidth = translated.width * cropperCanvas.ratio.get("width");
-    const traslatedHeight = translated.height * cropperCanvas.ratio.get("height");
+    const translatedX = translated.x * cropperCanvas.ratio.get("width");
+    const translatedY = translated.y * cropperCanvas.ratio.get("height");
 
-    canvas.width = image.width + translatedWidth * 2;
-    canvas.height = image.height + traslatedHeight * 2;
+    canvas.width = image.width + translatedX * 2;
+    canvas.height = image.height + translatedY * 2;
 
     const imageData = getImageData(image, area, ctx, angle.get());
 
@@ -214,8 +214,8 @@ function resetCanvas() {
     angle.reset();
     resetCropData();
     cropperCanvas.canvasTransform.resetTransform();
-    cropperCanvas.canvasTransform.translate(translated.width, translated.height);
-    cropperCanvas.selectedArea.setDefaultPos(translated.width, translated.height);
+    cropperCanvas.canvasTransform.translateDefault();
+    cropperCanvas.selectedArea.setDefaultPos(translated.x, translated.y);
     cropperCanvas.addBackground();
     cropperCanvas.drawImage();
 }

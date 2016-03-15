@@ -395,14 +395,17 @@ function getImageSize({ width, height }, maxWidth, maxHeight, ratio) {
 }
 
 function drawInitialImage(uri) {
-    canvasImage.original.addEventListener("load", () => {
-        const { width: imageWidth, height: imageHeight } = canvasImage.original;
+    const image = canvasImage.original;
+
+    image.addEventListener("load", () => {
+        const { width: imageWidth, height: imageHeight } = image;
         const imageRatio = imageWidth / imageHeight;
         const maxWidth = window.innerWidth - 212;
         const maxHeight = window.innerHeight - 40;
-        const { width, height } = getImageSize(canvasImage.original, maxWidth, maxHeight, imageRatio);
-        const translatedWidth = canvasTransform.setTranslated("width", (maxWidth - width) / 2);
-        const translatedHeight = canvasTransform.setTranslated("height", (maxHeight - height) / 2);
+        const { width, height } = getImageSize(image, maxWidth, maxHeight, imageRatio);
+        const x = (maxWidth - width) / 2;
+        const y = (maxHeight - height) / 2;
+        const translated = canvasTransform.setDefaultTranslation(x, y);
 
         canvas.width = maxWidth;
         canvas.height = maxHeight;
@@ -410,15 +413,15 @@ function drawInitialImage(uri) {
         canvasImage.height = height;
         addBackground();
         canvasTransform.resetTransform();
-        canvasTransform.translate(translatedWidth, translatedHeight);
-        ctx.drawImage(canvasImage.original, 0, 0, width, height);
+        canvasTransform.translateDefault();
+        selectedArea.setDefaultPos(translated.x, translated.y);
+        ctx.drawImage(image, 0, 0, width, height);
         changeCanvasQuality = loadCanvasWithQuality();
         ratio.set("width", imageWidth / width);
         ratio.set("height", imageHeight / height);
         canvas.classList.add("show");
-        selectedArea.setDefaultPos(translatedWidth, translatedHeight);
     });
-    canvasImage.original.src = uri;
+    image.src = uri;
 }
 
 function getMousePosition(event) {
@@ -759,7 +762,7 @@ function loadCanvasWithQuality() {
 
 function trackTransforms(ctx) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    const translatedDimension = {};
+    const translated = {};
     let xform = svg.createSVGMatrix();
 
     function getTransform() {
@@ -776,6 +779,10 @@ function trackTransforms(ctx) {
     function translate(dx, dy) {
         xform = xform.translate(dx, dy);
         ctx.translate(dx, dy);
+    }
+
+    function translateDefault() {
+        translate(translated.x, translated.y);
     }
 
     function getTransformedPoint(x, y) {
@@ -796,21 +803,23 @@ function trackTransforms(ctx) {
         ctx.resetTransform();
     }
 
-    function setTranslatedDimension(dimension, value) {
-        translatedDimension[dimension] = value;
-        return value;
+    function setDefaultTranslation(x, y) {
+        translated.x = x;
+        translated.y = y;
+        return translated;
     }
 
     function getTranslated() {
-        return translatedDimension;
+        return translated;
     }
 
     return {
-        setTranslated: setTranslatedDimension,
+        setDefaultTranslation,
         getTranslated,
         getTransform,
         scale,
         translate,
+        translateDefault,
         getTransformedPoint,
         resetTransform
     };
