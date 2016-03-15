@@ -218,6 +218,7 @@ function resetCanvas() {
     cropperCanvas.selectedArea.setDefaultPos(translated.x, translated.y);
     cropperCanvas.addBackground();
     cropperCanvas.drawImage();
+    toggleButtons(true);
 }
 
 function insertChar(target, char) {
