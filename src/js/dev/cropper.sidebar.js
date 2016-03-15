@@ -59,7 +59,11 @@ const preview = (function() {
     function draw(image) {
         const area = cropperCanvas.selectedArea.getScaled();
 
-        if (updating || !area.width || !area.height) {
+        if (updating) {
+            return;
+        }
+        if (!area.width || !area.height) {
+            clean();
             return;
         }
         updating = true;
@@ -77,7 +81,7 @@ const preview = (function() {
     return { clean, draw };
 })();
 
-function sendImageToWorker(imageToCrop) {
+function sendImageToWorker(imageToCrop, cb) {
     const image = new Image();
 
     image.addEventListener("load", () => {
@@ -96,11 +100,9 @@ function sendImageToWorker(imageToCrop) {
         if (!dropbox.images.getCount()) {
             cropperCanvas.resetCropper();
             dropbox.generateZip();
+            return;
         }
-        else {
-            quality.reset();
-            cropperCanvas.resetData();
-        }
+        cb();
     });
     image.src = imageToCrop.uri;
 }
@@ -124,19 +126,19 @@ function toggleSkipButton(imageCount) {
     toggleButton(skipButton, !hasImages);
 }
 
-function getImageData(image, area, ctx, rotated) {
+function getImageData(image, area, ctx, angle) {
     const xform = cropperCanvas.canvasTransform.getTransform();
     const translatedX = xform.e * cropperCanvas.ratio.get("width");
     const translatedY = xform.f * cropperCanvas.ratio.get("height");
     const scale = xform.a;
 
     ctx.save();
-    if (rotated) {
+    if (angle) {
         const centerX = area.x + area.width / 2;
         const centerY = area.y + area.height / 2;
 
         ctx.translate(centerX, centerY);
-        ctx.rotate(-rotated);
+        ctx.rotate(-angle);
         ctx.translate(-centerX, -centerY);
     }
     ctx.translate(translatedX, translatedY);
@@ -165,7 +167,7 @@ function getCroppedCanvas(image, area) {
 }
 
 function getCoordToUpdate(coordValue, dimensionValue) {
-    if (coordValue && dimensionValue) {
+    if (coordValue) {
         if (dimensionValue > 0) {
             return coordValue;
         }
@@ -177,8 +179,10 @@ function getCoordToUpdate(coordValue, dimensionValue) {
 function updatePointDisplay(x, y) {
     const area = cropperCanvas.selectedArea.get(true);
 
-    x = getCoordToUpdate(x, area.width);
-    y = getCoordToUpdate(y, area.height);
+    if (area.width && area.height) {
+        x = getCoordToUpdate(x, area.width);
+        y = getCoordToUpdate(y, area.height);
+    }
 
     cropDataInputs.setValue("x", Math.round(x * cropperCanvas.ratio.get("width")));
     cropDataInputs.setValue("y", Math.round(y * cropperCanvas.ratio.get("height")));
@@ -197,15 +201,21 @@ function updateDataDisplay(area) {
     updateMeasurmentDisplay(area.width, area.height);
 }
 
+function resetCropData() {
+    quality.reset();
+    cropDataInputs.setValue("scale", 100);
+    cropperCanvas.selectedArea.setHasArea(false);
+    cropperCanvas.resetData(true);
+}
+
 function resetCanvas() {
     const translated = cropperCanvas.canvasTransform.getTranslated();
 
     angle.reset();
-    quality.reset();
-    cropDataInputs.setValue("scale", 100);
+    resetCropData();
     cropperCanvas.canvasTransform.resetTransform();
     cropperCanvas.canvasTransform.translate(translated.width, translated.height);
-    cropperCanvas.resetData();
+    cropperCanvas.selectedArea.setDefaultPos(translated.width, translated.height);
     cropperCanvas.addBackground();
     cropperCanvas.drawImage();
 }
@@ -329,7 +339,7 @@ function cropImage() {
     const images = dropbox.images;
     const image = images.remove(0);
 
-    sendImageToWorker(image);
+    sendImageToWorker(image, resetCropData);
     loadNextImage(images.getFirst());
 }
 
@@ -369,9 +379,8 @@ function showPreview() {
 function skipImage() {
     const images = dropbox.images;
 
+    resetCropData();
     images.remove(0);
-    quality.reset();
-    cropperCanvas.resetData();
     loadNextImage(images.getFirst());
 }
 

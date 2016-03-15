@@ -130,8 +130,14 @@ const direction = (function() {
 })();
 
 const selectedArea = (function() {
-    const area = {};
+    const area = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+    };
     const transformedArea = {};
+    let hasArea;
 
     function getArea(transformed) {
         return transformed ? transformedArea : area;
@@ -170,6 +176,11 @@ const selectedArea = (function() {
             area[key] = value;
         }
         return value;
+    }
+
+    function setDefaultPos(x, y) {
+        setAreaProp("x", x);
+        setAreaProp("y", y);
     }
 
     function resetArea() {
@@ -217,28 +228,48 @@ const selectedArea = (function() {
         area[input] = areaValue + transformedArea[input];
     }
 
+    function setHasArea(area) {
+        hasArea = area;
+        return hasArea;
+    }
+
+    function getHasArea() {
+        return hasArea;
+    }
+
     return {
         get: getArea,
         getScaled: getScaledArea,
         set: setArea,
         getProp: getAreaProp,
         setProp: setAreaProp,
+        setDefaultPos: setDefaultPos,
         reset: resetArea,
-        update: updateAreaFromInput
+        update: updateAreaFromInput,
+        setHasArea: setHasArea,
+        getHasArea: getHasArea
     };
 })();
 
-function updateTransformedArea(area) {
-    const pt = canvasTransform.getTransformedPoint(area.x, area.y);
+function updateTransformedArea(area, canvasReset) {
+    let { x, y } = canvasTransform.getTransformedPoint(area.x, area.y);
     const pt2 = canvasTransform.getTransformedPoint(area.x + area.width, area.y + area.height);
-    const transformedArea = selectedArea.set({
-        x: pt.x,
-        y: pt.y,
-        width: pt2.x - pt.x,
-        height: pt2.y - pt.y
+    const width = pt2.x - x;
+    const height = pt2.y - y;
+
+    selectedArea.set({
+        x: x,
+        y: y,
+        width: width,
+        height: height
     }, true);
 
-    sidebar.updateDataDisplay(transformedArea);
+    if (canvasReset) {
+        x = 0;
+        y = 0;
+    }
+    sidebar.updatePointDisplay(x, y);
+    sidebar.updateMeasurmentDisplay(width, height);
 }
 
 function drawImage(image) {
@@ -285,24 +316,28 @@ function strokeRect(area) {
 }
 
 function drawArea(area) {
-    const hasArea = area.width && area.height;
-
-    if (!hasArea) {
-        return;
-    }
+    const width = area.width;
+    const height = area.height;
+    const hasArea = width && height;
     let x = area.x;
     let y = area.y;
-    const imageData = ctx.getImageData(x, y, area.width, area.height);
+    let imageData;
 
-    if (area.width < 0) {
-        x = x + area.width;
+    if (hasArea) {
+        imageData = ctx.getImageData(x, y, width, height);
+        if (width < 0) {
+            x = x + width;
+        }
+        if (height < 0) {
+            y = y + height;
+        }
     }
-
-    if (area.height < 0) {
-        y = y + area.height;
+    if (hasArea || selectedArea.getHasArea()) {
+        addMask();
     }
-    addMask();
-    ctx.putImageData(imageData, x, y);
+    if (imageData) {
+        ctx.putImageData(imageData, x, y);
+    }
     strokeRect(area);
 }
 
@@ -381,6 +416,7 @@ function drawInitialImage(uri) {
         ratio.set("width", imageWidth / width);
         ratio.set("height", imageHeight / height);
         canvas.classList.add("show");
+        selectedArea.setDefaultPos(translatedWidth, translatedHeight);
     });
     canvasImage.original.src = uri;
 }
@@ -473,7 +509,6 @@ function onSelectionStart(event) {
     const angle = sidebar.angle.get();
     const newDirection = direction.set(x, y, area);
 
-    requestAnimationFrame(drawCanvas);
     canvas.removeEventListener("mousemove", changeCursor, false);
     window.removeEventListener("keydown", changeCursorToMove, false);
 
@@ -499,8 +534,10 @@ function onSelectionStart(event) {
         sidebar.angle.reset();
         selectedArea.setProp("x", x);
         selectedArea.setProp("y", y);
+        sidebar.updatePointDisplay(x, y);
         cropper.cropping.toggleEventListeners("add", selectArea, lockSelectedArea);
     }
+    requestAnimationFrame(drawCanvas);
 }
 
 function selectArea(event) {
@@ -509,6 +546,7 @@ function selectArea(event) {
 
     selectedArea.setProp("width", x - area.x);
     selectedArea.setProp("height", y - area.y);
+    selectedArea.setHasArea(true);
     requestAnimationFrame(drawCanvas);
     updateTransformedArea(area);
 }
@@ -542,13 +580,16 @@ function onMouseup(mousemoveCallback, mouseupCallback) {
     }
     else {
         const transform = canvasTransform.getTransform();
+        const area = selectedArea.reset();
 
+        sidebar.updateDataDisplay(area);
         selectedArea.setProp("x", transform.e);
         selectedArea.setProp("y", transform.f);
         addBackground();
         drawImage();
         canvas.style.cursor = "default";
     }
+    selectedArea.setHasArea(hasArea);
     sidebar.toggleButtons(!hasArea);
 }
 
@@ -674,18 +715,18 @@ function init(image) {
     canvas.addEventListener("mousedown", onSelectionStart, false);
 }
 
-function resetData() {
+function resetData(canvasReset) {
     const area = selectedArea.reset();
 
     sidebar.cropDataInputs.setValue("angle", 0);
     sidebar.preview.clean();
-    updateTransformedArea(area);
+    updateTransformedArea(area, canvasReset);
 }
 
 function resetCropper() {
     sidebar.cropDataInputs.setValue("scale", 100);
     quality.reset();
-    resetData();
+    resetData(true);
     cropper.updateRemainingImageIndicator("remove");
     cropper.cropping.hide();
     canvas.removeEventListener("mousedown", onSelectionStart, false);
