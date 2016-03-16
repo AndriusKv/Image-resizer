@@ -4,11 +4,6 @@ import * as resizer from "./resizer.js";
 import * as tools from "./tools.js";
 import * as cropper from "./cropper.js";
 
-const dropboxElem = document.getElementById("js-dropbox");
-const progressBar = document.getElementById("js-progress");
-let timeout = 0;
-let counter = 0;
-
 const state = (function() {
 
     // -1 - default
@@ -36,6 +31,7 @@ const images = (function() {
     function getAll() {
         return images;
     }
+
     function getFirst() {
         return images[0];
     }
@@ -83,7 +79,7 @@ const worker = (function() {
             else if (data.action === "notify") {
                 state.set(-1);
                 removeMasksAndLabel();
-                showMessage("Images are ready for downloading");
+                message.show("Images are ready for downloading");
                 button.show("download");
             }
         };
@@ -104,6 +100,64 @@ const worker = (function() {
         init: initWorker,
         post: postMessage,
         isInited: isWorkerInitialized
+    };
+})();
+
+const progress = (function() {
+    const progressBar = document.getElementById("js-progress");
+    const progressLabel = document.getElementById("js-progress-label");
+
+    function showProgressBar() {
+        progressBar.classList.add("show");
+    }
+
+    function hideProgressBar() {
+        progressBar.classList.remove("show");
+    }
+
+    function setProgressLabel(text) {
+        progressLabel.textContent = text;
+    }
+
+    function updateProgress(value) {
+        progressBar.value += value;
+    }
+
+    function resetProgress() {
+        progressBar.classList.remove("show");
+        progressBar.value = 0;
+    }
+
+    return {
+        show: showProgressBar,
+        hide: hideProgressBar,
+        setLabel: setProgressLabel,
+        update: updateProgress,
+        reset: resetProgress
+    };
+})();
+
+const message = (function() {
+    const msgElem = document.getElementById("js-msg");
+    let timeout = 0;
+
+    function hideMessage(delay) {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+        timeout = setTimeout(showMessage, delay);
+    }
+
+    function showMessage(message = "") {
+        msgElem.textContent = message;
+        if (!message) {
+            return;
+        }
+        hideMessage(2000);
+    }
+
+    return {
+        show: showMessage
     };
 })();
 
@@ -146,43 +200,15 @@ function toggleMasks(action) {
     document.getElementById("js-mask").classList[action]("show");
 }
 
-function hideMessage(delay) {
-    if (timeout) {
-        clearTimeout(timeout);
-    }
-    timeout = setTimeout(showMessage, delay);
-}
-
-function showMessage(message = "") {
-    document.getElementById("js-msg").textContent = message;
-    if (!message) {
-        return;
-    }
-    hideMessage(2000);
-}
-
-function setProgressLabel(text) {
-    document.getElementById("js-progress-label").textContent = text;
-}
-
-function updateProgress(value) {
-    progressBar.value += value;
-}
-
-function resetProgress() {
-    progressBar.classList.remove("show");
-    progressBar.value = 0;
-}
-
 function removeMasksAndLabel() {
-    setProgressLabel("");
+    progress.setLabel("");
     toggleMasks("remove");
 }
 
 function beforeWork() {
     toggleMasks("add");
     state.set(1);
-    progressBar.classList.add("show");
+    progress.show();
     button.hide("process");
     button.show("cancel");
 }
@@ -190,7 +216,7 @@ function beforeWork() {
 function resetDropbox(newState = -1) {
     state.set(newState);
     button.hide("cancel");
-    resetProgress();
+    progress.reset();
     removeMasksAndLabel();
 }
 
@@ -201,16 +227,16 @@ function doneReadingFiles() {
 
     if (!images.getCount()) {
         resetDropbox();
-        showMessage("No images to process");
+        message.show("No images to process");
         return;
     }
 
-    if (tools.cropperEnabled) {
+    if (tools.getCurrentTool() === "cropper") {
         resetDropbox();
         cropper.init();
     }
     else {
-        resetProgress();
+        progress.reset();
         resizer.processImages();
     }
 }
@@ -231,7 +257,7 @@ function setImageName(name) {
 }
 
 function generateZip() {
-    setProgressLabel("Generating archive");
+    progress.setLabel("Generating archive");
     worker.post({ action: "generate" });
 }
 
@@ -255,12 +281,12 @@ function readImage(image) {
 function readFiles(files, inc) {
     const file = files.splice(0, 1)[0];
 
-    setProgressLabel(`Reading: ${file.name}`);
+    progress.setLabel(`Reading: ${file.name}`);
     if (isImage(file.type)) {
         readImage(file);
     }
 
-    updateProgress(inc);
+    progress.update(inc);
     if (!files.length) {
         setTimeout(doneReadingFiles, 1200);
         return;
@@ -278,7 +304,7 @@ function readFiles(files, inc) {
 function cancelWork() {
     images.reset();
     resetDropbox(0);
-    showMessage("Work canceled");
+    message.show("Work canceled");
 }
 
 function onFiles(files) {
@@ -316,74 +342,24 @@ function onUpload(event) {
     const files = event.target.files;
 
     event.preventDefault();
-
     if (files.length) {
         onFiles(files);
     }
 }
 
-function onDrop(event) {
-    counter = 0;
-    dropboxElem.classList.remove("over");
-    event.stopPropagation();
-    event.preventDefault();
-    if (state.get() === 1) {
-        event.dataTransfer.dropEffect = "none";
-        return;
-    }
-    event.dataTransfer.dropEffect = "copy";
-    onFiles(event.dataTransfer.files);
-}
-
-function onDragover(event) {
-    event.stopPropagation();
-    event.preventDefault();
-}
-
-function onDragenter(event) {
-    event.preventDefault();
-
-    if (state.get() === 1) {
-        return;
-    }
-    counter += 1;
-    dropboxElem.classList.add("over");
-}
-
-function onDragleave() {
-    if (state.get() === 1) {
-        return;
-    }
-    counter -= 1;
-    if (!counter) {
-        dropboxElem.classList.remove("over");
-    }
-}
-
 document.getElementById("js-dropbox-btns").addEventListener("click", onBtnClick, false);
 document.getElementById("js-image-select").addEventListener("change", onUpload, false);
-dropboxElem.addEventListener("dragover", onDragover, false);
-dropboxElem.addEventListener("dragenter", onDragenter, false);
-dropboxElem.addEventListener("dragleave", onDragleave, false);
-dropboxElem.addEventListener("drop", onDrop, false);
-dropboxElem.addEventListener("click", event => {
-    if (state.get() === 1) {
-        event.preventDefault();
-    }
-}, false);
 
 export {
     state,
     images,
     worker,
+    progress,
+    message,
     button,
+    onFiles,
 	beforeWork,
-    progressBar,
     generateZip,
-    showMessage,
 	resetDropbox,
-	resetProgress,
-	updateProgress,
-	setProgressLabel,
 	removeMasksAndLabel
 };
