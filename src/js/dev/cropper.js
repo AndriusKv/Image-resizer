@@ -40,7 +40,7 @@ const preview = (function() {
         cropPreview.classList.remove("show");
 
         // remove preview image after animation finished running.
-        setTimeout(()=> {
+        setTimeout(() => {
             cropPreview.removeChild(cropPreview.children[0]);
         }, 600);
     }
