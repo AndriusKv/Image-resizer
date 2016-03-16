@@ -1,4 +1,5 @@
 import "./dropbox.js";
+import "./dropbox.drag.js";
 import "./resizer.js";
 import "./resizer.dashboard.js";
 import "./tools.js";

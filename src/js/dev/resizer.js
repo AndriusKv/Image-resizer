@@ -91,7 +91,7 @@ function doneResizing() {
         return;
     }
     dropbox.button.hide("cancel");
-    dropbox.resetProgress();
+    dropbox.progress.reset();
     dropbox.generateZip();
 }
 
@@ -102,12 +102,12 @@ function resizeImage(image, imageToResize, measurments) {
     };
     const adjustedDimensions = measurments.map(measurment => convertMeasurements(measurment, imageMeasurment));
 
-    dropbox.setProgressLabel(`Processing: ${imageToResize.name.original}`);
+    dropbox.progress.setLabel(`Processing: ${imageToResize.name.original}`);
 
     return function resize(inc) {
         const dimension = adjustedDimensions.splice(0, 1)[0];
 
-        dropbox.updateProgress(inc);
+        dropbox.progress.update(inc);
         dropbox.worker.post({
             action: "add",
             image: {

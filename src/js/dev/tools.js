@@ -1,7 +1,10 @@
-import { showMessage } from "./dropbox.js";
+import { message } from "./dropbox.js";
 
-let cropperEnabled = false;
 let activeTool = "resizer";
+
+function getCurrentTool() {
+    return activeTool;
+}
 
 function toggleTool(tool, elem) {
     const toolSettings = document.getElementById(`js-${tool}-settings`);
@@ -34,10 +37,9 @@ function switchTool(event) {
     activeTool = tool;
     removeActiveTool();
     toggleTool(tool, target);
-    showMessage(`${tool} enabled`);
-    cropperEnabled = tool === "cropper";
+    message.show(`${tool} enabled`);
 }
 
 document.getElementById("js-tools-btns").addEventListener("click", switchTool, false);
 
-export { cropperEnabled };
+export { getCurrentTool };

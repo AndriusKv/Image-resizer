@@ -58,13 +58,13 @@ function getInputValues() {
 
 function verifyValues(values) {
     if (!values.length) {
-        dropbox.showMessage("No dimensions specified");
+        dropbox.message.show("No dimensions specified");
         dropbox.button.show("process");
     }
     else {
         values = values.filter(value => isDimensionsValid(value.width, value.height));
         if (!values.length) {
-            dropbox.showMessage("No valid values");
+            dropbox.message.show("No valid values");
             dropbox.button.show("process");
         }
     }
@@ -114,7 +114,7 @@ function appendInputs(element, num) {
 }
 
 function updateImageQuality(event) {
-    dropbox.showMessage(`Image quality set to: ${event.target.value}%`);
+    dropbox.message.show(`Image quality set to: ${event.target.value}%`);
 }
 
 function onDimensionInputFocus(event) {
