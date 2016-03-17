@@ -5,7 +5,7 @@
 importScripts("../libs/jszip.min.js");
 
 var zip = new JSZip();
-
+var content = null;
 var i = 0;
 
 function zipImages(name, uri, type) {
@@ -34,19 +34,25 @@ onmessage = function onmessage(event) {
 
             zipImages(image.name + i, uri, type);
             i += 1;
-
             break;
         case "generate":
             i = 0;
-
             if (Object.keys(zip.files).length) {
-                postMessage(zip.generate({ type: "blob" }));
+                content = zip.generate({ type: "blob" });
+                postMessage({ action: "notify" });
             }
-
+            break;
+        case "download":
+            if (content) {
+                postMessage({
+                    action: "download",
+                    content: content
+                });
+            }
             break;
         case "remove":
+            content = null;
             zip.remove("images");
-
             break;
     }
 };

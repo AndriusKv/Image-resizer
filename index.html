@@ -15,10 +15,10 @@
         <div id="js-progress-label" class="progress-label"></div>
         <div id="js-msg" class="info-msg"></div>
 		<div id="js-dropbox-label" class="label-title">Click to select or drop images here</div>
-        <div class="btn-container">
-            <button id="js-process" class="btn dropbox-btn">Process</button>
-            <button id="js-download" class="btn dropbox-btn">Download</button>
-            <button id="js-cancel" class="btn dropbox-btn">Cancel</button>
+        <div id="js-dropbox-btns" class="btn-container">
+            <button id="js-process" class="btn dropbox-btn" data-btn="process">Process</button>
+            <button id="js-download" class="btn dropbox-btn" data-btn="download">Download</button>
+            <button id="js-cancel" class="btn dropbox-btn" data-btn="cancel">Cancel</button>
         </div>
 	</label>
 	<input type="file" id="js-image-select" class="image-select-input" multiple>
@@ -53,16 +53,16 @@
         </div>
 	</div>
     <div id="js-crop" class="crop preload">
-        <div class="crop-container">
-            <div class="crop-info">
-                <div id="js-crop-remaining" class="crop-info-name"></div>
-                <div id="js-crop-image-name" class="crop-info-name"></div>
-                <button id="js-crop-close" class="btn inv-btn crop-btn">Close</button>
-            </div>
+        <div class="crop-info">
+            <div id="js-crop-remaining" class="crop-info-name"></div>
+            <div id="js-crop-image-name" class="crop-info-name"></div>
+            <button id="js-crop-close" class="btn inv-btn crop-btn">Close</button>
+        </div>
+        <div class="crop-main">
             <canvas id="js-canvas" class="crop-canvas"></canvas>
             <div class="crop-sidebar">
-				<button id="js-crop-reset" class="btn inv-btn reset-btn">Reset</button>
-				<canvas id="js-sidebar-preview"></canvas>
+                <button id="js-crop-reset" class="btn inv-btn reset-btn">Reset</button>
+                <canvas id="js-sidebar-preview"></canvas>
                 <div id="js-crop-data" class="crop-data">
                     <div class="crop-data-group">
                         <label for="js-crop-x" class="crop-data-measurment">X:</label>
@@ -97,7 +97,7 @@
                     <div class="crop-data-block">
                         <label for="js-crop-quality">Quality</label>
                         <input type="range" id="js-crop-quality" class="crop-data-quality-slider"
-							step="0.01" min="0" max="1" value="0.92">
+                            step="0.01" min="0" max="1" value="0.92">
                         <div id="js-quality-value">0.92</div>
                     </div>
                 </div>
@@ -107,8 +107,8 @@
                     <button id="js-crop-skip" class="btn inv-btn crop-btn" data-btn="skip">Skip</button>
                 </div>
             </div>
-            <div id="js-crop-preview" class="crop-preview-container"></div>
         </div>
+        <div id="js-crop-preview" class="crop-preview-container"></div>
     </div>
 	<script src="js/main.js"></script>
 </body>
