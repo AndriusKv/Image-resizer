@@ -800,7 +800,12 @@ function trackTransforms(ctx) {
         xform.d = 1;
         xform.e = 0;
         xform.f = 0;
-        ctx.resetTransform();
+        if (ctx.resetTransform) {
+            ctx.resetTransform();
+        }
+        else {
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
     }
 
     function setDefaultTranslation(x, y) {
