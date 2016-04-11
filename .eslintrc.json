@@ -57,8 +57,6 @@
         "eol-last": 2,
         "indent": [2, 4, {"SwitchCase": 1}],
         "no-lonely-if": 2,
-        "no-multiple-empty-lines": [2, {"max": 1, "maxEOF": 1}],
-        "no-trailing-spaces": 2,
         "arrow-spacing": [2, { "before": true, "after": true }],
         "no-const-assign": 2,
         "prefer-spread": 2,

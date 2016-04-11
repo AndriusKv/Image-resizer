@@ -1,0 +1,424 @@
+import * as dropbox from "./../dropbox.js";
+import * as canvas from "./cropper.canvas.js";
+import * as sidebar from "./cropper.sidebar.js";
+import * as events from "./cropper.canvas-events.js";
+import * as selectedArea from "./cropper.selected-area.js";
+import * as direction from "./cropper.direction.js";
+import * as ratio from "./cropper.ratio.js";
+import * as angle from "./cropper.angle.js";
+import * as quality from "./cropper.quality.js";
+
+const cropper = (function() {
+    const cropper = document.getElementById("js-crop");
+
+    function showCropper() {
+        cropper.classList.add("show");
+    }
+
+    function hideCropper() {
+        cropper.classList.remove("show");
+    }
+
+    return {
+        show: showCropper,
+        hide: hideCropper
+    };
+})();
+
+const preview = (function() {
+    const cropPreview = document.getElementById("js-crop-preview");
+    let previewState = false;
+
+    function showPreview(uri) {
+        const image = new Image();
+
+        image.classList.add("crop-preview-image");
+        image.onload = function() {
+            let width = image.width;
+            let height = image.height;
+            const maxWidth = window.innerWidth - 8;
+            const maxHeight = window.innerHeight - 40;
+            const ratio = width / height;
+
+            if (width > maxWidth) {
+                width = maxWidth;
+                height = Math.floor(width / ratio);
+            }
+
+            if (height > maxHeight) {
+                height = maxHeight;
+                width = Math.floor(height * ratio);
+            }
+
+            image.style.width = `${width}px`;
+            image.style.height = `${height}px`;
+        };
+        image.src = uri;
+        cropPreview.appendChild(image);
+        cropPreview.classList.add("show");
+        setState(true);
+    }
+
+    function hidePreview() {
+        cropPreview.classList.remove("show");
+
+        // remove preview image after animation finished running.
+        setTimeout(() => {
+            cropPreview.removeChild(cropPreview.children[0]);
+        }, 600);
+    }
+
+    function getState() {
+        return previewState;
+    }
+
+    function setState(state) {
+        previewState = state;
+    }
+
+    return {
+        show: showPreview,
+        hide: hidePreview,
+        getState,
+        setState
+    };
+})();
+
+const mousePosition = (function() {
+    let mousePosition = null;
+
+    function setPosition(pos) {
+        mousePosition = pos;
+    }
+
+    function getPosition() {
+        return mousePosition;
+    }
+
+    return {
+        set: setPosition,
+        get: getPosition
+    };
+})();
+
+function getImageData(image, area, ctx, angle, ratio) {
+    const transform = canvas.transform.getTransform();
+    const translatedX = transform.e * ratio.width;
+    const translatedY = transform.f * ratio.height;
+    const scale = transform.a;
+
+    ctx.save();
+    if (angle) {
+        const centerX = area.x + area.width / 2;
+        const centerY = area.y + area.height / 2;
+
+        ctx.translate(centerX, centerY);
+        ctx.rotate(-angle);
+        ctx.translate(-centerX, -centerY);
+    }
+    ctx.translate(translatedX, translatedY);
+    ctx.scale(scale, scale);
+    ctx.drawImage(image, 0, 0, image.width, image.height);
+    ctx.restore();
+    return ctx.getImageData(area.x, area.y, area.width, area.height);
+}
+
+function getCroppedCanvas(image, area) {
+    const croppedCanvas = document.createElement("canvas");
+    const ctx = croppedCanvas.getContext("2d");
+    const translated = canvas.transform.getTranslated();
+    const imageRatio = ratio.get();
+    const translatedX = translated.x * imageRatio.width;
+    const translatedY = translated.y * imageRatio.height;
+
+    croppedCanvas.width = image.width + translatedX * 2;
+    croppedCanvas.height = image.height + translatedY * 2;
+
+    const imageData = getImageData(image, area, ctx, angle.get(), imageRatio);
+
+    croppedCanvas.width = imageData.width;
+    croppedCanvas.height = imageData.height;
+    ctx.putImageData(imageData, 0, 0);
+    return croppedCanvas;
+}
+
+function sendImageToWorker(imageToCrop) {
+    return new Promise(resolve => {
+        const image = new Image();
+
+        image.onload = function() {
+            const area = selectedArea.getScaled(ratio.get());
+            const croppedCanvas = getCroppedCanvas(image, area);
+
+            dropbox.worker.post({
+                action: "add",
+                image: {
+                    name: imageToCrop.name.setByUser,
+                    type: imageToCrop.type.slice(6),
+                    uri: croppedCanvas.toDataURL(imageToCrop.type, quality.get())
+                }
+            });
+            resolve();
+        };
+        image.src = imageToCrop.uri;
+    });
+}
+
+function updateImageCount(count, multiple) {
+    const remaining = count - 1;
+    let value = "";
+
+    if (remaining > 1 || multiple) {
+        value = `${remaining} images remaining`;
+    }
+    else if (remaining === 1) {
+        value = `${remaining} image remaining`;
+    }
+    document.getElementById("js-crop-remaining").textContent = value;
+}
+
+function displayImageName(name) {
+    document.getElementById("js-crop-image-name").textContent = name;
+}
+
+function getImageSize({ width, height }, maxWidth, maxHeight) {
+    const ratio = width / height;
+
+    if (width > maxWidth) {
+        width = maxWidth;
+        height = width / ratio;
+    }
+    if (height > maxHeight) {
+        height = maxHeight;
+        width = height * ratio;
+    }
+    return { width, height };
+}
+
+function updateTransformedArea(area, canvasReset) {
+    const getTransformedPoint = canvas.transform.getTransformedPoint;
+    let { x, y } = getTransformedPoint(area.x, area.y);
+    const pt = getTransformedPoint(area.x + area.width, area.y + area.height);
+    const width = pt.x - x;
+    const height = pt.y - y;
+
+    selectedArea.set({
+        x: x,
+        y: y,
+        width: width,
+        height: height
+    }, true);
+
+    if (canvasReset) {
+        x = 0;
+        y = 0;
+    }
+    sidebar.updatePointDisplay(x, y);
+    sidebar.updateMeasurmentDisplay(width, height);
+}
+
+function init() {
+    const image = dropbox.images.getFirst();
+
+    setupInitialImage(image);
+    canvas.addEventListener("wheel", handleScroll);
+    canvas.addEventListener("mousedown", onSelectionStart);
+    dropbox.worker.init();
+    cropper.show();
+}
+
+function draw() {
+    const image = canvas.getImage(quality.useImageWithQuality());
+    const currentAngle = angle.get();
+    const area = selectedArea.get();
+    const scaledArea = selectedArea.getScaled(ratio.get());
+    const areaDrawn = selectedArea.getHasArea();
+
+    canvas.drawCanvas(image, area, currentAngle, areaDrawn);
+    sidebar.preview.draw(image.src, scaledArea);
+}
+
+function setupInitialImage(image, multiple) {
+    const imageCount = dropbox.images.getCount();
+
+    updateImageCount(imageCount, multiple);
+    displayImageName(image.name.original);
+    sidebar.toggleButtons(true);
+    sidebar.toggleSkipButton(imageCount);
+    canvas.drawInitialImage(image.uri, getImageSize)
+    .then(data => {
+        selectedArea.setDefaultPos(data.translated.x, data.translated.y);
+        ratio.set(data.widthRatio, data.heightRatio);
+    });
+}
+
+function onSelectionStart(event) {
+    if (event.which !== 1) {
+        return;
+    }
+
+    const { x, y } = canvas.getMousePosition(event);
+    const area = selectedArea.get();
+    const hasArea = area.width && area.height;
+    const currentAngle = angle.get();
+    const newDirection = direction.set(x, y, area);
+    let eventToEnable = "select";
+
+    if (event.shiftKey) {
+        mousePosition.set(canvas.transform.getTransformedPoint(x, y));
+        eventToEnable = "drag";
+    }
+    else if (event.ctrlKey && hasArea) {
+        if (selectedArea.isInside(area, x, y, currentAngle)) {
+            mousePosition.set({
+                x: x - area.x,
+                y: y - area.y
+            });
+            eventToEnable = "move";
+        }
+        else {
+            eventToEnable = "rotate";
+        }
+    }
+    else if (newDirection && hasArea && !currentAngle) {
+        eventToEnable = "resize";
+    }
+    else {
+        resetAreaAndAngle();
+        selectedArea.setProp("x", x);
+        selectedArea.setProp("y", y);
+        sidebar.updatePointDisplay(x, y);
+    }
+    events.toggleEvent(eventToEnable);
+    requestAnimationFrame(draw);
+}
+
+function resetAreaAndAngle(canvasReset) {
+    const area = selectedArea.reset();
+
+    angle.reset();
+    sidebar.cropDataInputs.setValue("angle", 0);
+    sidebar.preview.clean();
+    updateTransformedArea(area, canvasReset);
+}
+
+function resetCropper() {
+    cropper.hide();
+    updateImageCount(0);
+    resetData();
+    events.toggleCursorEvents();
+    canvas.removeEventListener("wheel", handleScroll);
+    canvas.removeEventListener("mousedown", onSelectionStart);
+    dropbox.generateZip();
+}
+
+function resetData() {
+    quality.reset();
+    sidebar.resetQualityAndScaleDisplay();
+    resetAreaAndAngle(true);
+}
+
+function scaleImage(x, y, scale) {
+    const area = selectedArea.get();
+    const transform = canvas.transform;
+
+    transform.translate(x, y);
+    transform.scale(scale / 100);
+    transform.translate(-x, -y);
+
+    if (area.width && area.height) {
+        updateTransformedArea(area);
+    }
+    else {
+        const { e: translatedX, f: translatedY } = transform.getTransform();
+
+        selectedArea.setProp("x", translatedX);
+        selectedArea.setProp("y", translatedY);
+    }
+    requestAnimationFrame(draw);
+}
+
+function handleScroll(event) {
+    const { x, y } = canvas.getMousePosition(event);
+    const pt = canvas.transform.getTransformedPoint(x, y);
+    let scale = sidebar.cropDataInputs.getValue("scale");
+
+    if (event.deltaY > 0) {
+        scale *= 0.8;
+    }
+    else {
+        scale /= 0.8;
+    }
+    scaleImage(pt.x, pt.y, scale);
+    sidebar.cropDataInputs.setValue("scale", Math.round(scale));
+}
+
+function loadNextImage(image) {
+    resetData();
+    selectedArea.setHasArea(false);
+    canvas.hideCanvas();
+    setTimeout(() => {
+        setupInitialImage(image, true);
+    }, 240);
+}
+
+function cropImage() {
+    const images = dropbox.images;
+    const image = images.remove(0);
+
+    sendImageToWorker(image)
+    .then(() => {
+        if (!images.getCount()) {
+            resetCropper();
+        }
+        else {
+            loadNextImage(images.getFirst());
+        }
+    });
+}
+
+function showPreview() {
+    const area = selectedArea.getScaled(ratio.get());
+    const { src: image } = canvas.getImage();
+    const croppedCanvas = getCroppedCanvas(image, area);
+    const uri = croppedCanvas.toDataURL("image/jpeg", quality.get());
+
+    preview.show(uri);
+}
+
+function skipImage() {
+    const images = dropbox.images;
+
+    images.remove(0);
+
+    const nextImage = images.getFirst();
+
+    if (nextImage) {
+        loadNextImage(nextImage);
+    }
+}
+
+function closeCropping() {
+    if (preview.getState()) {
+        preview.setState(false);
+        preview.hide();
+        return;
+    }
+    resetCropper();
+}
+
+document.getElementById("js-crop-close").addEventListener("click", closeCropping);
+
+export {
+    init,
+    draw,
+    preview,
+    mousePosition,
+    getImageSize,
+    updateTransformedArea,
+    getCroppedCanvas,
+    resetData,
+    cropImage,
+    showPreview,
+    skipImage
+};
