@@ -223,6 +223,8 @@ function init() {
     setupInitialImage(image);
     canvas.addEventListener("wheel", handleScroll);
     canvas.addEventListener("mousedown", onSelectionStart);
+    canvas.addEventListener("mousemove", trackMousePosition);
+    canvas.addEventListener("mouseleave", hideMousePosition);
     dropbox.worker.init();
     cropper.show();
 }
@@ -309,6 +311,8 @@ function resetCropper() {
     events.toggleCursorEvents();
     canvas.removeEventListener("wheel", handleScroll);
     canvas.removeEventListener("mousedown", onSelectionStart);
+    canvas.removeEventListener("mousemove", trackMousePosition);
+    canvas.removeEventListener("mouseleave", hideMousePosition);
     dropbox.generateZip();
 }
 
@@ -351,6 +355,19 @@ function handleScroll(event) {
     }
     scaleImage(pt.x, pt.y, scale);
     sidebar.cropDataInputs.setValue("scale", Math.round(scale));
+}
+
+function trackMousePosition(event) {
+    const { x, y } = canvas.getMousePosition(event);
+    const pt = canvas.transform.getTransformedPoint(x, y);
+    const mousePosX = Math.floor(pt.x);
+    const mousePosY = Math.floor(pt.y);
+
+    document.getElementById("js-crop-mouse-pos").textContent = `${mousePosX}, ${mousePosY}`;
+}
+
+function hideMousePosition() {
+    document.getElementById("js-crop-mouse-pos").textContent = "";
 }
 
 function loadNextImage(image) {

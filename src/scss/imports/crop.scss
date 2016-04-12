@@ -97,14 +97,19 @@
 }
 .crop-bottom-bar {
     overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     height: 28px;
     border-top: 1px solid $dark-color;
+}
+.crop-mouse-pos {
+    font-size: 12px;
 }
 .crop-button-container {
     float: right;
     display: flex;
     align-items: flex-end;
-    flex-grow: 1;
     width: 192px;
 
     .crop-btn {
@@ -118,7 +123,7 @@
     padding: 2px 8px;
 
     &:disabled {
-        color: rgba(0, 52, 89, .2);
+        color: #aaa;
 
         &:hover { background-color: $light-color; }
     }
