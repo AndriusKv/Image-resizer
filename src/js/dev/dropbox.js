@@ -2,7 +2,7 @@
 
 import * as resizer from "./resizer.js";
 import * as tools from "./tools.js";
-import * as cropper from "./cropper.js";
+import * as cropper from "./cropper/cropper.js";
 
 const state = (function() {
 

@@ -50,14 +50,12 @@
 	height: 4px;
 
 	&::-webkit-progress-bar { background-color: inherit; }
-
 	&::-webkit-progress-value { background-color: $brand-color2; }
-
     &.show { display: block; }
 }
-
-.image-select-input { display: none; }
-
+.image-select-input {
+    display: none;
+}
 .btn-container {
     position: absolute;
     left: 0;

@@ -13,14 +13,16 @@
         background-color: rgba(0, 52, 89, .8);
     }
 }
-.label-container { text-align: center; }
-
+.label-container {
+    text-align: center;
+}
 .dimension-label {
 	display: inline-block;
 	width: calc(50% - 4px);
 }
-.dimension-inputs { text-align: center; }
-
+.dimension-inputs {
+    text-align: center;
+}
 .image-input {
 	@extend %primary-input-styles;
 
@@ -40,12 +42,11 @@
         height: 26px;
         padding-top: 0;
     }
-
     &:last-of-type { height: auto; }
 }
-
-.setting-label { vertical-align: middle; }
-
+.setting-label {
+    vertical-align: middle;
+}
 .setting-action {
     float: right;
     width: 200px;
