@@ -134,17 +134,6 @@ function resetQualityAndScaleDisplay() {
     setQualityDisplayValue();
 }
 
-function resetCanvas() {
-    const translated = canvas.transform.getTranslated();
-
-    cropper.resetData();
-    selectedArea.setDefaultPos(translated.x, translated.y);
-    selectedArea.setHasArea(false);
-    canvas.transform.resetTransform();
-    canvas.drawImage(canvas.getImage());
-    toggleButtons(true);
-}
-
 function insertChar(target, char) {
     const start = target.selectionStart;
     const end = target.selectionEnd;
@@ -247,27 +236,9 @@ function adjustQuality(event) {
     quality.set(newQuality);
 }
 
-function onSidebarBtnClick(event) {
-    const btn = event.target.getAttribute("data-btn");
-
-    switch (btn) {
-        case "crop":
-            cropper.cropImage();
-            break;
-        case "preview":
-            cropper.showPreview();
-            break;
-        case "skip":
-            cropper.skipImage();
-            break;
-    }
-}
-
-document.getElementById("js-crop-reset").addEventListener("click", resetCanvas, false);
-cropData.addEventListener("keypress", updateCanvasWithCropData, false);
-cropData.addEventListener("keyup", updateSelectedAreaWithCropData, false);
-document.getElementById("js-crop-quality").addEventListener("input", adjustQuality, false);
-document.getElementById("js-crop-data-btns").addEventListener("click", onSidebarBtnClick, false);
+cropData.addEventListener("keypress", updateCanvasWithCropData);
+cropData.addEventListener("keyup", updateSelectedAreaWithCropData);
+document.getElementById("js-crop-quality").addEventListener("input", adjustQuality);
 
 export {
     preview,

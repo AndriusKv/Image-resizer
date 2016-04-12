@@ -398,6 +398,17 @@ function skipImage() {
     }
 }
 
+function resetCanvas() {
+    const translated = canvas.transform.getTranslated();
+
+    resetData();
+    selectedArea.setDefaultPos(translated.x, translated.y);
+    selectedArea.setHasArea(false);
+    canvas.transform.resetTransform();
+    canvas.drawImage(canvas.getImage());
+    sidebar.toggleButtons(true);
+}
+
 function closeCropping() {
     if (preview.getState()) {
         preview.setState(false);
@@ -407,7 +418,25 @@ function closeCropping() {
     resetCropper();
 }
 
+function onSidebarBtnClick(event) {
+    const btn = event.target.getAttribute("data-btn");
+
+    switch (btn) {
+        case "crop":
+            cropImage();
+            break;
+        case "preview":
+            showPreview();
+            break;
+        case "skip":
+            skipImage();
+            break;
+    }
+}
+
+document.getElementById("js-crop-reset").addEventListener("click", resetCanvas);
 document.getElementById("js-crop-close").addEventListener("click", closeCropping);
+document.getElementById("js-crop-data-btns").addEventListener("click", onSidebarBtnClick);
 
 export {
     init,
