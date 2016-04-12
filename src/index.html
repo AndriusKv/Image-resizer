@@ -53,15 +53,17 @@
         </div>
 	</div>
     <div id="js-crop" class="crop preload">
-        <div class="crop-info">
-            <div id="js-crop-remaining" class="crop-info-name"></div>
-            <div id="js-crop-image-name" class="crop-info-name"></div>
-            <button id="js-crop-close" class="btn inv-btn crop-btn">Close</button>
+        <div class="crop-bar crop-top-bar">
+            <span id="js-crop-remaining"></span>
+            <span id="js-crop-image-name"></span>
+			<div>
+				<button id="js-crop-reset" class="btn inv-btn crop-btn">Reset</button>
+				<button id="js-crop-close" class="btn inv-btn crop-btn">Close</button>
+			</div>
         </div>
         <div class="crop-main">
             <canvas id="js-canvas" class="crop-canvas"></canvas>
-            <div class="crop-sidebar">
-                <button id="js-crop-reset" class="btn inv-btn reset-btn">Reset</button>
+            <div class="crop-bar crop-sidebar">
                 <canvas id="js-sidebar-preview"></canvas>
                 <div id="js-crop-data" class="crop-data">
                     <div class="crop-data-group">
@@ -101,13 +103,15 @@
                         <div id="js-quality-value">0.92</div>
                     </div>
                 </div>
-                <div id="js-crop-data-btns" class="crop-button-container">
-                    <button id="js-crop-ok" class="btn inv-btn crop-btn" data-btn="crop">Crop</button>
-                    <button id="js-crop-preview-btn" class="btn inv-btn crop-btn" data-btn="preview">Preview</button>
-                    <button id="js-crop-skip" class="btn inv-btn crop-btn" data-btn="skip">Skip</button>
-                </div>
             </div>
         </div>
+		<div class="crop-bar crop-bottom-bar">
+			<div id="js-crop-data-btns" class="crop-button-container">
+				<button id="js-crop-ok" class="btn inv-btn crop-btn" data-btn="crop">Crop</button>
+				<button id="js-crop-preview-btn" class="btn inv-btn crop-btn" data-btn="preview">Preview</button>
+				<button id="js-crop-skip" class="btn inv-btn crop-btn" data-btn="skip">Skip</button>
+			</div>
+		</div>
         <div id="js-crop-preview" class="crop-preview-container"></div>
     </div>
 	<script src="js/main.js"></script>

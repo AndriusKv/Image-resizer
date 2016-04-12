@@ -8,7 +8,6 @@
     left: 0;
     right: 0;
     height: 100%;
-    padding: 4px;
     background-color: $light-color;
     cursor: default;
     transform: scale(.8);
@@ -21,26 +20,25 @@
         transform: scale(1);
     }
 }
-.crop-info {
+.crop-bar {
+    padding: 4px;
+    background-color: $brand-color2;
+    color: $light-color;
+}
+.crop-top-bar {
     user-select: none;
     z-index: 1;
     position: relative;
     display: flex;
     justify-content: space-between;
-    margin-bottom: 4px;
-    padding: 4px;
-    background-color: $brand-color2;
-    box-shadow: 0 0 5px rgba(0,0,0,0.4);
+    align-items: center;
+    height: 28px;
+    border-bottom: 1px solid $dark-color;
     font-size: 14px;
-    color: $light-color;
-}
-.crop-info-name {
-    line-height: 1.428;
 }
 .crop-main {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
 }
 .crop-canvas {
     vertical-align: top;
@@ -57,19 +55,10 @@
 .crop-sidebar {
     user-select: none;
     width: 200px;
-    margin-left: 4px;
-    padding: 4px;
-    background-color: $brand-color2;
-    box-shadow: 0 0 5px rgba(0,0,0,0.4);
-    color: $light-color;
-}
-.reset-btn {
-    float: right;
-    padding-top: 2px;
-    margin-bottom: 4px;
-    font-size: 10px;
+    border-left: 1px solid $dark-color;
 }
 .crop-data {
+    margin-top: 4px;
     font-size: 12px;
     color: $dark-color;
 }
@@ -100,25 +89,33 @@
     text-align: center;
 }
 .crop-data-quality-slider {
-    width: calc(100% - 8px);
-    margin: 4px 0;
-
     @extend %slider;
+
+    width: 100%;
+    margin-bottom: 6px;
+
+}
+.crop-bottom-bar {
+    overflow: hidden;
+    height: 28px;
+    border-top: 1px solid $dark-color;
 }
 .crop-button-container {
+    float: right;
     display: flex;
-    margin-top: 8px;
+    align-items: flex-end;
+    flex-grow: 1;
+    width: 192px;
 
     .crop-btn {
         flex-basis: 33%;
         border-right: 1px solid #ccc;
 
-        &:last-of-type { border: 0; }
-        &:active { transform: scale(1); }
+        &:last-of-type { border-right: 0; }
     }
 }
 .crop-btn {
-    font-size: 14px;
+    padding: 2px 8px;
 
     &:disabled {
         color: rgba(0, 52, 89, .2);

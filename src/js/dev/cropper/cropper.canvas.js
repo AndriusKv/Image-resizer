@@ -269,8 +269,8 @@ function drawCanvas(image, area, angle, areaDrawn) {
 function drawInitialImage(uri, cb) {
     const ctx = getContext();
     const { src: image } = getImage();
-    const maxWidth = window.innerWidth - 212;
-    const maxHeight = window.innerHeight - 40;
+    const maxWidth = window.innerWidth - 200;
+    const maxHeight = window.innerHeight - 56;
 
     changeCanvasQuality = loadCanvasWithQuality(uri);
     setCanvasDimensions(maxWidth, maxHeight);
