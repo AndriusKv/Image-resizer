@@ -123,7 +123,7 @@ function getImageData(image, area, ctx, angle, ratio) {
     return ctx.getImageData(area.x, area.y, area.width, area.height);
 }
 
-function getCroppedCanvas(image, area) {
+function getCroppedCanvas(image, area, sidebarHidden) {
     const croppedCanvas = document.createElement("canvas");
     const ctx = croppedCanvas.getContext("2d");
     const translated = canvas.transform.getTranslated();
@@ -133,6 +133,10 @@ function getCroppedCanvas(image, area) {
 
     croppedCanvas.width = image.width + translatedX * 2;
     croppedCanvas.height = image.height + translatedY * 2;
+
+    if (sidebarHidden) {
+        croppedCanvas.width += 200;
+    }
 
     const imageData = getImageData(image, area, ctx, angle.get(), imageRatio);
 
@@ -396,9 +400,9 @@ function cropImage() {
 
 function showPreview() {
     const area = selectedArea.getScaled(ratio.get());
-    const { src: image } = canvas.getImage();
-    const croppedCanvas = getCroppedCanvas(image, area);
-    const uri = croppedCanvas.toDataURL("image/jpeg", quality.get());
+    const { src: image } = canvas.getImage(quality.useImageWithQuality());
+    const croppedCanvas = getCroppedCanvas(image, area, !sidebar.isVisible());
+    const uri = croppedCanvas.toDataURL("image/jpeg");
 
     preview.show(uri);
 }
@@ -413,6 +417,31 @@ function skipImage() {
     if (nextImage) {
         loadNextImage(nextImage);
     }
+}
+
+function toggleSidebar(btn) {
+    const { classList } = document.getElementById("js-crop-sidebar");
+    const transform = canvas.transform.getTransform();
+    const visible = classList.contains("hide");
+
+    if (visible) {
+        btn.setAttribute("title", "hide sidebar");
+        btn.style.transform = "rotateZ(0)";
+        canvas.setCanvasDimensions(window.innerWidth - 200);
+    }
+    else {
+        btn.setAttribute("title", "show sidebar");
+        btn.style.transform = "rotateZ(180deg)";
+        canvas.setCanvasDimensions(window.innerWidth);
+    }
+    sidebar.setVisibility(visible);
+    canvas.transform.setTransform(
+        transform.a, transform.b,
+        transform.c, transform.d,
+        transform.e, transform.f
+    );
+    classList.toggle("hide");
+    requestAnimationFrame(draw);
 }
 
 function resetCanvas() {
@@ -435,8 +464,21 @@ function closeCropping() {
     resetCropper();
 }
 
-function onSidebarBtnClick(event) {
-    const btn = event.target.getAttribute("data-btn");
+function onTopBarBtnClick({ target }) {
+    const btn = target.getAttribute("data-btn");
+
+    switch (btn) {
+        case "reset":
+            resetCanvas();
+            break;
+        case "close":
+            closeCropping();
+            break;
+    }
+}
+
+function onBottomBarBtnClick({ target }) {
+    const btn = target.getAttribute("data-btn");
 
     switch (btn) {
         case "crop":
@@ -448,12 +490,14 @@ function onSidebarBtnClick(event) {
         case "skip":
             skipImage();
             break;
+        case "toggle":
+            toggleSidebar(target);
+            break;
     }
 }
 
-document.getElementById("js-crop-reset").addEventListener("click", resetCanvas);
-document.getElementById("js-crop-close").addEventListener("click", closeCropping);
-document.getElementById("js-crop-data-btns").addEventListener("click", onSidebarBtnClick);
+document.getElementById("js-crop-top-btns").addEventListener("click", onTopBarBtnClick);
+document.getElementById("js-crop-bottom-btns").addEventListener("click", onBottomBarBtnClick);
 
 export {
     init,

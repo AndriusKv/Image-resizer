@@ -6,6 +6,7 @@ import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
 
 const cropData = document.getElementById("js-crop-data");
+let visible = true;
 
 const cropDataInputs = (function() {
     function getDataInput(name) {
@@ -67,6 +68,14 @@ const preview = (function() {
 
     return { clean, draw };
 })();
+
+function setVisibility(value) {
+    visible = value;
+}
+
+function isVisible() {
+    return visible;
+}
 
 function setQualityDisplayValue(value = 0.92) {
     document.getElementById("js-quality-value").textContent = value;
@@ -243,6 +252,8 @@ document.getElementById("js-crop-quality").addEventListener("input", adjustQuali
 export {
     preview,
     cropDataInputs,
+    setVisibility,
+    isVisible,
     toggleButtons,
     toggleSkipButton,
     updatePointDisplay,

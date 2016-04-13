@@ -38,19 +38,18 @@ const transform = (function trackTransforms(ctx) {
         return pt.matrixTransform(xform.inverse());
     }
 
+    function setTransform(a, b, c, d, e, f) {
+        xform.a = a;
+        xform.b = b;
+        xform.c = c;
+        xform.d = d;
+        xform.e = e;
+        xform.f = f;
+        ctx.setTransform(a, b, c, d, e, f);
+    }
+
     function resetTransform() {
-        xform.a = 1;
-        xform.b = 0;
-        xform.c = 0;
-        xform.d = 1;
-        xform.e = 0;
-        xform.f = 0;
-        if (ctx.resetTransform) {
-            ctx.resetTransform();
-        }
-        else {
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
-        }
+        setTransform(1, 0, 0, 1, 0, 0);
         translateDefault();
     }
 
@@ -71,6 +70,7 @@ const transform = (function trackTransforms(ctx) {
         scale,
         translate,
         getTransformedPoint,
+        setTransform,
         resetTransform
     };
 })(getContext());
@@ -109,7 +109,9 @@ function getCanvasDimensions() {
 
 function setCanvasDimensions(width, height) {
     canvas.width = width;
-    canvas.height = height;
+    if (height) {
+        canvas.height = height;
+    }
 }
 
 function addEventListener(event, cb) {
@@ -302,6 +304,7 @@ export {
     hideCanvas,
     transform,
     getCanvasDimensions,
+    setCanvasDimensions,
     getImage,
     getMousePosition,
     drawInitialImage,

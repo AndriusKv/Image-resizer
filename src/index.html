@@ -56,14 +56,14 @@
         <div class="crop-bar crop-top-bar">
             <span id="js-crop-remaining"></span>
             <span id="js-crop-image-name"></span>
-			<div>
-				<button id="js-crop-reset" class="btn inv-btn crop-btn">Reset</button>
-				<button id="js-crop-close" class="btn inv-btn crop-btn">Close</button>
+			<div id="js-crop-top-btns">
+				<button class="btn inv-btn crop-btn" data-btn="reset">Reset</button>
+				<button class="btn inv-btn crop-btn" data-btn="close">Close</button>
 			</div>
         </div>
         <div class="crop-main">
             <canvas id="js-canvas" class="crop-canvas"></canvas>
-            <div class="crop-bar crop-sidebar">
+            <div id="js-crop-sidebar" class="crop-bar crop-sidebar">
                 <canvas id="js-sidebar-preview"></canvas>
                 <div id="js-crop-data" class="crop-data">
                     <div class="crop-data-group">
@@ -107,10 +107,11 @@
         </div>
 		<div class="crop-bar crop-bottom-bar">
 			<div id="js-crop-mouse-pos" class="crop-mouse-pos"></div>
-			<div id="js-crop-data-btns" class="crop-button-container">
+			<div id="js-crop-bottom-btns" class="crop-button-container">
 				<button id="js-crop-ok" class="btn inv-btn crop-btn" data-btn="crop">Crop</button>
 				<button id="js-crop-preview-btn" class="btn inv-btn crop-btn" data-btn="preview">Preview</button>
 				<button id="js-crop-skip" class="btn inv-btn crop-btn" data-btn="skip">Skip</button>
+				<button class="btn inv-btn crop-btn" data-btn="toggle" title="hide sidebar">>></button>
 			</div>
 		</div>
         <div id="js-crop-preview" class="crop-preview-container"></div>

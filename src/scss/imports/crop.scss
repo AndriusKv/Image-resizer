@@ -38,7 +38,7 @@
 }
 .crop-main {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
 }
 .crop-canvas {
     vertical-align: top;
@@ -56,6 +56,8 @@
     user-select: none;
     width: 200px;
     border-left: 1px solid $dark-color;
+
+    &.hide { display: none; }
 }
 .crop-data {
     margin-top: 4px;
@@ -113,10 +115,13 @@
     width: 192px;
 
     .crop-btn {
-        flex-basis: 33%;
+        flex-basis: 30%;
         border-right: 1px solid #ccc;
 
-        &:last-of-type { border-right: 0; }
+        &:last-of-type {
+            flex-basis: 10%;
+            border-right: 0;
+        }
     }
 }
 .crop-btn {
