@@ -214,6 +214,10 @@ function changeCursor(event) {
 
     cropper.mousePosition.set({ x, y });
 
+    if (!area.width || !area.height) {
+        return;
+    }
+
     if (event.ctrlKey) {
         let cursor = "default";
 
