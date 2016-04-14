@@ -30,7 +30,7 @@
     "browserify": "^13.0.0",
     "eslint": "^2.7.0",
     "node-sass": "^3.4.2",
-    "onchange": "^2.2.0"
+    "onchange": "^2.3.0"
   },
   "browserify": {
     "transform": [
