@@ -27,17 +27,16 @@ const cropper = (function() {
 
 const preview = (function() {
     const cropPreview = document.getElementById("js-crop-preview");
-    let previewState = false;
+    const imageContainer = cropPreview.firstElementChild;
 
     function showPreview(uri) {
         const image = new Image();
 
-        image.classList.add("crop-preview-image");
         image.onload = function() {
             let width = image.width;
             let height = image.height;
             const maxWidth = window.innerWidth - 8;
-            const maxHeight = window.innerHeight - 40;
+            const maxHeight = window.innerHeight - 8;
             const ratio = width / height;
 
             if (width > maxWidth) {
@@ -54,9 +53,8 @@ const preview = (function() {
             image.style.height = `${height}px`;
         };
         image.src = uri;
-        cropPreview.appendChild(image);
+        imageContainer.appendChild(image);
         cropPreview.classList.add("show");
-        setState(true);
     }
 
     function hidePreview() {
@@ -64,23 +62,13 @@ const preview = (function() {
 
         // remove preview image after animation finished running.
         setTimeout(() => {
-            cropPreview.removeChild(cropPreview.children[0]);
+            imageContainer.removeChild(imageContainer.lastElementChild);
         }, 600);
-    }
-
-    function getState() {
-        return previewState;
-    }
-
-    function setState(state) {
-        previewState = state;
     }
 
     return {
         show: showPreview,
-        hide: hidePreview,
-        getState,
-        setState
+        hide: hidePreview
     };
 })();
 
@@ -455,15 +443,6 @@ function resetCanvas() {
     sidebar.toggleButtons(true);
 }
 
-function closeCropping() {
-    if (preview.getState()) {
-        preview.setState(false);
-        preview.hide();
-        return;
-    }
-    resetCropper();
-}
-
 function onTopBarBtnClick({ target }) {
     const btn = target.getAttribute("data-btn");
 
@@ -472,7 +451,7 @@ function onTopBarBtnClick({ target }) {
             resetCanvas();
             break;
         case "close":
-            closeCropping();
+            resetCropper();
             break;
     }
 }
@@ -498,6 +477,7 @@ function onBottomBarBtnClick({ target }) {
 
 document.getElementById("js-crop-top-btns").addEventListener("click", onTopBarBtnClick);
 document.getElementById("js-crop-bottom-btns").addEventListener("click", onBottomBarBtnClick);
+document.getElementById("js-crop-preview-close").addEventListener("click", preview.hide);
 
 export {
     init,
