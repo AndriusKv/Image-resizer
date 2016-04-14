@@ -205,7 +205,10 @@ function updateTransformedArea(area, canvasReset) {
         x = 0;
         y = 0;
     }
-    sidebar.updatePointDisplay(x, y);
+
+    const transformedArea = selectedArea.get(true);
+
+    sidebar.updatePointDisplay(transformedArea, x, y);
     sidebar.updateMeasurmentDisplay(width, height);
 }
 
@@ -281,7 +284,11 @@ function onSelectionStart(event) {
         resetAreaAndAngle();
         selectedArea.setProp("x", x);
         selectedArea.setProp("y", y);
-        sidebar.updatePointDisplay(x, y);
+
+        const area = selectedArea.get(true);
+        const pt = canvas.transform.getTransformedPoint(x, y);
+
+        sidebar.updatePointDisplay(area, pt.x, pt.y);
     }
     events.toggleEvent(eventToEnable);
     requestAnimationFrame(draw);

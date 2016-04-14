@@ -109,8 +109,7 @@ function getCoordToUpdate(coordValue, dimensionValue) {
     return 0;
 }
 
-function updatePointDisplay(x, y) {
-    const area = selectedArea.get(true);
+function updatePointDisplay(area, x, y) {
     const { width: widthRatio, height: heightRatio } = ratio.get();
 
     if (area.width && area.height) {
@@ -118,22 +117,22 @@ function updatePointDisplay(x, y) {
         y = getCoordToUpdate(y, area.height);
     }
 
-    cropDataInputs.setValue("x", Math.round(x * widthRatio));
-    cropDataInputs.setValue("y", Math.round(y * heightRatio));
+    cropDataInputs.setValue("x", Math.floor(x * widthRatio));
+    cropDataInputs.setValue("y", Math.floor(y * heightRatio));
 }
 
 function updateMeasurmentDisplay(width, height) {
     const { width: widthRatio, height: heightRatio } = ratio.get();
 
-    width = Math.round(width * widthRatio);
-    height = Math.round(height * heightRatio);
+    width = Math.floor(width * widthRatio);
+    height = Math.floor(height * heightRatio);
 
     cropDataInputs.setValue("width", width < 0 ? -width : width);
     cropDataInputs.setValue("height", height < 0 ? -height : height);
 }
 
 function updateDataDisplay(area) {
-    updatePointDisplay(area.x, area.y);
+    updatePointDisplay(area, area.x, area.y);
     updateMeasurmentDisplay(area.width, area.height);
 }
 
