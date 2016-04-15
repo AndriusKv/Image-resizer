@@ -151,12 +151,10 @@ function moveArea(event) {
 
     const mousePos = cropper.mousePosition.get();
     const { x, y } = canvas.getMousePosition(event);
-    const newX = selectedArea.setProp("x", x - mousePos.x);
-    const newY = selectedArea.setProp("y", y - mousePos.y);
-    const area = selectedArea.get(true);
-    const pt = canvas.transform.getTransformedPoint(newX, newY);
 
-    sidebar.updatePointDisplay(area, pt.x, pt.y);
+    selectedArea.setProp("x", x - mousePos.x);
+    selectedArea.setProp("y", y - mousePos.y);
+    cropper.updateTransformedArea(selectedArea.get());
     requestAnimationFrame(cropper.draw);
 }
 
@@ -173,10 +171,7 @@ function dragImage(event) {
 
     transform.translate(pt.x - mousePos.x, pt.y - mousePos.y);
     if (area.width && area.height) {
-        const area = selectedArea.get(true);
-        const pt = transform.getTransformedPoint(area.x, area.y);
-
-        sidebar.updatePointDisplay(area, pt.x, pt.y);
+        cropper.updateTransformedArea(area);
     }
     requestAnimationFrame(cropper.draw);
 }

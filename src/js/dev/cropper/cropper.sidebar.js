@@ -6,7 +6,6 @@ import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
 
 const cropData = document.getElementById("js-crop-data");
-let visible = true;
 
 const cropDataInputs = (function() {
     function getDataInput(name) {
@@ -69,14 +68,6 @@ const preview = (function() {
     return { clean, draw };
 })();
 
-function setVisibility(value) {
-    visible = value;
-}
-
-function isVisible() {
-    return visible;
-}
-
 function setQualityDisplayValue(value = 0.92) {
     document.getElementById("js-quality-value").textContent = value;
 }
@@ -109,7 +100,7 @@ function getCoordToUpdate(coordValue, dimensionValue) {
     return 0;
 }
 
-function updatePointDisplay(area, x, y) {
+function updatePointDisplay(area, x = area.x, y = area.y) {
     const { width: widthRatio, height: heightRatio } = ratio.get();
 
     if (area.width && area.height) {
@@ -132,7 +123,7 @@ function updateMeasurmentDisplay(width, height) {
 }
 
 function updateDataDisplay(area) {
-    updatePointDisplay(area, area.x, area.y);
+    updatePointDisplay(area);
     updateMeasurmentDisplay(area.width, area.height);
 }
 
@@ -251,8 +242,6 @@ document.getElementById("js-crop-quality").addEventListener("input", adjustQuali
 export {
     preview,
     cropDataInputs,
-    setVisibility,
-    isVisible,
     toggleButtons,
     toggleSkipButton,
     updatePointDisplay,

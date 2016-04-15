@@ -4,7 +4,7 @@ const area = {
     width: 0,
     height: 0
 };
-const transformedArea = {};
+const transformedArea = Object.assign({}, area);
 let hasArea;
 
 function getArea(transformed) {
@@ -13,10 +13,10 @@ function getArea(transformed) {
 
 function getScaledArea({ width: widthRatio, height: heightRatio }) {
     return {
-        x: area.x * widthRatio,
-        y: area.y * heightRatio,
-        width: area.width * widthRatio,
-        height: area.height * heightRatio
+        x: Math.floor(transformedArea.x * widthRatio),
+        y: Math.floor(transformedArea.y * heightRatio),
+        width: Math.floor(transformedArea.width * widthRatio),
+        height: Math.floor(transformedArea.height * heightRatio)
     };
 }
 
@@ -33,13 +33,8 @@ function setArea(newArea, transformed) {
     return area;
 }
 
-function setAreaProp(key, value, transformed) {
-    if (transformed) {
-        transformedArea[key] = value;
-    }
-    else {
-        area[key] = value;
-    }
+function setAreaProp(key, value) {
+    area[key] = value;
     return value;
 }
 
@@ -96,7 +91,7 @@ function updateAreaFromInput(input, inputValue, ratio, transform) {
     const scale = transform.a;
     let areaValue = 0;
 
-    transformedArea[input] = inputValue / ratio * scale || 0;
+    transformedArea[input] = inputValue || 0;
     if (input === "x") {
         areaValue = transform.e;
         if (area.width < 0) {
@@ -119,7 +114,7 @@ function updateAreaFromInput(input, inputValue, ratio, transform) {
             area.y = area.y + area[input];
         }
     }
-    area[input] = areaValue + transformedArea[input];
+    area[input] = areaValue + transformedArea[input] / ratio * scale;
 }
 
 function setHasArea(area) {
