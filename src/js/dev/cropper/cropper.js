@@ -89,12 +89,7 @@ const mousePosition = (function() {
     };
 })();
 
-function getImageData(image, area, ctx, angle, ratio) {
-    const transform = canvas.transform.getTransform();
-    const translatedX = transform.e * ratio.width;
-    const translatedY = transform.f * ratio.height;
-    const scale = transform.a;
-
+function getImageData(image, area, ctx, angle) {
     ctx.save();
     if (angle) {
         const centerX = area.x + area.width / 2;
@@ -104,29 +99,19 @@ function getImageData(image, area, ctx, angle, ratio) {
         ctx.rotate(-angle);
         ctx.translate(-centerX, -centerY);
     }
-    ctx.translate(translatedX, translatedY);
-    ctx.scale(scale, scale);
     ctx.drawImage(image, 0, 0, image.width, image.height);
     ctx.restore();
     return ctx.getImageData(area.x, area.y, area.width, area.height);
 }
 
-function getCroppedCanvas(image, area, sidebarHidden) {
+function getCroppedCanvas(image, area) {
     const croppedCanvas = document.createElement("canvas");
     const ctx = croppedCanvas.getContext("2d");
-    const translated = canvas.transform.getTranslated();
-    const imageRatio = ratio.get();
-    const translatedX = translated.x * imageRatio.width;
-    const translatedY = translated.y * imageRatio.height;
 
-    croppedCanvas.width = image.width + translatedX * 2;
-    croppedCanvas.height = image.height + translatedY * 2;
+    croppedCanvas.width = image.width;
+    croppedCanvas.height = image.height;
 
-    if (sidebarHidden) {
-        croppedCanvas.width += 200;
-    }
-
-    const imageData = getImageData(image, area, ctx, angle.get(), imageRatio);
+    const imageData = getImageData(image, area, ctx, angle.get());
 
     croppedCanvas.width = imageData.width;
     croppedCanvas.height = imageData.height;
@@ -139,8 +124,8 @@ function sendImageToWorker(imageToCrop) {
         const image = new Image();
 
         image.onload = function() {
-            const area = selectedArea.getScaled(ratio.get());
-            const croppedCanvas = getCroppedCanvas(image, area);
+            const scaledArea = selectedArea.getScaled(ratio.get());
+            const croppedCanvas = getCroppedCanvas(image, scaledArea);
 
             dropbox.worker.post({
                 action: "add",
@@ -189,12 +174,11 @@ function getImageSize({ width, height }, maxWidth, maxHeight) {
 
 function updateTransformedArea(area, canvasReset) {
     const getTransformedPoint = canvas.transform.getTransformedPoint;
-    let { x, y } = getTransformedPoint(area.x, area.y);
+    const { x, y } = getTransformedPoint(area.x, area.y);
     const pt = getTransformedPoint(area.x + area.width, area.y + area.height);
     const width = pt.x - x;
     const height = pt.y - y;
-
-    selectedArea.set({
+    const transformedArea = selectedArea.set({
         x: x,
         y: y,
         width: width,
@@ -202,11 +186,11 @@ function updateTransformedArea(area, canvasReset) {
     }, true);
 
     if (canvasReset) {
-        x = 0;
-        y = 0;
+        transformedArea.x = 0;
+        transformedArea.y = 0;
     }
-    sidebar.updatePointDisplay(x, y);
-    sidebar.updateMeasurmentDisplay(width, height);
+
+    sidebar.updateDataDisplay(transformedArea);
 }
 
 function init() {
@@ -281,7 +265,11 @@ function onSelectionStart(event) {
         resetAreaAndAngle();
         selectedArea.setProp("x", x);
         selectedArea.setProp("y", y);
-        sidebar.updatePointDisplay(x, y);
+
+        const area = selectedArea.get(true);
+        const pt = canvas.transform.getTransformedPoint(x, y);
+
+        sidebar.updatePointDisplay(area, pt.x, pt.y);
     }
     events.toggleEvent(eventToEnable);
     requestAnimationFrame(draw);
@@ -389,7 +377,7 @@ function cropImage() {
 function showPreview() {
     const area = selectedArea.getScaled(ratio.get());
     const { src: image } = canvas.getImage(quality.useImageWithQuality());
-    const croppedCanvas = getCroppedCanvas(image, area, !sidebar.isVisible());
+    const croppedCanvas = getCroppedCanvas(image, area);
     const uri = croppedCanvas.toDataURL("image/jpeg");
 
     preview.show(uri);
@@ -410,9 +398,8 @@ function skipImage() {
 function toggleSidebar(btn) {
     const { classList } = document.getElementById("js-crop-sidebar");
     const transform = canvas.transform.getTransform();
-    const visible = classList.contains("hide");
 
-    if (visible) {
+    if (classList.contains("hide")) {
         btn.setAttribute("title", "hide sidebar");
         btn.style.transform = "rotateZ(0)";
         canvas.setCanvasDimensions(window.innerWidth - 200);
@@ -422,7 +409,6 @@ function toggleSidebar(btn) {
         btn.style.transform = "rotateZ(180deg)";
         canvas.setCanvasDimensions(window.innerWidth);
     }
-    sidebar.setVisibility(visible);
     canvas.transform.setTransform(
         transform.a, transform.b,
         transform.c, transform.d,
@@ -487,6 +473,7 @@ export {
     getImageSize,
     updateTransformedArea,
     getCroppedCanvas,
+    scaleImage,
     resetData,
     cropImage,
     showPreview,

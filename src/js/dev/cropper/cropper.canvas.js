@@ -271,7 +271,11 @@ function drawCanvas(image, area, angle, areaDrawn) {
 function drawInitialImage(uri, cb) {
     const ctx = getContext();
     const { src: image } = getImage();
+
+    // -200 to account for sidebar
     const maxWidth = window.innerWidth - 200;
+
+    // -56 to account for top bar and bottom bar
     const maxHeight = window.innerHeight - 56;
 
     changeCanvasQuality = loadCanvasWithQuality(uri);
