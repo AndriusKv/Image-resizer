@@ -21,44 +21,58 @@ function toggleCursorEvents(addEvents) {
     }
 }
 
-function toggleEventListeners(event, cb) {
+function toggleEvent(event = currentEvent) {
     const cropping = document.getElementById("js-crop");
     const removeEvents = event === currentEvent;
 
     if (removeEvents) {
         currentEvent = "";
-        cropping.removeEventListener("mousemove", cb);
+        cropping.removeEventListener("mousemove", onMousemove);
         cropping.removeEventListener("mouseup", onMouseup);
     }
     else {
         currentEvent = event;
-        cropping.addEventListener("mousemove", cb);
+        cropping.addEventListener("mousemove", onMousemove);
         cropping.addEventListener("mouseup", onMouseup);
     }
     toggleCursorEvents(removeEvents);
 }
 
-function toggleEvent(event = currentEvent) {
-    let cb = null;
+function onMousemove(event) {
+    if (event.target !== document.getElementById("js-canvas")) {
+        event.preventDefault();
+    }
 
-    switch (event) {
+    const { x, y } = canvas.getMousePosition(event);
+    const area = selectedArea.get();
+
+    switch (currentEvent) {
         case "select":
-            cb = selectArea;
+            selectArea(area, x, y);
             break;
         case "resize":
-            cb = resizeArea;
+            resizeArea(area, x, y);
             break;
         case "rotate":
-            cb = rotateArea;
+            rotateArea(area, x, y);
             break;
         case "move":
-            cb = moveArea;
+            if (!event.ctrlKey) {
+                return;
+            }
+            moveArea(x, y);
             break;
         case "drag":
-            cb = dragImage;
+            if (!event.shiftKey) {
+                return;
+            }
+            dragImage(x, y);
             break;
     }
-    toggleEventListeners(event, cb);
+    if (area.width && area.height && currentEvent !== "rotate") {
+        cropper.updateTransformedArea(area);
+    }
+    requestAnimationFrame(cropper.draw);
 }
 
 function onMouseup() {
@@ -81,21 +95,14 @@ function onMouseup() {
     sidebar.toggleButtons(!hasArea);
 }
 
-function selectArea(event) {
-    const { x, y } = canvas.getMousePosition(event);
-    const area = selectedArea.get();
-
+function selectArea(area, x, y) {
     selectedArea.setProp("width", x - area.x);
     selectedArea.setProp("height", y - area.y);
     selectedArea.setHasArea(true);
-    cropper.updateTransformedArea(area);
-    requestAnimationFrame(cropper.draw);
 }
 
-function resizeArea(event) {
-    const { x, y } = canvas.getMousePosition(event);
+function resizeArea(area, x, y) {
     const newDirection = direction.get();
-    const area = selectedArea.get();
     let oppositeDirection = "";
 
     if (newDirection.indexOf("n") !== -1) {
@@ -123,57 +130,39 @@ function resizeArea(event) {
 
         canvas.setCursor(selectedDirection + "-resize");
     }
-    cropper.updateTransformedArea(area);
-    requestAnimationFrame(cropper.draw);
 }
 
-function getAngleInRadians(event) {
-    const { x, y } = canvas.getMousePosition(event);
-    const area = selectedArea.get();
+function getAngleInRadians(area, x, y) {
     const x2 = area.x + area.width / 2;
     const y2 = area.y + area.height / 2;
 
     return Math.atan2(y2 - y, x2 - x);
 }
 
-function rotateArea(event) {
-    const radians = getAngleInRadians(event);
+function rotateArea(area, x, y) {
+    const radians = getAngleInRadians(area, x, y);
     const degrees = angle.set(radians, "deg");
 
     sidebar.cropDataInputs.setValue("angle", degrees);
-    requestAnimationFrame(cropper.draw);
 }
 
-function moveArea(event) {
-    if (!event.ctrlKey) {
-        return;
-    }
-
+function moveArea(x, y) {
     const mousePos = cropper.mousePosition.get();
-    const { x, y } = canvas.getMousePosition(event);
 
     selectedArea.setProp("x", x - mousePos.x);
     selectedArea.setProp("y", y - mousePos.y);
-    cropper.updateTransformedArea(selectedArea.get());
-    requestAnimationFrame(cropper.draw);
 }
 
-function dragImage(event) {
+function dragImage(x, y) {
     const mousePos = cropper.mousePosition.get();
 
     if (!mousePos) {
         return;
     }
     const transform = canvas.transform;
-    const { x, y } = canvas.getMousePosition(event);
     const pt = transform.getTransformedPoint(x, y);
-    const area = selectedArea.get();
 
     transform.translate(pt.x - mousePos.x, pt.y - mousePos.y);
-    if (area.width && area.height) {
-        cropper.updateTransformedArea(area);
-    }
-    requestAnimationFrame(cropper.draw);
 }
 
 function removeMoveCursor() {
