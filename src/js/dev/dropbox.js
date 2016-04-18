@@ -27,6 +27,7 @@ const state = (function() {
 
 const images = (function() {
     const images = [];
+    let storedImageCount = 0;
 
     function getAll() {
         return images;
@@ -52,13 +53,28 @@ const images = (function() {
         images.length = 0;
     }
 
+    function incStoredImageCount() {
+        storedImageCount += 1;
+    }
+
+    function getStoredImageCount() {
+        return storedImageCount;
+    }
+
+    function resetStoredImageCount() {
+        storedImageCount = 0;
+    }
+
     return {
         add: addImage,
         remove: removeImage,
         getCount: getImageCount,
         reset: resetImages,
         getAll,
-        getFirst
+        getFirst,
+        incStoredImageCount,
+        getStoredImageCount,
+        resetStoredImageCount
     };
 })();
 
@@ -257,8 +273,11 @@ function setImageName(name) {
 }
 
 function generateZip() {
-    progress.setLabel("Generating archive");
-    worker.post({ action: "generate" });
+    if (images.getStoredImageCount()) {
+        images.resetStoredImageCount();
+        progress.setLabel("Generating archive");
+        worker.post({ action: "generate" });
+    }
 }
 
 function readImage(image) {

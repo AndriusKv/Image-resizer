@@ -1,7 +1,5 @@
 /* global importScripts, JSZip, onmessage, postMessage */
 
-"use strict";
-
 importScripts("../libs/jszip.min.js");
 
 const zip = new JSZip();

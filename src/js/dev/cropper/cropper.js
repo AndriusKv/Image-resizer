@@ -135,6 +135,7 @@ function sendImageToWorker(imageToCrop) {
                     uri: croppedCanvas.toDataURL(imageToCrop.type, quality.get())
                 }
             });
+            dropbox.images.incStoredImageCount();
             resolve();
         };
         image.src = imageToCrop.uri;

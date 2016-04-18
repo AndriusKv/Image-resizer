@@ -10,7 +10,7 @@
     "watch:scss": "onchange 'src/scss/*.scss' 'src/scss/imports/*.scss' -- npm run scss",
     "watch:js": "onchange 'src/js/dev/*.js' 'src/js/dev/**/*.js' -- npm run js",
     "watch": "npm run watch:js & npm run watch:scss",
-    "start": "live-server & npm run watch",
+    "start": "live-server && npm run watch",
     "build:html": "cp src/index.html dist",
     "build:css": "npm run scss && csso src/css/main.css dist/css/main.css",
     "build:js": "npm run js && uglifyjs src/js/main.js -mco dist/js/main.js",
@@ -19,7 +19,7 @@
     "build:img": "cp -R src/images dist/images",
     "prebuild": "rm -rf dist && mkdir -p dist/{css,js/workers}",
     "build": "npm run build:html && npm run build:css && npm run build:js && npm run build:img && npm run build:lib && npm run build:worker",
-    "postbuild": "rm -rf src/css & rm src/js/main.js"
+    "postbuild": "rm -rf src/css && rm src/js/main.js"
   },
   "author": "",
   "license": "ISC",
