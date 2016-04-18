@@ -15,9 +15,9 @@
     "build:css": "npm run scss && csso src/css/main.css dist/css/main.css",
     "build:js": "npm run js && uglifyjs src/js/main.js -mco dist/js/main.js",
     "build:lib": "cp -R src/js/libs dist/js",
-    "build:worker": "cp -R src/js/workers dist/js",
+    "build:worker": "babel src/js/workers/worker1.js -o dist/js/workers/worker1.js",
     "build:img": "cp -R src/images dist/images",
-    "prebuild": "rm -rf dist && mkdir dist dist/css dist/js dist/js/libs dist/js/workers",
+    "prebuild": "rm -rf dist && mkdir -p dist/{css,js/workers}",
     "build": "npm run build:html && npm run build:css && npm run build:js && npm run build:img && npm run build:lib && npm run build:worker",
     "postbuild": "rm -rf src/css & rm src/js/main.js"
   },
