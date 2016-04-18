@@ -1,6 +1,6 @@
-/* global importScripts, JSZip, onmessage, postMessage */
-
 "use strict";
+
+/* global importScripts, JSZip, onmessage, postMessage */
 
 importScripts("../libs/jszip.min.js");
 
