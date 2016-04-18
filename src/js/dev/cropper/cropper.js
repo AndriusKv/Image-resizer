@@ -89,7 +89,7 @@ const mousePosition = (function() {
     };
 })();
 
-function getImageData(image, area, ctx, angle) {
+function getImageData(image, area, ctx, angle, translated) {
     ctx.save();
     if (angle) {
         const centerX = area.x + area.width / 2;
@@ -101,17 +101,23 @@ function getImageData(image, area, ctx, angle) {
     }
     ctx.drawImage(image, 0, 0, image.width, image.height);
     ctx.restore();
-    return ctx.getImageData(area.x, area.y, area.width, area.height);
+
+    return ctx.getImageData(area.x + translated.x, area.y + translated.y, area.width, area.height);
 }
 
 function getCroppedCanvas(image, area) {
     const croppedCanvas = document.createElement("canvas");
     const ctx = croppedCanvas.getContext("2d");
+    const translated = canvas.transform.getTranslated();
 
-    croppedCanvas.width = image.width;
-    croppedCanvas.height = image.height;
+    translated.x = translated.x * ratio.get("width");
+    translated.y = translated.y * ratio.get("height");
 
-    const imageData = getImageData(image, area, ctx, angle.get());
+    croppedCanvas.width = image.width + translated.x * 2;
+    croppedCanvas.height = image.height + translated.y * 2;
+    ctx.translate(translated.x, translated.y);
+
+    const imageData = getImageData(image, area, ctx, angle.get(), translated);
 
     croppedCanvas.width = imageData.width;
     croppedCanvas.height = imageData.height;
