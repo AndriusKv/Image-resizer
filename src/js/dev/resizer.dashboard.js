@@ -1,4 +1,5 @@
-import * as dropbox from "./dropbox.js";
+import * as message from "./dropbox/dropbox.message.js";
+import * as button from "./dropbox/dropbox.buttons.js";
 
 const dimensionInputContainer = document.getElementById("js-dimension-inputs");
 const imageName = document.getElementById("js-image-name");
@@ -58,14 +59,14 @@ function getInputValues() {
 
 function verifyValues(values) {
     if (!values.length) {
-        dropbox.message.show("No dimensions specified");
-        dropbox.button.show("process");
+        message.show("No dimensions specified");
+        button.show("process");
     }
     else {
         values = values.filter(value => isDimensionsValid(value.width, value.height));
         if (!values.length) {
-            dropbox.message.show("No valid values");
-            dropbox.button.show("process");
+            message.show("No valid values");
+            button.show("process");
         }
     }
     return values;
@@ -114,7 +115,7 @@ function appendInputs(element, num) {
 }
 
 function updateImageQuality(event) {
-    dropbox.message.show(`Image quality set to: ${event.target.value}%`);
+    message.show(`Image quality set to: ${event.target.value}%`);
 }
 
 function onDimensionInputFocus(event) {

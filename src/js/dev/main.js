@@ -1,5 +1,5 @@
-import "./dropbox.js";
-import "./dropbox.drag.js";
+import "./dropbox/dropbox.js";
+import "./dropbox/dropbox.drag.js";
 import "./tools.js";
 
 function removeTransitionPrevention() {

@@ -1,4 +1,9 @@
-import * as dropbox from "./dropbox.js";
+import * as state from "./editor.state.js";
+import * as worker from "./editor.worker.js";
+import * as dropbox from "./dropbox/dropbox.js";
+import * as images from "./dropbox/dropbox.images.js";
+import * as progress from "./dropbox/dropbox.progress.js";
+import * as button from "./dropbox/dropbox.buttons.js";
 import * as dashboard from "./resizer.dashboard.js";
 
 const imageCount = (function() {
@@ -87,12 +92,12 @@ function getUri(image, type, { width, height }) {
 }
 
 function doneResizing() {
-    if (dropbox.state.get() === 0) {
+    if (state.get() === 0) {
         return;
     }
-    dropbox.button.hide("cancel");
-    dropbox.progress.reset();
-    dropbox.progress.setLabel("");
+    button.hide("cancel");
+    progress.reset();
+    progress.setLabel("");
     dropbox.generateZip();
 }
 
@@ -103,13 +108,13 @@ function resizeImage(image, imageToResize, measurments) {
     };
     const adjustedDimensions = measurments.map(measurment => convertMeasurements(measurment, imageMeasurment));
 
-    dropbox.progress.setLabel(`Processing: ${imageToResize.name.original}`);
+    progress.setLabel(`Processing: ${imageToResize.name.original}`);
 
     return function resize(inc) {
         const dimension = adjustedDimensions.splice(0, 1)[0];
 
-        dropbox.progress.update(inc);
-        dropbox.worker.post({
+        progress.update(inc);
+        worker.post({
             action: "add",
             image: {
                 name: imageToResize.name.setByUser,
@@ -118,7 +123,7 @@ function resizeImage(image, imageToResize, measurments) {
             }
         });
         imageCount.decrement();
-        dropbox.images.incStoredImageCount();
+        images.incStoredImageCount();
         if (!imageCount.get()) {
             setTimeout(doneResizing, 1600);
             return;
@@ -128,7 +133,7 @@ function resizeImage(image, imageToResize, measurments) {
             const delay = imageToResize.size * dimension.width * dimension.height / 2000 + 120;
 
             setTimeout(() => {
-                if (dropbox.state.get() !== 0) {
+                if (state.get() !== 0) {
                     resize(inc);
                 }
             }, delay);
@@ -146,7 +151,7 @@ function processImage(images, measurments) {
         const imageToResize = images.splice(0, 1)[0];
 
         image.onload = function() {
-            if (dropbox.state.get() !== 0) {
+            if (state.get() !== 0) {
                 const resize = resizeImage(image, imageToResize, measurments);
 
                 resize(inc);
@@ -157,7 +162,7 @@ function processImage(images, measurments) {
             const delay = imageToResize.size * 400 + 100;
 
             setTimeout(() => {
-                if (dropbox.state.get() !== 0) {
+                if (state.get() !== 0) {
                     process();
                 }
             }, delay);
@@ -169,10 +174,10 @@ function processImages() {
     const inputValues = dashboard.getInputValues();
 
     if (inputValues.length) {
-        const images = dropbox.images.getAll();
-        const process = processImage(images, inputValues);
+        const imagesToProcess = images.getAll();
+        const process = processImage(imagesToProcess, inputValues);
 
-        dropbox.worker.init();
+        worker.init();
         dropbox.beforeWork();
         process();
         dashboard.saveToLocalStorage(inputValues);

@@ -1,3 +1,4 @@
+import * as state from "./../editor.state.js";
 import * as dropbox from "./dropbox.js";
 
 const dropboxElem = document.getElementById("js-dropbox");
@@ -11,7 +12,7 @@ function onDragover(event) {
 function onDragenter(event) {
     event.preventDefault();
 
-    if (dropbox.state.get() === 1) {
+    if (state.get() === 1) {
         return;
     }
     counter += 1;
@@ -19,7 +20,7 @@ function onDragenter(event) {
 }
 
 function onDragleave() {
-    if (dropbox.state.get() === 1) {
+    if (state.get() === 1) {
         return;
     }
     counter -= 1;
@@ -33,7 +34,7 @@ function onDrop(event) {
     dropboxElem.classList.remove("over");
     event.stopPropagation();
     event.preventDefault();
-    if (dropbox.state.get() === 1) {
+    if (state.get() === 1) {
         event.dataTransfer.dropEffect = "none";
         return;
     }
@@ -42,7 +43,7 @@ function onDrop(event) {
 }
 
 function onClick(event) {
-    if (dropbox.state.get() === 1) {
+    if (state.get() === 1) {
         event.preventDefault();
     }
 }

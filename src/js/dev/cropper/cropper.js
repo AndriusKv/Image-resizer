@@ -1,4 +1,6 @@
-import * as dropbox from "./../dropbox.js";
+import * as worker from "./../editor.worker.js";
+import * as dropbox from "./../dropbox/dropbox.js";
+import * as images from "./../dropbox/dropbox.images.js";
 import * as canvas from "./cropper.canvas.js";
 import * as sidebar from "./cropper.sidebar.js";
 import * as events from "./cropper.canvas-events.js";
@@ -133,7 +135,7 @@ function sendImageToWorker(imageToCrop) {
             const scaledArea = selectedArea.getScaled(ratio.get());
             const croppedCanvas = getCroppedCanvas(image, scaledArea);
 
-            dropbox.worker.post({
+            worker.post({
                 action: "add",
                 image: {
                     name: imageToCrop.name.setByUser,
@@ -141,7 +143,7 @@ function sendImageToWorker(imageToCrop) {
                     uri: croppedCanvas.toDataURL(imageToCrop.type, quality.get())
                 }
             });
-            dropbox.images.incStoredImageCount();
+            images.incStoredImageCount();
             resolve();
         };
         image.src = imageToCrop.uri;
@@ -201,14 +203,14 @@ function updateTransformedArea(area, canvasReset) {
 }
 
 function init() {
-    const image = dropbox.images.getFirst();
+    const image = images.getFirst();
 
     setupInitialImage(image);
     canvas.addEventListener("wheel", handleScroll);
     canvas.addEventListener("mousedown", onSelectionStart);
     canvas.addEventListener("mousemove", trackMousePosition);
     canvas.addEventListener("mouseleave", hideMousePosition);
-    dropbox.worker.init();
+    worker.init();
     cropper.show();
 }
 
@@ -224,7 +226,7 @@ function draw() {
 }
 
 function setupInitialImage(image, multiple) {
-    const imageCount = dropbox.images.getCount();
+    const imageCount = images.getCount();
 
     updateImageCount(imageCount, multiple);
     displayImageName(image.name.original);
@@ -367,7 +369,6 @@ function loadNextImage(image) {
 }
 
 function cropImage() {
-    const images = dropbox.images;
     const image = images.remove(0);
 
     sendImageToWorker(image)
@@ -391,8 +392,6 @@ function showPreview() {
 }
 
 function skipImage() {
-    const images = dropbox.images;
-
     images.remove(0);
 
     const nextImage = images.getFirst();

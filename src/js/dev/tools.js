@@ -1,4 +1,4 @@
-import { message } from "./dropbox.js";
+import * as message from "./dropbox/dropbox.message.js";
 
 let activeTool = "resizer";
 
