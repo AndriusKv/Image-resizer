@@ -92,6 +92,7 @@ function doneResizing() {
     }
     dropbox.button.hide("cancel");
     dropbox.progress.reset();
+    dropbox.progress.setLabel("");
     dropbox.generateZip();
 }
 
@@ -117,6 +118,7 @@ function resizeImage(image, imageToResize, measurments) {
             }
         });
         imageCount.decrement();
+        dropbox.images.incStoredImageCount();
         if (!imageCount.get()) {
             setTimeout(doneResizing, 1600);
             return;
