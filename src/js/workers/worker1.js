@@ -7,7 +7,7 @@ let content = null;
 let i = 0;
 
 function zipImages(name, uri, type) {
-    zip.folder("images").file(name + "." + type, uri, { base64: true });
+    zip.folder("images").file(`${name}.${type}`, uri, { base64: true });
 }
 
 function changeFileType(type) {
@@ -36,8 +36,11 @@ onmessage = function(event) {
         case "generate":
             i = 0;
             if (Object.keys(zip.files).length) {
-                content = zip.generate({type: "blob"});
-                postMessage({ action: "notify" });
+                zip.generateAsync({ type:"blob" })
+                .then(data => {
+                    content = data;
+                    postMessage({ action: "notify" });
+                });
             }
             break;
         case "download":
