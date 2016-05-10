@@ -33,7 +33,7 @@ function resetDropbox(newState = -1) {
     removeMasksAndLabel();
 }
 
-function doneReadingFiles() {
+function doneReadingImages() {
     if (tools.getCurrentTool() === "cropper") {
         resetDropbox();
         cropper.init();
@@ -92,7 +92,7 @@ function readImages(images, inc) {
     .then(() => {
         if (state.get() !== 0) {
             if (!images.length) {
-                setTimeout(doneReadingFiles, 1000);
+                setTimeout(doneReadingImages, 1000);
                 return;
             }
             readImages(images, inc);
