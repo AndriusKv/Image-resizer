@@ -33,17 +33,7 @@ function resetDropbox(newState = -1) {
     removeMasksAndLabel();
 }
 
-function doneReadingFiles() {
-    if (state.get() === 0) {
-        return;
-    }
-
-    if (!images.getCount()) {
-        resetDropbox();
-        message.show("No images to process");
-        return;
-    }
-
+function doneReadingImages() {
     if (tools.getCurrentTool() === "cropper") {
         resetDropbox();
         cropper.init();
@@ -52,10 +42,6 @@ function doneReadingFiles() {
         progress.reset();
         resizer.processImages();
     }
-}
-
-function isImage(type) {
-    return type.includes("image");
 }
 
 function removeFileType(fileName) {
@@ -78,43 +64,40 @@ function generateZip() {
 }
 
 function readImage(image) {
-    const reader = new FileReader();
+    return new Promise(resolve => {
+        const reader = new FileReader();
 
-    reader.readAsDataURL(image);
-    reader.onloadend = function(event) {
-        images.add({
-            name: {
-                original: image.name,
-                setByUser: setImageName(image.name)
-            },
-            type: image.type,
-            size: image.size / 1e6,
-            uri: event.target.result
-        });
-    };
+        reader.readAsDataURL(image);
+        reader.onloadend = function(event) {
+            images.add({
+                name: {
+                    original: image.name,
+                    setByUser: setImageName(image.name)
+                },
+                type: image.type,
+                size: image.size / 1e6,
+                uri: event.target.result
+            });
+            resolve();
+        };
+    });
 }
 
-function readFiles(files, inc) {
-    const file = files.splice(0, 1)[0];
+function readImages(images, inc) {
+    const image = images.splice(0, 1)[0];
 
-    progress.setLabel(`Reading: ${file.name}`);
-    if (isImage(file.type)) {
-        readImage(file);
-    }
-
+    progress.setLabel(`Reading: ${image.name}`);
     progress.update(inc);
-    if (!files.length) {
-        setTimeout(doneReadingFiles, 1200);
-        return;
-    }
-
-    const delay = file.size / 1e6 * 100 + 120;
-
-    setTimeout(() => {
+    readImage(image)
+    .then(() => {
         if (state.get() !== 0) {
-            readFiles(files, inc);
+            if (!images.length) {
+                setTimeout(doneReadingImages, 1000);
+                return;
+            }
+            readImages(images, inc);
         }
-    }, delay);
+    });
 }
 
 function cancelWork() {
@@ -123,9 +106,24 @@ function cancelWork() {
     message.show("Work canceled");
 }
 
-function onFiles(files) {
-    const inc = 100 / files.length;
+function filterOutNonImages(files) {
+    return files.filter(file => file.type.includes("image"));
+}
 
+function readFiles(files) {
+    const images = filterOutNonImages(files);
+
+    if (images.length) {
+        const inc = 100 / images.length;
+
+        readImages(images, inc);
+        return;
+    }
+    message.show("No images to process");
+    resetDropbox();
+}
+
+function onFiles(files) {
     if (worker.isInited()) {
         worker.post({ action: "remove" });
     }
@@ -137,7 +135,7 @@ function onFiles(files) {
     state.set(-1);
     button.hide("download");
     beforeWork();
-    readFiles([...files], inc);
+    readFiles([...files]);
 }
 
 function onBtnClick(event) {
