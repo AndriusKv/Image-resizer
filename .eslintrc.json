@@ -10,7 +10,8 @@
     "env": {
         "browser": true,
         "es6": true,
-        "worker": true
+        "worker": true,
+        "mocha": true
     },
     "rules": {
         "semi": 2,

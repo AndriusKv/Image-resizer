@@ -24,14 +24,8 @@ function setAngle(angle, convertTo) {
     if (convertTo === "deg") {
         const degrees = convertRadiansToDegrees(angle);
 
-        if (degrees === 0 || degrees === 360) {
-            theta = 0;
-        }
-        else {
-            theta = angle;
-        }
+        theta = degrees === 0 || degrees === 360 ? 0: angle;
         return degrees;
-
     }
 }
 
