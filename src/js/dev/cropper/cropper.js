@@ -219,7 +219,7 @@ function draw() {
     const currentAngle = angle.get();
     const area = selectedArea.get();
     const scaledArea = selectedArea.getScaled(ratio.get());
-    const areaDrawn = selectedArea.getHasArea();
+    const areaDrawn = selectedArea.isDrawn();
 
     canvas.drawCanvas(image, area, currentAngle, areaDrawn);
     sidebar.preview.draw(image.src, scaledArea);
@@ -361,7 +361,7 @@ function hideMousePosition() {
 
 function loadNextImage(image) {
     resetData();
-    selectedArea.setHasArea(false);
+    selectedArea.containsArea(false);
     canvas.hideCanvas();
     setTimeout(() => {
         setupInitialImage(image, true);
@@ -429,7 +429,7 @@ function resetCanvas() {
 
     resetData();
     selectedArea.setDefaultPos(translated.x, translated.y);
-    selectedArea.setHasArea(false);
+    selectedArea.containsArea(false);
     canvas.transform.resetTransform();
     canvas.drawImage(canvas.getImage());
     sidebar.toggleButtons(true);

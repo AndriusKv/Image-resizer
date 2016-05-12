@@ -77,10 +77,10 @@ function onMousemove(event) {
 
 function onMouseup() {
     const area = selectedArea.get();
-    const hasArea = area.width && area.height;
+    const containsArea = area.width && area.height;
 
     toggleEvent();
-    if (!hasArea) {
+    if (!containsArea) {
         const transform = canvas.transform.getTransform();
         const area = selectedArea.reset();
         const image = canvas.getImage(quality.useImageWithQuality());
@@ -91,14 +91,14 @@ function onMouseup() {
         canvas.drawImage(image);
         canvas.setCursor();
     }
-    selectedArea.setHasArea(hasArea);
-    sidebar.toggleButtons(!hasArea);
+    selectedArea.containsArea(containsArea);
+    sidebar.toggleButtons(!containsArea);
 }
 
 function selectArea(area, x, y) {
     selectedArea.setProp("width", x - area.x);
     selectedArea.setProp("height", y - area.y);
-    selectedArea.setHasArea(true);
+    selectedArea.containsArea(true);
 }
 
 function resizeArea(area, x, y) {
