@@ -103,30 +103,25 @@ function selectArea(area, x, y) {
 
 function resizeArea(area, x, y) {
     const newDirection = direction.get();
-    let oppositeDirection = "";
 
     if (newDirection.indexOf("n") !== -1) {
         selectedArea.setProp("height", area.y - y + area.height);
         selectedArea.setProp("y", y);
-        oppositeDirection = "n";
     }
     else if (newDirection.indexOf("s") !== -1) {
         selectedArea.setProp("height", y - area.y);
-        oppositeDirection = "s";
     }
 
     if (newDirection.indexOf("w") !== -1) {
         selectedArea.setProp("width", area.x - x + area.width);
         selectedArea.setProp("x", x);
-        oppositeDirection += "e";
     }
     else if (newDirection.indexOf("e") !== -1) {
         selectedArea.setProp("width", x - area.x);
-        oppositeDirection += "w";
     }
 
-    if (oppositeDirection.length > 1) {
-        const selectedDirection = direction.reverse(newDirection, oppositeDirection, area);
+    if (newDirection.length > 1) {
+        const selectedDirection = direction.reverse(newDirection, area);
 
         canvas.setCursor(selectedDirection + "-resize");
     }
@@ -182,12 +177,9 @@ function changeCursorToMove(event) {
 }
 
 function changeResizeCursor(area, x, y) {
-    const newDirection = direction.getOpposite(x, y, area);
-    let cursor = "default";
+    const newDirection = direction.getReal(x, y, area);
+    const cursor = newDirection ? `${newDirection}-resize` : "default";
 
-    if (newDirection) {
-        cursor = `${newDirection}-resize`;
-    }
     canvas.setCursor(cursor);
 }
 
