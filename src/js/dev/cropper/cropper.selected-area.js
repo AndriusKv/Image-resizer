@@ -5,13 +5,13 @@ const area = {
     height: 0
 };
 const transformedArea = Object.assign({}, area);
-let hasArea;
+let isAreaDrawn = false;
 
 function getArea(transformed) {
     return transformed ? transformedArea : area;
 }
 
-function getScaledArea({ width: widthRatio, height: heightRatio }) {
+function getScaledTransformedArea({ width: widthRatio, height: heightRatio }) {
     return {
         x: Math.floor(transformedArea.x * widthRatio),
         y: Math.floor(transformedArea.y * heightRatio),
@@ -117,25 +117,25 @@ function updateAreaFromInput(input, inputValue, ratio, transform) {
     area[input] = areaValue + transformedArea[input] / ratio * scale;
 }
 
-function setHasArea(area) {
-    hasArea = area;
-    return hasArea;
+function containsArea(areaDrawn) {
+    isAreaDrawn = areaDrawn;
+    return areaDrawn;
 }
 
-function getHasArea() {
-    return hasArea;
+function isDrawn() {
+    return isAreaDrawn;
 }
 
 export {
     getArea as get,
-    getScaledArea as getScaled,
+    getScaledTransformedArea as getScaled,
     setArea as set,
     getAreaProp as getProp,
     setAreaProp as setProp,
-    setDefaultPos as setDefaultPos,
     resetArea as reset,
     isInsideArea as isInside,
     updateAreaFromInput as update,
-    setHasArea as setHasArea,
-    getHasArea as getHasArea
+    setDefaultPos,
+    containsArea,
+    isDrawn
 };

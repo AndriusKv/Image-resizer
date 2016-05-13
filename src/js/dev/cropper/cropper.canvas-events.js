@@ -77,10 +77,10 @@ function onMousemove(event) {
 
 function onMouseup() {
     const area = selectedArea.get();
-    const hasArea = area.width && area.height;
+    const containsArea = area.width && area.height;
 
     toggleEvent();
-    if (!hasArea) {
+    if (!containsArea) {
         const transform = canvas.transform.getTransform();
         const area = selectedArea.reset();
         const image = canvas.getImage(quality.useImageWithQuality());
@@ -91,42 +91,37 @@ function onMouseup() {
         canvas.drawImage(image);
         canvas.setCursor();
     }
-    selectedArea.setHasArea(hasArea);
-    sidebar.toggleButtons(!hasArea);
+    selectedArea.containsArea(containsArea);
+    sidebar.toggleButtons(!containsArea);
 }
 
 function selectArea(area, x, y) {
     selectedArea.setProp("width", x - area.x);
     selectedArea.setProp("height", y - area.y);
-    selectedArea.setHasArea(true);
+    selectedArea.containsArea(true);
 }
 
 function resizeArea(area, x, y) {
     const newDirection = direction.get();
-    let oppositeDirection = "";
 
     if (newDirection.indexOf("n") !== -1) {
         selectedArea.setProp("height", area.y - y + area.height);
         selectedArea.setProp("y", y);
-        oppositeDirection = "n";
     }
     else if (newDirection.indexOf("s") !== -1) {
         selectedArea.setProp("height", y - area.y);
-        oppositeDirection = "s";
     }
 
     if (newDirection.indexOf("w") !== -1) {
         selectedArea.setProp("width", area.x - x + area.width);
         selectedArea.setProp("x", x);
-        oppositeDirection += "e";
     }
     else if (newDirection.indexOf("e") !== -1) {
         selectedArea.setProp("width", x - area.x);
-        oppositeDirection += "w";
     }
 
-    if (oppositeDirection.length > 1) {
-        const selectedDirection = direction.reverse(newDirection, oppositeDirection, area);
+    if (newDirection.length > 1) {
+        const selectedDirection = direction.reverse(newDirection, area);
 
         canvas.setCursor(selectedDirection + "-resize");
     }
@@ -182,12 +177,9 @@ function changeCursorToMove(event) {
 }
 
 function changeResizeCursor(area, x, y) {
-    const newDirection = direction.getOpposite(x, y, area);
-    let cursor = "default";
+    const newDirection = direction.getReal(x, y, area);
+    const cursor = newDirection ? `${newDirection}-resize` : "default";
 
-    if (newDirection) {
-        cursor = `${newDirection}-resize`;
-    }
     canvas.setCursor(cursor);
 }
 

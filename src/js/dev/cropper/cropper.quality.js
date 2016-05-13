@@ -3,7 +3,7 @@ let customQuality = false;
 let quality = defaultQuality;
 
 function setImageQuality(newQuality) {
-    customQuality = newQuality !== defaultQuality;
+    customQuality = newQuality < defaultQuality;
     quality = newQuality;
 }
 

@@ -14,38 +14,25 @@ function getVerticalDirection(direction, inWestBound, inEastBound) {
     return direction;
 }
 
-function reverseDirection(direction, oppositeDirection, area) {
+function reverseIntercardinalDirection(direction, area) {
     const x = area.x;
     const y = area.y;
     const x2 = x + area.width;
     const y2 = y + area.height;
 
-    if (x2 > x) {
-        if (y2 < y) {
-            return oppositeDirection;
-        }
-    }
-    else if (y2 > y) {
-        return oppositeDirection;
+    if (x2 > x && y2 < y || x2 < x && y2 > y) {
+        return direction[1] === "w" ? direction[0] + "e": direction[0] + "w";
     }
     return direction;
 }
 
-function getOppositeDirection(x, y, area) {
-    const newDirection = setDirection(x, y, area);
+function getRealDirection(x, y, area) {
+    const direction = setDirection(x, y, area);
 
-    switch (newDirection) {
-        case "nw":
-            return reverseDirection(newDirection, "ne", area);
-        case "ne":
-            return reverseDirection(newDirection, "nw", area);
-        case "sw":
-            return reverseDirection(newDirection, "se", area);
-        case "se":
-            return reverseDirection(newDirection, "sw", area);
-        default:
-            return newDirection;
+    if (direction.length < 2) {
+        return direction;
     }
+    return reverseIntercardinalDirection(direction, area);
 }
 
 function setDirection(x, y, area) {
@@ -82,7 +69,7 @@ function setDirection(x, y, area) {
 
 export {
     getDirection as get,
-    getOppositeDirection as getOpposite,
+    getRealDirection as getReal,
     setDirection as set,
-    reverseDirection as reverse
+    reverseIntercardinalDirection as reverse
 };
