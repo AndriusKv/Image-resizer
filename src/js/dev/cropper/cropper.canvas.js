@@ -205,7 +205,7 @@ function strokeRect(ctx, area) {
     ctx.strokeRect(area.x + 0.5, area.y + 0.5, area.width, area.height);
 }
 
-function drawArea(ctx, area, areaDrawn) {
+function drawArea(ctx, area, areaWasDrawn) {
     const width = area.width;
     const height = area.height;
     const hasArea = width && height;
@@ -222,7 +222,7 @@ function drawArea(ctx, area, areaDrawn) {
             y = y + height;
         }
     }
-    if (hasArea || areaDrawn) {
+    if (hasArea || areaWasDrawn) {
         addMask(ctx);
     }
     if (imageData) {
@@ -284,9 +284,7 @@ function drawInitialImage(uri, cb) {
     return new Promise(resolve => {
         image.onload = function() {
             const { width, height } = cb(image, maxWidth, maxHeight);
-            const x = (maxWidth - width) / 2;
-            const y = (maxHeight - height) / 2;
-            const translated = transform.setDefaultTranslation(x, y);
+            const translated = setDefaultImagePosition(width, height, maxWidth, maxHeight);
 
             canvasImage.width = width;
             canvasImage.height = height;
@@ -304,6 +302,13 @@ function drawInitialImage(uri, cb) {
     });
 }
 
+function setDefaultImagePosition(imageWidth, imageHeight, canvasWidth, canvasHeight) {
+    const x = (canvasWidth - imageWidth) / 2;
+    const y = (canvasHeight - imageHeight) / 2;
+
+    return transform.setDefaultTranslation(x, y);
+}
+
 export {
     hideCanvas,
     transform,
@@ -317,5 +322,6 @@ export {
     setCursor,
     addEventListener,
     removeEventListener,
-    getModifyQualityCb
+    getModifyQualityCb,
+    setDefaultImagePosition
 };

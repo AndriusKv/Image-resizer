@@ -6,6 +6,7 @@ import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
 
 const cropData = document.getElementById("js-crop-data");
+let sidebarVisible = true;
 
 const cropDataInputs = (function() {
     function getDataInput(name) {
@@ -67,6 +68,10 @@ const preview = (function() {
 
     return { clean, draw };
 })();
+
+function isVisible() {
+    return sidebarVisible;
+}
 
 function setQualityDisplayValue(value = 0.92) {
     document.getElementById("js-quality-value").textContent = value;
@@ -235,11 +240,30 @@ function adjustQuality(event) {
     quality.set(newQuality);
 }
 
+function toggleSidebar(btn) {
+    const { classList } = document.getElementById("js-crop-sidebar");
+
+    sidebarVisible = !sidebarVisible;
+    cropper.resetCanvasProperties(sidebarVisible);
+    requestAnimationFrame(cropper.draw);
+    if (classList.contains("hide")) {
+        btn.setAttribute("title", "Hide sidebar");
+        btn.style.transform = "rotateZ(0)";
+    }
+    else {
+        btn.setAttribute("title", "Show sidebar");
+        btn.style.transform = "rotateZ(180deg)";
+    }
+    classList.toggle("hide");
+}
+
 cropData.addEventListener("keypress", updateCanvasWithCropData);
 cropData.addEventListener("keyup", updateSelectedAreaWithCropData);
 document.getElementById("js-crop-quality").addEventListener("input", adjustQuality);
 
 export {
+    toggleSidebar as toggle,
+    isVisible,
     preview,
     cropDataInputs,
     toggleButtons,

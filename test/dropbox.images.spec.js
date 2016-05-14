@@ -53,6 +53,7 @@ describe("Dropbox images", () => {
 
         expect(images.getStoredImageCount()).to.equal(2);
     });
+
     it("should reset astored image count", () => {
         images.incStoredImageCount();
         images.incStoredImageCount();
