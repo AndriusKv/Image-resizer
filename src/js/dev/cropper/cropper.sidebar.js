@@ -41,6 +41,20 @@ const preview = (function() {
     preview.width = maxWidth;
     preview.height = maxHeight;
 
+    function getImageSize({width, height }, maxWidth, maxHeight) {
+        const ratio = width / height;
+
+        if (width >= height) {
+            width = maxWidth;
+            height = width / ratio;
+        }
+        if (width < height || height > maxHeight) {
+            height = maxHeight;
+            width = height * ratio;
+        }
+        return { width, height };
+    }
+
     function clean() {
         ctx.clearRect(0, 0, maxWidth, maxHeight);
     }
@@ -56,7 +70,7 @@ const preview = (function() {
         updating = true;
         requestAnimationFrame(() => {
             const croppedCanvas = cropper.getCroppedCanvas(image, area);
-            const { width, height } = cropper.getImageSize(croppedCanvas, maxWidth, maxHeight);
+            const { width, height } = getImageSize(croppedCanvas, maxWidth, maxHeight);
             const x = (maxWidth - width) / 2;
             const y = (maxHeight - height) / 2;
 
