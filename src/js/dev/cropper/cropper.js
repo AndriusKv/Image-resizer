@@ -91,6 +91,35 @@ const mousePosition = (function() {
     };
 })();
 
+const redrawOnResize = (function() {
+    let running = false;
+
+    function onResize() {
+        if (running) {
+            return;
+        }
+        running = true;
+        requestAnimationFrame(() => {
+            resetCanvasProperties(sidebar.isVisible());
+            draw();
+            running = false;
+        });
+    }
+
+    function enable() {
+        window.addEventListener("resize", onResize);
+    }
+
+    function disable() {
+        window.removeEventListener("resize", onResize);
+    }
+
+    return {
+        enable,
+        disable
+    };
+})();
+
 function getImageData(image, area, ctx, angle, translated) {
     ctx.save();
     if (angle) {
@@ -210,6 +239,7 @@ function init() {
     canvas.addEventListener("mousedown", onSelectionStart);
     canvas.addEventListener("mousemove", trackMousePosition);
     canvas.addEventListener("mouseleave", hideMousePosition);
+    redrawOnResize.enable();
     worker.init();
     cropper.show();
 }
@@ -218,11 +248,14 @@ function draw() {
     const image = canvas.getImage(quality.useImageWithQuality());
     const currentAngle = angle.get();
     const area = selectedArea.get();
-    const scaledArea = selectedArea.getScaled(ratio.get());
     const areaDrawn = selectedArea.isDrawn();
 
     canvas.drawCanvas(image, area, currentAngle, areaDrawn);
-    sidebar.preview.draw(image.src, scaledArea);
+    if (sidebar.isVisible()) {
+        const scaledArea = selectedArea.getScaled(ratio.get());
+
+        sidebar.preview.draw(image.src, scaledArea);
+    }
 }
 
 function setupInitialImage(image, multiple) {
@@ -302,6 +335,7 @@ function resetCropper() {
     canvas.removeEventListener("mousedown", onSelectionStart);
     canvas.removeEventListener("mousemove", trackMousePosition);
     canvas.removeEventListener("mouseleave", hideMousePosition);
+    redrawOnResize.disable();
     dropbox.generateZip();
 }
 
@@ -401,27 +435,20 @@ function skipImage() {
     }
 }
 
-function toggleSidebar(btn) {
-    const { classList } = document.getElementById("js-crop-sidebar");
+function resetCanvasProperties(sidebarVisible) {
     const transform = canvas.transform.getTransform();
+    const maxWidth = sidebarVisible ? window.innerWidth - 200 : window.innerWidth;
+    const maxHeight = window.innerHeight - 56;
+    const { src: image } = canvas.getImage();
+    const { width, height } = getImageSize(image, maxWidth, maxHeight);
 
-    if (classList.contains("hide")) {
-        btn.setAttribute("title", "hide sidebar");
-        btn.style.transform = "rotateZ(0)";
-        canvas.setCanvasDimensions(window.innerWidth - 200);
-    }
-    else {
-        btn.setAttribute("title", "show sidebar");
-        btn.style.transform = "rotateZ(180deg)";
-        canvas.setCanvasDimensions(window.innerWidth);
-    }
+    canvas.setDefaultImagePosition(width, height, maxWidth, maxHeight);
+    canvas.setCanvasDimensions(maxWidth, maxHeight);
     canvas.transform.setTransform(
         transform.a, transform.b,
         transform.c, transform.d,
         transform.e, transform.f
     );
-    classList.toggle("hide");
-    requestAnimationFrame(draw);
 }
 
 function resetCanvas() {
@@ -462,7 +489,7 @@ function onBottomBarBtnClick({ target }) {
             skipImage();
             break;
         case "toggle":
-            toggleSidebar(target);
+            sidebar.toggle(target);
             break;
     }
 }
@@ -481,6 +508,7 @@ export {
     getCroppedCanvas,
     scaleImage,
     resetData,
+    resetCanvasProperties,
     cropImage,
     showPreview,
     skipImage
