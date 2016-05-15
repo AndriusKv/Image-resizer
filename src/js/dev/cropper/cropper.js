@@ -3,6 +3,7 @@ import * as dropbox from "./../dropbox/dropbox.js";
 import * as images from "./../dropbox/dropbox.images.js";
 import * as canvas from "./cropper.canvas.js";
 import * as sidebar from "./cropper.sidebar.js";
+import * as dataInput from "./cropper.data-input.js";
 import * as events from "./cropper.canvas-events.js";
 import * as selectedArea from "./cropper.selected-area.js";
 import * as direction from "./cropper.direction.js";
@@ -228,7 +229,7 @@ function updateTransformedArea(area, canvasReset) {
         transformedArea.y = 0;
     }
 
-    sidebar.updateDataDisplay(transformedArea);
+    dataInput.update(transformedArea);
 }
 
 function init() {
@@ -263,8 +264,8 @@ function setupInitialImage(image, multiple) {
 
     updateImageCount(imageCount, multiple);
     displayImageName(image.name.original);
-    sidebar.toggleButtons(true);
-    sidebar.toggleSkipButton(imageCount);
+    sidebar.toggleButton(true, "crop", "preview");
+    sidebar.toggleButton(imageCount <= 1, "skip");
     canvas.drawInitialImage(image.uri, getImageSize)
     .then(data => {
         selectedArea.setDefaultPos(data.translated.x, data.translated.y);
@@ -311,7 +312,7 @@ function onSelectionStart(event) {
         const area = selectedArea.get(true);
         const pt = canvas.transform.getTransformedPoint(x, y);
 
-        sidebar.updatePointDisplay(area, pt.x, pt.y);
+        dataInput.updatePoint(area, pt.x, pt.y);
     }
     events.toggleEvent(eventToEnable);
     requestAnimationFrame(draw);
@@ -321,7 +322,7 @@ function resetAreaAndAngle(canvasReset) {
     const area = selectedArea.reset();
 
     angle.reset();
-    sidebar.cropDataInputs.setValue("angle", 0);
+    dataInput.setValue("angle", 0);
     sidebar.preview.clean();
     updateTransformedArea(area, canvasReset);
 }
@@ -341,7 +342,9 @@ function resetCropper() {
 
 function resetData() {
     quality.reset();
-    sidebar.resetQualityAndScaleDisplay();
+    dataInput.setValue("scale", 100);
+    dataInput.setValue("quality", 0.92);
+    dataInput.setValue("quality-display", 0.92);
     resetAreaAndAngle(true);
 }
 
@@ -368,7 +371,7 @@ function scaleImage(x, y, scale) {
 function handleScroll(event) {
     const { x, y } = canvas.getMousePosition(event);
     const pt = canvas.transform.getTransformedPoint(x, y);
-    let scale = sidebar.cropDataInputs.getValue("scale");
+    let scale = dataInput.getValue("scale");
 
     if (event.deltaY > 0) {
         scale *= 0.8;
@@ -377,7 +380,7 @@ function handleScroll(event) {
         scale /= 0.8;
     }
     scaleImage(pt.x, pt.y, scale);
-    sidebar.cropDataInputs.setValue("scale", Math.round(scale));
+    dataInput.setValue("scale", Math.round(scale));
 }
 
 function trackMousePosition(event) {
@@ -459,7 +462,7 @@ function resetCanvas() {
     selectedArea.containsArea(false);
     canvas.transform.resetTransform();
     canvas.drawImage(canvas.getImage());
-    sidebar.toggleButtons(true);
+    sidebar.toggleButton(true, "crop", "preview");
 }
 
 function onTopBarBtnClick({ target }) {
@@ -501,15 +504,9 @@ document.getElementById("js-crop-preview-close").addEventListener("click", previ
 export {
     init,
     draw,
-    preview,
     mousePosition,
-    getImageSize,
     updateTransformedArea,
     getCroppedCanvas,
     scaleImage,
-    resetData,
-    resetCanvasProperties,
-    cropImage,
-    showPreview,
-    skipImage
+    resetCanvasProperties
 };
