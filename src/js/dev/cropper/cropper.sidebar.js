@@ -1,5 +1,6 @@
 import * as cropper from "./cropper.js";
 import * as canvas from "./cropper.canvas.js";
+import * as dataInput from "./cropper.data-input.js";
 import * as selectedArea from "./cropper.selected-area.js";
 import * as ratio from "./cropper.ratio.js";
 import * as angle from "./cropper.angle.js";
@@ -8,30 +9,7 @@ import * as quality from "./cropper.quality.js";
 const cropData = document.getElementById("js-crop-data");
 let sidebarVisible = true;
 
-const cropDataInputs = (function() {
-    function getDataInput(name) {
-        return document.getElementById(`js-crop-${name}`);
-    }
-
-    function getInputValue(name) {
-        const input = getDataInput(name);
-
-        return input.value;
-    }
-
-    function setInputValue(name, value) {
-        const input = getDataInput(name);
-
-        input.value = value;
-    }
-
-    return {
-        getValue: getInputValue,
-        setValue: setInputValue
-    };
-})();
-
-const preview = (function() {
+const preview = (function(cropper) {
     const preview = document.getElementById("js-sidebar-preview");
     const ctx = preview.getContext("2d");
     const maxWidth = 192;
@@ -81,75 +59,16 @@ const preview = (function() {
     }
 
     return { clean, draw };
-})();
+})(cropper);
+
+function toggleButton(disabled, ...buttons) {
+    buttons.forEach(button => {
+        document.getElementById(`js-cropper-${button}`).disabled = disabled;
+    });
+}
 
 function isVisible() {
     return sidebarVisible;
-}
-
-function setQualityDisplayValue(value = 0.92) {
-    document.getElementById("js-quality-value").textContent = value;
-}
-
-function toggleButton(button, disabled) {
-    button.disabled = disabled;
-}
-
-function toggleButtons(disabled) {
-    const cropButton = document.getElementById("js-crop-ok");
-    const previewButton = document.getElementById("js-crop-preview-btn");
-
-    toggleButton(cropButton, disabled);
-    toggleButton(previewButton, disabled);
-}
-
-function toggleSkipButton(imageCount) {
-    const skipButton = document.getElementById("js-crop-skip");
-
-    toggleButton(skipButton, imageCount <= 1);
-}
-
-function getCoordToUpdate(coordValue, dimensionValue) {
-    if (coordValue) {
-        if (dimensionValue > 0) {
-            return coordValue;
-        }
-        return dimensionValue + coordValue;
-    }
-    return 0;
-}
-
-function updatePointDisplay(area, x = area.x, y = area.y) {
-    const { width: widthRatio, height: heightRatio } = ratio.get();
-
-    if (area.width && area.height) {
-        x = getCoordToUpdate(x, area.width);
-        y = getCoordToUpdate(y, area.height);
-    }
-
-    cropDataInputs.setValue("x", Math.floor(x * widthRatio));
-    cropDataInputs.setValue("y", Math.floor(y * heightRatio));
-}
-
-function updateMeasurmentDisplay(width, height) {
-    const { width: widthRatio, height: heightRatio } = ratio.get();
-
-    width = Math.floor(width * widthRatio);
-    height = Math.floor(height * heightRatio);
-
-    cropDataInputs.setValue("width", width < 0 ? -width : width);
-    cropDataInputs.setValue("height", height < 0 ? -height : height);
-}
-
-function updateDataDisplay(area) {
-    updatePointDisplay(area);
-    updateMeasurmentDisplay(area.width, area.height);
-}
-
-function resetQualityAndScaleDisplay() {
-    cropDataInputs.setValue("scale", 100);
-    cropDataInputs.setValue("quality", 0.92);
-    setQualityDisplayValue();
 }
 
 function insertChar(target, char) {
@@ -187,7 +106,7 @@ function updateCanvasOnInput(input, inputValue) {
     const area = selectedArea.get();
     const hasArea = area.width && area.height;
 
-    toggleButtons(!hasArea);
+    toggleButton(!hasArea, "crop", "preview");
     if (hasArea) {
         requestAnimationFrame(cropper.draw);
     }
@@ -250,7 +169,7 @@ function adjustQuality(event) {
     const changeCanvasQuality = canvas.getModifyQualityCb();
 
     changeCanvasQuality(newQuality, cropper.draw);
-    setQualityDisplayValue(newQuality);
+    dataInput.setValue("quality-display", newQuality);
     quality.set(newQuality);
 }
 
@@ -279,11 +198,5 @@ export {
     toggleSidebar as toggle,
     isVisible,
     preview,
-    cropDataInputs,
-    toggleButtons,
-    toggleSkipButton,
-    updatePointDisplay,
-    updateMeasurmentDisplay,
-    updateDataDisplay,
-    resetQualityAndScaleDisplay
+    toggleButton
 };

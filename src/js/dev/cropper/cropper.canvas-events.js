@@ -1,6 +1,7 @@
 import * as cropper from "./cropper.js";
 import * as canvas from "./cropper.canvas.js";
 import * as sidebar from "./cropper.sidebar.js";
+import * as dataInput from "./cropper.data-input.js";
 import * as selectedArea from "./cropper.selected-area.js";
 import * as direction from "./cropper.direction.js";
 import * as angle from "./cropper.angle.js";
@@ -85,14 +86,14 @@ function onMouseup() {
         const area = selectedArea.reset();
         const image = canvas.getImage(quality.useImageWithQuality());
 
-        sidebar.updateDataDisplay(area);
         selectedArea.setProp("x", transform.e);
         selectedArea.setProp("y", transform.f);
         canvas.drawImage(image);
         canvas.setCursor();
+        dataInput.update(area);
     }
     selectedArea.containsArea(containsArea);
-    sidebar.toggleButtons(!containsArea);
+    sidebar.toggleButton(!containsArea, "crop", "preview");
 }
 
 function selectArea(area, x, y) {
@@ -138,7 +139,7 @@ function rotateArea(area, x, y) {
     const radians = getAngleInRadians(area, x, y);
     const degrees = angle.set(radians, "deg");
 
-    sidebar.cropDataInputs.setValue("angle", degrees);
+    dataInput.setValue("angle", degrees);
 }
 
 function moveArea(x, y) {
