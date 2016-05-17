@@ -1,5 +1,5 @@
-const canvas = document.getElementById("js-canvas");
-let changeCanvasQuality = null;
+import * as transform from "./cropper.canvas-transform.js";
+import * as canvasElement from "./cropper.canvas-element.js";
 
 const canvasImage = (function() {
     const original = new Image();
@@ -14,169 +14,23 @@ const canvasImage = (function() {
     };
 })();
 
-const transform = (function trackTransforms(ctx) {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    const translated = {};
-    let xform = svg.createSVGMatrix();
-
-    function getTransform() {
-        return xform;
-    }
-
-    function scale(scale) {
-        xform.a = 1;
-        xform.d = 1;
-        xform = xform.scale(scale, scale);
-        ctx.setTransform(xform.a, 0, 0, xform.a, xform.e, xform.f);
-    }
-
-    function translate(dx, dy) {
-        xform = xform.translate(dx, dy);
-        ctx.translate(dx, dy);
-    }
-
-    function translateDefault() {
-        translate(translated.x, translated.y);
-    }
-
-    function getTransformedPoint(x, y) {
-        const pt = svg.createSVGPoint();
-
-        pt.x = x;
-        pt.y = y;
-        return pt.matrixTransform(xform.inverse());
-    }
-
-    function setTransform(a, b, c, d, e, f) {
-        xform.a = a;
-        xform.b = b;
-        xform.c = c;
-        xform.d = d;
-        xform.e = e;
-        xform.f = f;
-        ctx.setTransform(a, b, c, d, e, f);
-    }
-
-    function resetTransform() {
-        setTransform(1, 0, 0, 1, 0, 0);
-        translateDefault();
-    }
-
-    function setDefaultTranslation(x, y) {
-        translated.x = x;
-        translated.y = y;
-        return translated;
-    }
-
-    function getTranslated() {
-        return translated;
-    }
-
-    return {
-        setDefaultTranslation,
-        getTranslated,
-        getTransform,
-        scale,
-        translate,
-        getTransformedPoint,
-        setTransform,
-        resetTransform
-    };
-})(getContext());
-
-const addBackground = (function getPattern(ctx) {
-    const image = new Image();
-    let pattern;
-
-    image.onload = function() {
-        pattern = ctx.createPattern(image, "repeat");
-    };
-    image.src = "images/pattern.png";
-
-    return function(ctx) {
-        const { width, height } = getCanvasDimensions();
-
-        ctx.fillStyle = pattern;
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.fillRect(0, 0, width, height);
-        addMask(ctx);
-        ctx.restore();
-    };
-})(getContext());
-
-function getContext() {
-    return canvas.getContext("2d");
-}
-
-function getCanvasDimensions() {
-    return {
-        width: canvas.width,
-        height: canvas.height
-    };
-}
-
-function resetCanvasDimensions(sidebarVisible) {
-    canvas.width = sidebarVisible ? window.innerWidth - 200 : window.innerWidth;
-
-    // -56 to account for top bar and bottom bar
-    canvas.height = window.innerHeight - 56;
-}
-
-function addEventListener(event, cb) {
-    canvas.addEventListener(event, cb);
-}
-
-function removeEventListener(event, cb) {
-    canvas.removeEventListener(event, cb);
-}
-
-function showCanvas() {
-    canvas.classList.add("show");
-}
-
-function hideCanvas() {
-    canvas.classList.remove("show");
-}
-
-function setCursor(name = "default") {
-    canvas.style.cursor = name;
-}
-
-function getMousePosition({ clientX: x, clientY: y }) {
-    const { left, top } = canvas.getBoundingClientRect();
-
-    return {
-        x: x - left,
-        y: y - top
-    };
-}
-
-function getModifyQualityCb() {
-    return changeCanvasQuality;
-}
-
-function addMask(ctx) {
-    const { width, height } = getCanvasDimensions();
-
-    ctx.fillStyle = "rgba(0, 0, 0, .4)";
-    ctx.fillRect(0, 0, width, height);
-}
-
-function loadCanvasWithQuality(uri) {
-    const image = new Image();
-    const originalCanvas = document.createElement("canvas");
-    const ctx = originalCanvas.getContext("2d");
+const spareCanvas = (function(canvasImage) {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     let loading = false;
 
-    image.onload = function() {
-        originalCanvas.width = image.width;
-        originalCanvas.height = image.height;
-        ctx.drawImage(image, 0, 0, image.width, image.height);
-    };
-    image.src = uri;
+    function drawCanvas(uri) {
+        const image = new Image();
 
-    return function(quality, cb) {
+        image.onload = function() {
+            canvas.width = image.width;
+            canvas.height = image.height;
+            ctx.drawImage(image, 0, 0, image.width, image.height);
+        };
+        image.src = uri;
+    }
+
+    function adjustQuality(quality, cb) {
         if (loading) {
             return;
         }
@@ -190,12 +44,45 @@ function loadCanvasWithQuality(uri) {
                 loading = false;
             });
         };
-        imageWithQuality.src = originalCanvas.toDataURL("image/jpeg", quality);
+        imageWithQuality.src = canvas.toDataURL("image/jpeg", quality);
+    }
+
+    return {
+        draw: drawCanvas,
+        adjustQuality
     };
+})(canvasImage);
+
+const addBackground = (function getPattern(ctx) {
+    const image = new Image();
+    let pattern;
+
+    image.onload = function() {
+        pattern = ctx.createPattern(image, "repeat");
+    };
+    image.src = "images/pattern.png";
+
+    return function(ctx) {
+        const { width, height } = canvasElement.getDimensions();
+
+        ctx.fillStyle = pattern;
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillRect(0, 0, width, height);
+        addMask(ctx);
+        ctx.restore();
+    };
+})(canvasElement.getContext());
+
+function addMask(ctx) {
+    const { width, height } = canvasElement.getDimensions();
+
+    ctx.fillStyle = "rgba(0, 0, 0, .4)";
+    ctx.fillRect(0, 0, width, height);
 }
 
 function drawImage(image) {
-    const ctx = getContext();
+    const ctx = canvasElement.getContext();
 
     addBackground(ctx);
     ctx.drawImage(image, 0, 0, image.width, image.height);
@@ -236,10 +123,9 @@ function drawArea(ctx, area, areaWasDrawn) {
 function drawRotatedArea(ctx, area, radians) {
     const width = area.width > 0 ? area.width : -area.width;
     const height = area.height > 0 ? area.height : -area.height;
-    const { width: canvasWidth, height: canvasHeight } = getCanvasDimensions();
-    ctx.save();
+    const { width: canvasWidth, height: canvasHeight } = canvasElement.getDimensions();
 
-    // +0.5 to get line width of 1px
+    ctx.save();
     ctx.translate(area.x + 0.5 + area.width / 2, area.y + 0.5 + area.height / 2);
     ctx.rotate(radians);
     ctx.strokeRect(-area.width / 2, -area.height / 2, area.width, area.height);
@@ -252,7 +138,7 @@ function drawRotatedArea(ctx, area, radians) {
 }
 
 function drawCanvas(image, area, angle, areaDrawn) {
-    const ctx = getContext();
+    const ctx = canvasElement.getContext();
 
     drawImage(image);
 
@@ -273,12 +159,12 @@ function drawCanvas(image, area, angle, areaDrawn) {
 function drawInitialImage(uri, cb) {
     const image = canvasImage.get();
 
-    changeCanvasQuality = loadCanvasWithQuality(uri);
+    spareCanvas.draw(uri);
 
     return new Promise(resolve => {
         image.onload = function() {
             cb(image);
-            showCanvas();
+            canvasElement.show();
             resolve();
         };
         image.src = uri;
@@ -293,18 +179,12 @@ function setDefaultImagePosition(imageWidth, imageHeight, canvasWidth, canvasHei
 }
 
 export {
-    hideCanvas as hide,
-    getCanvasDimensions as getDimensions,
-    resetCanvasDimensions as resetDimensions,
     canvasImage as image,
-    transform,
-    getMousePosition,
     drawInitialImage,
     drawImage,
     drawCanvas,
-    setCursor,
     addEventListener,
     removeEventListener,
-    getModifyQualityCb,
-    setDefaultImagePosition
+    setDefaultImagePosition,
+    spareCanvas
 };
