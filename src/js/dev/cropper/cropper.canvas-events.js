@@ -1,4 +1,6 @@
 import * as cropper from "./cropper.js";
+import * as transform from "./cropper.canvas-transform.js";
+import * as canvasElement from "./cropper.canvas-element.js";
 import * as canvas from "./cropper.canvas.js";
 import * as sidebar from "./cropper.sidebar.js";
 import * as dataInput from "./cropper.data-input.js";
@@ -10,14 +12,12 @@ import * as quality from "./cropper.quality.js";
 let currentEvent = "";
 
 function toggleCursorEvents(addEvents) {
-    const canvas = document.getElementById("js-canvas");
-
     if (addEvents) {
-        canvas.addEventListener("mousemove", changeCursor);
+        canvasElement.addEventListener("mousemove", changeCursor);
         window.addEventListener("keydown", changeCursorToMove);
     }
     else {
-        canvas.removeEventListener("mousemove", changeCursor);
+        canvasElement.removeEventListener("mousemove", changeCursor);
         window.removeEventListener("keydown", changeCursorToMove);
     }
 }
@@ -44,7 +44,7 @@ function onMousemove(event) {
         event.preventDefault();
     }
 
-    const { x, y } = canvas.getMousePosition(event);
+    const { x, y } = canvasElement.getMousePosition(event);
     const area = selectedArea.get();
 
     switch (currentEvent) {
@@ -82,14 +82,14 @@ function onMouseup() {
 
     toggleEvent();
     if (!containsArea) {
-        const transform = canvas.transform.getTransform();
+        const { e: x, f: y } = transform.get();
         const area = selectedArea.reset();
         const image = canvas.image.get(quality.useImageWithQuality());
 
-        selectedArea.setProp("x", transform.e);
-        selectedArea.setProp("y", transform.f);
+        selectedArea.setProp("x", x);
+        selectedArea.setProp("y", y);
         canvas.drawImage(image);
-        canvas.setCursor();
+        canvasElement.setCursor();
         dataInput.update(area);
     }
     selectedArea.containsArea(containsArea);
@@ -124,7 +124,7 @@ function resizeArea(area, x, y) {
     if (newDirection.length > 1) {
         const selectedDirection = direction.reverse(newDirection, area);
 
-        canvas.setCursor(selectedDirection + "-resize");
+        canvasElement.setCursor(selectedDirection + "-resize");
     }
 }
 
@@ -155,14 +155,15 @@ function dragImage(x, y) {
     if (!mousePos) {
         return;
     }
-    const transform = canvas.transform;
+
+    const ctx = canvasElement.getContext();
     const pt = transform.getTransformedPoint(x, y);
 
-    transform.translate(pt.x - mousePos.x, pt.y - mousePos.y);
+    transform.translate(ctx, pt.x - mousePos.x, pt.y - mousePos.y);
 }
 
 function removeMoveCursor() {
-    canvas.setCursor();
+    canvasElement.setCursor();
     window.removeEventListener("keyup", removeMoveCursor);
 }
 
@@ -172,7 +173,7 @@ function changeCursorToMove(event) {
     const { x, y } = cropper.mousePosition.get();
 
     if (event.ctrlKey && selectedArea.isInside(area, x, y, currentAngle)) {
-        canvas.setCursor("move");
+        canvasElement.setCursor("move");
     }
     window.addEventListener("keyup", removeMoveCursor);
 }
@@ -181,11 +182,11 @@ function changeResizeCursor(area, x, y) {
     const newDirection = direction.getReal(x, y, area);
     const cursor = newDirection ? `${newDirection}-resize` : "default";
 
-    canvas.setCursor(cursor);
+    canvasElement.setCursor(cursor);
 }
 
 function changeCursor(event) {
-    const { x, y } = canvas.getMousePosition(event);
+    const { x, y } = canvasElement.getMousePosition(event);
     const area = selectedArea.get();
     const currentAngle = angle.get();
 
@@ -201,7 +202,7 @@ function changeCursor(event) {
         if (selectedArea.isInside(area, x, y, currentAngle)) {
             cursor = "move";
         }
-        canvas.setCursor(cursor);
+        canvasElement.setCursor(cursor);
         return;
     }
     if (!currentAngle) {

@@ -1,4 +1,6 @@
 import * as cropper from "./cropper.js";
+import * as transform from "./cropper.canvas-transform.js";
+import * as canvasElement from "./cropper.canvas-element.js";
 import * as canvas from "./cropper.canvas.js";
 import * as dataInput from "./cropper.data-input.js";
 import * as selectedArea from "./cropper.selected-area.js";
@@ -86,7 +88,7 @@ function insertChar(target, char) {
 
 function updateCanvasOnInput(input, inputValue) {
     if (input === "scale") {
-        const { width, height } = canvas.getDimensions();
+        const { width, height } = canvasElement.getDimensions();
 
         cropper.scaleImage(width / 2, height / 2, inputValue);
         return;
@@ -96,9 +98,7 @@ function updateCanvasOnInput(input, inputValue) {
         angle.set(inputValue, "rad");
     }
     else {
-        const transform = canvas.transform.getTransform();
-
-        selectedArea.update(input, inputValue, transform);
+        selectedArea.update(input, inputValue, transform.get());
     }
 
     const area = selectedArea.get();
@@ -164,9 +164,8 @@ function updateSelectedAreaWithCropData(event) {
 
 function adjustQuality(event) {
     const newQuality = Number.parseFloat(event.target.value);
-    const changeCanvasQuality = canvas.getModifyQualityCb();
 
-    changeCanvasQuality(newQuality, cropper.draw);
+    canvas.spareCanvas.adjustQuality(newQuality, cropper.draw);
     dataInput.setValue("quality-display", newQuality);
     quality.set(newQuality);
 }

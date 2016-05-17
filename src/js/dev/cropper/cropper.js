@@ -1,6 +1,8 @@
 import * as worker from "./../editor.worker.js";
 import * as dropbox from "./../dropbox/dropbox.js";
 import * as images from "./../dropbox/dropbox.images.js";
+import * as transform from "./cropper.canvas-transform.js";
+import * as canvasElement from "./cropper.canvas-element.js";
 import * as canvas from "./cropper.canvas.js";
 import * as sidebar from "./cropper.sidebar.js";
 import * as dataInput from "./cropper.data-input.js";
@@ -139,7 +141,7 @@ function getImageData(image, area, ctx, angle, translated) {
 function getCroppedCanvas(image, area) {
     const croppedCanvas = document.createElement("canvas");
     const ctx = croppedCanvas.getContext("2d");
-    const translated = canvas.transform.getTranslated();
+    const translated = transform.getTranslated();
 
     croppedCanvas.width = image.width + translated.x * 2;
     croppedCanvas.height = image.height + translated.y * 2;
@@ -194,9 +196,8 @@ function displayImageName(name) {
 }
 
 function updateTransformedArea(area, canvasReset) {
-    const getTransformedPoint = canvas.transform.getTransformedPoint;
-    const { x, y } = getTransformedPoint(area.x, area.y);
-    const pt = getTransformedPoint(area.x + area.width, area.y + area.height);
+    const { x, y } = transform.getTransformedPoint(area.x, area.y);
+    const pt = transform.getTransformedPoint(area.x + area.width, area.y + area.height);
     const width = pt.x - x;
     const height = pt.y - y;
     const transformedArea = selectedArea.set({
@@ -217,12 +218,12 @@ function updateTransformedArea(area, canvasReset) {
 function init() {
     const image = images.getFirst();
 
-    canvas.resetDimensions(sidebar.isVisible());
+    canvasElement.resetDimensions(sidebar.isVisible());
     setupInitialImage(image);
-    canvas.addEventListener("wheel", handleScroll);
-    canvas.addEventListener("mousedown", onSelectionStart);
-    canvas.addEventListener("mousemove", trackMousePosition);
-    canvas.addEventListener("mouseleave", hideMousePosition);
+    canvasElement.addEventListener("wheel", handleScroll);
+    canvasElement.addEventListener("mousedown", onSelectionStart);
+    canvasElement.addEventListener("mousemove", trackMousePosition);
+    canvasElement.addEventListener("mouseleave", hideMousePosition);
     redrawOnResize.enable();
     worker.init();
     cropper.show();
@@ -251,7 +252,7 @@ function setupInitialImage(image, multiple) {
     sidebar.toggleButton(imageCount <= 1, "skip");
     canvas.drawInitialImage(image.uri, scaleImageToFitCanvas)
     .then(() => {
-        const translated = canvas.transform.getTranslated();
+        const translated = transform.getTranslated();
 
         selectedArea.setDefaultPos(translated.x, translated.y);
     });
@@ -262,7 +263,7 @@ function onSelectionStart(event) {
         return;
     }
 
-    const { x, y } = canvas.getMousePosition(event);
+    const { x, y } = canvasElement.getMousePosition(event);
     const area = selectedArea.get();
     const hasArea = area.width && area.height;
     const currentAngle = angle.get();
@@ -270,7 +271,7 @@ function onSelectionStart(event) {
     let eventToEnable = "select";
 
     if (event.shiftKey) {
-        mousePosition.set(canvas.transform.getTransformedPoint(x, y));
+        mousePosition.set(transform.getTransformedPoint(x, y));
         eventToEnable = "drag";
     }
     else if (event.ctrlKey && hasArea) {
@@ -294,7 +295,7 @@ function onSelectionStart(event) {
         selectedArea.setProp("y", y);
 
         const area = selectedArea.get(true);
-        const pt = canvas.transform.getTransformedPoint(x, y);
+        const pt = transform.getTransformedPoint(x, y);
 
         dataInput.updatePoint(area, pt.x, pt.y);
     }
@@ -316,10 +317,10 @@ function resetCropper() {
     updateImageCount(0);
     resetData();
     events.toggleCursorEvents();
-    canvas.removeEventListener("wheel", handleScroll);
-    canvas.removeEventListener("mousedown", onSelectionStart);
-    canvas.removeEventListener("mousemove", trackMousePosition);
-    canvas.removeEventListener("mouseleave", hideMousePosition);
+    canvasElement.removeEventListener("wheel", handleScroll);
+    canvasElement.removeEventListener("mousedown", onSelectionStart);
+    canvasElement.removeEventListener("mousemove", trackMousePosition);
+    canvasElement.removeEventListener("mouseleave", hideMousePosition);
     redrawOnResize.disable();
     dropbox.generateZip();
 }
@@ -333,18 +334,18 @@ function resetData() {
 }
 
 function scaleImage(x, y, scale) {
+    const ctx = canvasElement.getContext();
     const area = selectedArea.get();
-    const transform = canvas.transform;
 
-    transform.translate(x, y);
-    transform.scale(scale / 100);
-    transform.translate(-x, -y);
+    transform.translate(ctx, x, y);
+    transform.scale(ctx, scale / 100);
+    transform.translate(ctx, -x, -y);
 
     if (area.width && area.height) {
         updateTransformedArea(area);
     }
     else {
-        const { e: translatedX, f: translatedY } = transform.getTransform();
+        const { e: translatedX, f: translatedY } = transform.get();
 
         selectedArea.setProp("x", translatedX);
         selectedArea.setProp("y", translatedY);
@@ -353,8 +354,8 @@ function scaleImage(x, y, scale) {
 }
 
 function handleScroll(event) {
-    const { x, y } = canvas.getMousePosition(event);
-    const pt = canvas.transform.getTransformedPoint(x, y);
+    const { x, y } = canvasElement.getMousePosition(event);
+    const pt = transform.getTransformedPoint(x, y);
     let scale = dataInput.getValue("scale");
 
     if (event.deltaY > 0) {
@@ -368,8 +369,8 @@ function handleScroll(event) {
 }
 
 function trackMousePosition(event) {
-    const { x, y } = canvas.getMousePosition(event);
-    const pt = canvas.transform.getTransformedPoint(x, y);
+    const { x, y } = canvasElement.getMousePosition(event);
+    const pt = transform.getTransformedPoint(x, y);
     const mousePosX = Math.floor(pt.x);
     const mousePosY = Math.floor(pt.y);
 
@@ -383,7 +384,7 @@ function hideMousePosition() {
 function loadNextImage(image) {
     resetData();
     selectedArea.containsArea(false);
-    canvas.hide();
+    canvasElement.hide();
     setTimeout(() => {
         setupInitialImage(image, true);
     }, 240);
@@ -423,14 +424,11 @@ function skipImage() {
 }
 
 function resetCanvasProperties(sidebarVisible) {
-    const transform = canvas.transform.getTransform();
+    const ctx = canvasElement.getContext();
+    const xform = transform.get();
 
-    canvas.resetDimensions(sidebarVisible);
-    canvas.transform.setTransform(
-        transform.a, transform.b,
-        transform.c, transform.d,
-        transform.e, transform.f
-    );
+    canvasElement.resetDimensions(sidebarVisible);
+    transform.set(ctx, xform.a, xform.b, xform.c, xform.d, xform.e, xform.f);
 }
 
 function getScale(imageDimension1, imageDimension2, canvasDimension1, canvasDimension2) {
@@ -453,7 +451,8 @@ function getScale(imageDimension1, imageDimension2, canvasDimension1, canvasDime
 }
 
 function scaleImageToFitCanvas(image) {
-    const { width: canvasWidth, height: canvasHeight } = canvas.getDimensions();
+    const ctx = canvasElement.getContext();
+    const { width: canvasWidth, height: canvasHeight } = canvasElement.getDimensions();
     const { width, height } = image;
     let scale = 100;
 
@@ -464,14 +463,14 @@ function scaleImageToFitCanvas(image) {
         scale = getScale(height, width, canvasHeight, canvasWidth);
     }
     canvas.setDefaultImagePosition(width * scale / 100, height * scale / 100, canvasWidth, canvasHeight);
-    canvas.transform.resetTransform();
+    transform.reset(ctx);
     scaleImage(0, 0, scale);
     dataInput.setValue("scale", Math.round(scale));
     canvas.drawImage(image);
 }
 
 function resetCanvas() {
-    const translated = canvas.transform.getTranslated();
+    const translated = transform.getTranslated();
 
     resetData();
     selectedArea.setDefaultPos(translated.x, translated.y);
