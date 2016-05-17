@@ -7,7 +7,6 @@ import * as dataInput from "./cropper.data-input.js";
 import * as events from "./cropper.canvas-events.js";
 import * as selectedArea from "./cropper.selected-area.js";
 import * as direction from "./cropper.direction.js";
-import * as ratio from "./cropper.ratio.js";
 import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
 
@@ -142,9 +141,6 @@ function getCroppedCanvas(image, area) {
     const ctx = croppedCanvas.getContext("2d");
     const translated = canvas.transform.getTranslated();
 
-    translated.x = translated.x * ratio.get("width");
-    translated.y = translated.y * ratio.get("height");
-
     croppedCanvas.width = image.width + translated.x * 2;
     croppedCanvas.height = image.height + translated.y * 2;
     ctx.translate(translated.x, translated.y);
@@ -162,7 +158,7 @@ function sendImageToWorker(imageToCrop) {
         const image = new Image();
 
         image.onload = function() {
-            const scaledArea = selectedArea.getScaled(ratio.get());
+            const scaledArea = selectedArea.get(true);
             const croppedCanvas = getCroppedCanvas(image, scaledArea);
 
             worker.post({
@@ -197,20 +193,6 @@ function displayImageName(name) {
     document.getElementById("js-crop-image-name").textContent = name;
 }
 
-function getImageSize({ width, height }, maxWidth, maxHeight) {
-    const ratio = width / height;
-
-    if (width > maxWidth) {
-        width = maxWidth;
-        height = width / ratio;
-    }
-    if (height > maxHeight) {
-        height = maxHeight;
-        width = height * ratio;
-    }
-    return { width, height };
-}
-
 function updateTransformedArea(area, canvasReset) {
     const getTransformedPoint = canvas.transform.getTransformedPoint;
     const { x, y } = getTransformedPoint(area.x, area.y);
@@ -235,6 +217,7 @@ function updateTransformedArea(area, canvasReset) {
 function init() {
     const image = images.getFirst();
 
+    canvas.resetDimensions(sidebar.isVisible());
     setupInitialImage(image);
     canvas.addEventListener("wheel", handleScroll);
     canvas.addEventListener("mousedown", onSelectionStart);
@@ -246,16 +229,16 @@ function init() {
 }
 
 function draw() {
-    const image = canvas.getImage(quality.useImageWithQuality());
+    const image = canvas.image.get(quality.useImageWithQuality());
     const currentAngle = angle.get();
     const area = selectedArea.get();
     const areaDrawn = selectedArea.isDrawn();
 
     canvas.drawCanvas(image, area, currentAngle, areaDrawn);
     if (sidebar.isVisible()) {
-        const scaledArea = selectedArea.getScaled(ratio.get());
+        const scaledArea = selectedArea.get(true);
 
-        sidebar.preview.draw(image.src, scaledArea);
+        sidebar.preview.draw(image, scaledArea);
     }
 }
 
@@ -266,10 +249,11 @@ function setupInitialImage(image, multiple) {
     displayImageName(image.name.original);
     sidebar.toggleButton(true, "crop", "preview");
     sidebar.toggleButton(imageCount <= 1, "skip");
-    canvas.drawInitialImage(image.uri, getImageSize)
-    .then(data => {
-        selectedArea.setDefaultPos(data.translated.x, data.translated.y);
-        ratio.set(data.widthRatio, data.heightRatio);
+    canvas.drawInitialImage(image.uri, scaleImageToFitCanvas)
+    .then(() => {
+        const translated = canvas.transform.getTranslated();
+
+        selectedArea.setDefaultPos(translated.x, translated.y);
     });
 }
 
@@ -399,7 +383,7 @@ function hideMousePosition() {
 function loadNextImage(image) {
     resetData();
     selectedArea.containsArea(false);
-    canvas.hideCanvas();
+    canvas.hide();
     setTimeout(() => {
         setupInitialImage(image, true);
     }, 240);
@@ -420,8 +404,8 @@ function cropImage() {
 }
 
 function showPreview() {
-    const area = selectedArea.getScaled(ratio.get());
-    const { src: image } = canvas.getImage(quality.useImageWithQuality());
+    const area = selectedArea.get(true);
+    const image = canvas.image.get(quality.useImageWithQuality());
     const croppedCanvas = getCroppedCanvas(image, area);
     const uri = croppedCanvas.toDataURL("image/jpeg");
 
@@ -440,18 +424,50 @@ function skipImage() {
 
 function resetCanvasProperties(sidebarVisible) {
     const transform = canvas.transform.getTransform();
-    const maxWidth = sidebarVisible ? window.innerWidth - 200 : window.innerWidth;
-    const maxHeight = window.innerHeight - 56;
-    const { src: image } = canvas.getImage();
-    const { width, height } = getImageSize(image, maxWidth, maxHeight);
 
-    canvas.setDefaultImagePosition(width, height, maxWidth, maxHeight);
-    canvas.setCanvasDimensions(maxWidth, maxHeight);
+    canvas.resetDimensions(sidebarVisible);
     canvas.transform.setTransform(
         transform.a, transform.b,
         transform.c, transform.d,
         transform.e, transform.f
     );
+}
+
+function getScale(imageDimension1, imageDimension2, canvasDimension1, canvasDimension2) {
+    let scale = 100;
+
+    function getDimensionScale(scale, imageDimension, canvasDimension) {
+        const excess = imageDimension - canvasDimension;
+
+        return scale - 100 / (imageDimension / excess);
+    }
+
+    if (imageDimension1 > canvasDimension1) {
+        scale = getDimensionScale(scale, imageDimension1, canvasDimension1);
+
+        if (imageDimension2 * scale / 100 > canvasDimension2) {
+            scale = getDimensionScale(100, imageDimension2, canvasDimension2);
+        }
+    }
+    return scale;
+}
+
+function scaleImageToFitCanvas(image) {
+    const { width: canvasWidth, height: canvasHeight } = canvas.getDimensions();
+    const { width, height } = image;
+    let scale = 100;
+
+    if (width > height) {
+        scale = getScale(width, height, canvasWidth, canvasHeight);
+    }
+    else {
+        scale = getScale(height, width, canvasHeight, canvasWidth);
+    }
+    canvas.setDefaultImagePosition(width * scale / 100, height * scale / 100, canvasWidth, canvasHeight);
+    canvas.transform.resetTransform();
+    scaleImage(0, 0, scale);
+    dataInput.setValue("scale", Math.round(scale));
+    canvas.drawImage(image);
 }
 
 function resetCanvas() {
@@ -460,8 +476,7 @@ function resetCanvas() {
     resetData();
     selectedArea.setDefaultPos(translated.x, translated.y);
     selectedArea.containsArea(false);
-    canvas.transform.resetTransform();
-    canvas.drawImage(canvas.getImage());
+    scaleImageToFitCanvas(canvas.image.get());
     sidebar.toggleButton(true, "crop", "preview");
 }
 

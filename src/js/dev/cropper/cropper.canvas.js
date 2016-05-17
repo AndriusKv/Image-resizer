@@ -1,9 +1,18 @@
 const canvas = document.getElementById("js-canvas");
-const canvasImage = {
-    original: new Image(),
-    withQuality: new Image()
-};
 let changeCanvasQuality = null;
+
+const canvasImage = (function() {
+    const original = new Image();
+    const withQuality = new Image();
+
+    function getImage(quality) {
+        return quality ? withQuality : original;
+    }
+
+    return {
+        get: getImage
+    };
+})();
 
 const transform = (function trackTransforms(ctx) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -107,11 +116,11 @@ function getCanvasDimensions() {
     };
 }
 
-function setCanvasDimensions(width, height) {
-    canvas.width = width;
-    if (height) {
-        canvas.height = height;
-    }
+function resetCanvasDimensions(sidebarVisible) {
+    canvas.width = sidebarVisible ? window.innerWidth - 200 : window.innerWidth;
+
+    // -56 to account for top bar and bottom bar
+    canvas.height = window.innerHeight - 56;
 }
 
 function addEventListener(event, cb) {
@@ -147,14 +156,6 @@ function getModifyQualityCb() {
     return changeCanvasQuality;
 }
 
-function getImage(quality) {
-    return {
-        width: canvasImage.width,
-        height: canvasImage.height,
-        src: quality ? canvasImage.withQuality : canvasImage.original
-    };
-}
-
 function addMask(ctx) {
     const { width, height } = getCanvasDimensions();
 
@@ -179,7 +180,8 @@ function loadCanvasWithQuality(uri) {
         if (loading) {
             return;
         }
-        const { src: imageWithQuality } = getImage(true);
+
+        const imageWithQuality = canvasImage.get(true);
 
         loading = true;
         imageWithQuality.onload = function() {
@@ -196,7 +198,7 @@ function drawImage(image) {
     const ctx = getContext();
 
     addBackground(ctx);
-    ctx.drawImage(image.src, 0, 0, image.width, image.height);
+    ctx.drawImage(image, 0, 0, image.width, image.height);
 }
 
 function strokeRect(ctx, area) {
@@ -269,34 +271,15 @@ function drawCanvas(image, area, angle, areaDrawn) {
 }
 
 function drawInitialImage(uri, cb) {
-    const ctx = getContext();
-    const { src: image } = getImage();
-
-    // -200 to account for sidebar
-    const maxWidth = window.innerWidth - 200;
-
-    // -56 to account for top bar and bottom bar
-    const maxHeight = window.innerHeight - 56;
+    const image = canvasImage.get();
 
     changeCanvasQuality = loadCanvasWithQuality(uri);
-    setCanvasDimensions(maxWidth, maxHeight);
-    addBackground(ctx);
+
     return new Promise(resolve => {
         image.onload = function() {
-            const { width, height } = cb(image, maxWidth, maxHeight);
-            const translated = setDefaultImagePosition(width, height, maxWidth, maxHeight);
-
-            canvasImage.width = width;
-            canvasImage.height = height;
-
-            transform.resetTransform();
-            ctx.drawImage(image, 0, 0, width, height);
+            cb(image);
             showCanvas();
-            resolve({
-                translated,
-                widthRatio: image.width / width,
-                heightRatio: image.height / height
-            });
+            resolve();
         };
         image.src = uri;
     });
@@ -310,11 +293,11 @@ function setDefaultImagePosition(imageWidth, imageHeight, canvasWidth, canvasHei
 }
 
 export {
-    hideCanvas,
+    hideCanvas as hide,
+    getCanvasDimensions as getDimensions,
+    resetCanvasDimensions as resetDimensions,
+    canvasImage as image,
     transform,
-    getCanvasDimensions,
-    setCanvasDimensions,
-    getImage,
     getMousePosition,
     drawInitialImage,
     drawImage,

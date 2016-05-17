@@ -2,7 +2,6 @@ import * as cropper from "./cropper.js";
 import * as canvas from "./cropper.canvas.js";
 import * as dataInput from "./cropper.data-input.js";
 import * as selectedArea from "./cropper.selected-area.js";
-import * as ratio from "./cropper.ratio.js";
 import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
 
@@ -87,7 +86,7 @@ function insertChar(target, char) {
 
 function updateCanvasOnInput(input, inputValue) {
     if (input === "scale") {
-        const { width, height } = canvas.getCanvasDimensions();
+        const { width, height } = canvas.getDimensions();
 
         cropper.scaleImage(width / 2, height / 2, inputValue);
         return;
@@ -98,9 +97,8 @@ function updateCanvasOnInput(input, inputValue) {
     }
     else {
         const transform = canvas.transform.getTransform();
-        const inputRatio = ratio.get(input);
 
-        selectedArea.update(input, inputValue, inputRatio, transform);
+        selectedArea.update(input, inputValue, transform);
     }
 
     const area = selectedArea.get();

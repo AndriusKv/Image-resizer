@@ -84,7 +84,7 @@ function onMouseup() {
     if (!containsArea) {
         const transform = canvas.transform.getTransform();
         const area = selectedArea.reset();
-        const image = canvas.getImage(quality.useImageWithQuality());
+        const image = canvas.image.get(quality.useImageWithQuality());
 
         selectedArea.setProp("x", transform.e);
         selectedArea.setProp("y", transform.f);

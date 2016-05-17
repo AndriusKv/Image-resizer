@@ -1,5 +1,3 @@
-import * as ratio from "./cropper.ratio.js";
-
 function getDataElement(name) {
     return document.getElementById(`js-crop-${name}`);
 }
@@ -32,21 +30,17 @@ function getCoordToUpdate(coordValue, dimensionValue) {
 }
 
 function updatePointDisplay(area, x = area.x, y = area.y) {
-    const { width: widthRatio, height: heightRatio } = ratio.get();
-
     if (area.width && area.height) {
         x = getCoordToUpdate(x, area.width);
         y = getCoordToUpdate(y, area.height);
     }
-    setElementValue("x", Math.floor(x * widthRatio));
-    setElementValue("y", Math.floor(y * heightRatio));
+    setElementValue("x", Math.floor(x));
+    setElementValue("y", Math.floor(y));
 }
 
 function updateDimensionDisplay(width, height) {
-    const { width: widthRatio, height: heightRatio } = ratio.get();
-
-    width = Math.floor(width * widthRatio);
-    height = Math.floor(height * heightRatio);
+    width = Math.floor(width);
+    height = Math.floor(height);
 
     setElementValue("width", width < 0 ? -width : width);
     setElementValue("height", height < 0 ? -height : height);

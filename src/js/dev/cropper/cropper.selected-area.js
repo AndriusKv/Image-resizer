@@ -11,15 +11,6 @@ function getArea(transformed) {
     return transformed ? transformedArea : area;
 }
 
-function getScaledTransformedArea({ width: widthRatio, height: heightRatio }) {
-    return {
-        x: Math.floor(transformedArea.x * widthRatio),
-        y: Math.floor(transformedArea.y * heightRatio),
-        width: Math.floor(transformedArea.width * widthRatio),
-        height: Math.floor(transformedArea.height * heightRatio)
-    };
-}
-
 function getAreaProp(key) {
     return area[key];
 }
@@ -87,7 +78,7 @@ function isInsideArea(area, x, y, angle) {
     return isMouseInsideRotatedArea(area, x, y, angle);
 }
 
-function updateAreaFromInput(input, inputValue, ratio, transform) {
+function updateAreaFromInput(input, inputValue, transform) {
     const scale = transform.a;
     let areaValue = 0;
 
@@ -114,7 +105,7 @@ function updateAreaFromInput(input, inputValue, ratio, transform) {
             area.y = area.y + area[input];
         }
     }
-    area[input] = areaValue + transformedArea[input] / ratio * scale;
+    area[input] = areaValue + transformedArea[input] / scale;
 }
 
 function containsArea(areaDrawn) {
@@ -128,7 +119,6 @@ function isDrawn() {
 
 export {
     getArea as get,
-    getScaledTransformedArea as getScaled,
     setArea as set,
     getAreaProp as getProp,
     setAreaProp as setProp,
