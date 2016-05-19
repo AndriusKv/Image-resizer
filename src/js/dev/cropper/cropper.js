@@ -294,28 +294,31 @@ function onSelectionStart(event) {
         selectedArea.setProp("x", x);
         selectedArea.setProp("y", y);
 
-        const area = selectedArea.get(true);
         const pt = transform.getTransformedPoint(x, y);
 
-        dataInput.updatePoint(area, pt.x, pt.y);
+        dataInput.update({
+            x: pt.x,
+            y: pt.y,
+            width: 0,
+            height: 0
+        });
     }
     events.toggleEvent(eventToEnable);
     requestAnimationFrame(draw);
 }
 
-function resetAreaAndAngle(canvasReset) {
-    const area = selectedArea.reset();
-
+function resetAreaAndAngle() {
+    selectedArea.reset();
     angle.reset();
     dataInput.setValue("angle", 0);
     sidebar.preview.clean();
-    updateTransformedArea(area, canvasReset);
 }
 
 function resetCropper() {
     cropper.hide();
     updateImageCount(0);
     resetData();
+    selectedArea.containsArea(false);
     events.toggleCursorEvents();
     canvasElement.removeEventListener("wheel", handleScroll);
     canvasElement.removeEventListener("mousedown", onSelectionStart);
@@ -330,7 +333,8 @@ function resetData() {
     dataInput.setValue("scale", 100);
     dataInput.setValue("quality", 0.92);
     dataInput.setValue("quality-display", 0.92);
-    resetAreaAndAngle(true);
+    resetAreaAndAngle();
+    updateTransformedArea(selectedArea.get(), true);
 }
 
 function scaleImage(x, y, scale) {

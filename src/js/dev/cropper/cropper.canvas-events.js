@@ -82,12 +82,9 @@ function onMouseup() {
 
     toggleEvent();
     if (!containsArea) {
-        const { e: x, f: y } = transform.get();
         const area = selectedArea.reset();
         const image = canvas.image.get(quality.useImageWithQuality());
 
-        selectedArea.setProp("x", x);
-        selectedArea.setProp("y", y);
         canvas.drawImage(image);
         canvasElement.setCursor();
         dataInput.update(area);

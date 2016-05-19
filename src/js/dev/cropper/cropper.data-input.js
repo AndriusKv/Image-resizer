@@ -11,7 +11,7 @@ function getElementValue(name) {
 function setElementValue(name, value) {
     const element = getDataElement(name);
 
-    if (element.value) {
+    if (typeof element.value === "string") {
         element.value = value;
     }
     else {
@@ -29,11 +29,10 @@ function getCoordToUpdate(coordValue, dimensionValue) {
     return 0;
 }
 
-function updatePointDisplay(area, x = area.x, y = area.y) {
-    if (area.width && area.height) {
-        x = getCoordToUpdate(x, area.width);
-        y = getCoordToUpdate(y, area.height);
-    }
+function updatePointDisplay(area) {
+    const x = getCoordToUpdate(area.x, area.width);
+    const y = getCoordToUpdate(area.y, area.height);
+
     setElementValue("x", Math.floor(x));
     setElementValue("y", Math.floor(y));
 }
@@ -54,6 +53,5 @@ function updateDataDisplay(area) {
 export {
     getElementValue as getValue,
     setElementValue as setValue,
-    updatePointDisplay as updatePoint,
     updateDataDisplay as update
 };
