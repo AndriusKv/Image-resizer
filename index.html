@@ -61,7 +61,7 @@
 				<button class="btn inv-btn crop-btn" data-btn="close">Close</button>
 			</div>
         </div>
-        <div class="crop-main">
+        <div>
             <canvas id="js-canvas" class="crop-canvas"></canvas>
             <div id="js-crop-sidebar" class="crop-bar crop-sidebar">
                 <canvas id="js-sidebar-preview"></canvas>
@@ -100,7 +100,7 @@
                         <label for="js-crop-quality">Quality</label>
                         <input type="range" id="js-crop-quality" class="crop-data-quality-slider"
                             step="0.01" min="0" max="1" value="0.92">
-                        <div id="js-quality-value">0.92</div>
+                        <div id="js-crop-quality-display">0.92</div>
                     </div>
                 </div>
             </div>
@@ -108,10 +108,10 @@
 		<div class="crop-bar crop-bottom-bar">
 			<div id="js-crop-mouse-pos" class="crop-mouse-pos"></div>
 			<div id="js-crop-bottom-btns" class="crop-button-container">
-				<button id="js-crop-ok" class="btn inv-btn crop-btn" data-btn="crop">Crop</button>
-				<button id="js-crop-preview-btn" class="btn inv-btn crop-btn" data-btn="preview">Preview</button>
-				<button id="js-crop-skip" class="btn inv-btn crop-btn" data-btn="skip">Skip</button>
-				<button class="btn inv-btn crop-btn" data-btn="toggle" title="hide sidebar">>></button>
+				<button id="js-cropper-crop" class="btn inv-btn crop-btn" data-btn="crop">Crop</button>
+				<button id="js-cropper-preview" class="btn inv-btn crop-btn" data-btn="preview">Preview</button>
+				<button id="js-cropper-skip" class="btn inv-btn crop-btn" data-btn="skip">Skip</button>
+				<button class="btn inv-btn crop-btn" data-btn="toggle" title="Hide sidebar">>></button>
 			</div>
 		</div>
         <div id="js-crop-preview" class="crop-preview-mask">
