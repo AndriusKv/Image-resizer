@@ -105,7 +105,7 @@ function updateAreaFromInput(input, inputValue, transform) {
             area.y = area.y + area[input];
         }
     }
-    area[input] = areaValue + transformedArea[input] / scale;
+    area[input] = areaValue + transformedArea[input] * scale;
 }
 
 function containsArea(areaDrawn) {

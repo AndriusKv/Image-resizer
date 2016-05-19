@@ -164,7 +164,7 @@ describe("Cropper selected area", () => {
             area.update("x", 250, transform);
 
             const transformedArea = area.get(true);
-            const expectedValue = transform.e + transformedArea.x / transform.a;
+            const expectedValue = transform.e + transformedArea.x * transform.a;
 
             expect(area.getProp("x")).to.equal(expectedValue);
             expect(transformedArea.x).to.equal(250);
@@ -175,7 +175,7 @@ describe("Cropper selected area", () => {
             area.update("y", 250, transform);
 
             const transformedArea = area.get(true);
-            const expectedValue = transform.f + transformedArea.y / transform.a;
+            const expectedValue = transform.f + transformedArea.y * transform.a;
 
             expect(area.getProp("y")).to.equal(expectedValue);
             expect(transformedArea.y).to.equal(250);
@@ -189,7 +189,7 @@ describe("Cropper selected area", () => {
             area.update("width", 250, transform);
 
             const transformedArea = area.get(true);
-            const expectedValue = transformedArea.width / transform.a;
+            const expectedValue = transformedArea.width * transform.a;
 
             expect(area.getProp("width")).to.equal(expectedValue);
             expect(transformedArea.width).to.equal(250);
@@ -203,7 +203,7 @@ describe("Cropper selected area", () => {
             area.update("height", 250, transform);
 
             const transformedArea = area.get(true);
-            const expectedValue = transformedArea.height / transform.a;
+            const expectedValue = transformedArea.height * transform.a;
 
             expect(area.getProp("height")).to.equal(expectedValue);
             expect(transformedArea.height).to.equal(250);
