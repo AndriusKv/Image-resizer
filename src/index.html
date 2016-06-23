@@ -54,8 +54,7 @@
 	</div>
     <div id="js-crop" class="crop preload">
         <div class="crop-bar crop-top-bar">
-            <span id="js-crop-remaining"></span>
-            <span id="js-crop-image-name"></span>
+            <span id="js-crop-image-name" class="crop-image-name"></span>
 			<div id="js-crop-top-btns">
 				<button class="btn inv-btn crop-btn" data-btn="reset">Reset</button>
 				<button class="btn inv-btn crop-btn" data-btn="close">Close</button>
@@ -107,10 +106,11 @@
         </div>
 		<div class="crop-bar crop-bottom-bar">
 			<div id="js-crop-mouse-pos" class="crop-mouse-pos"></div>
+            <div id="js-crop-message" class="crop-message">Cropped</div>
 			<div id="js-crop-bottom-btns" class="crop-button-container">
 				<button id="js-cropper-crop" class="btn inv-btn crop-btn" data-btn="crop">Crop</button>
 				<button id="js-cropper-preview" class="btn inv-btn crop-btn" data-btn="preview">Preview</button>
-				<button id="js-cropper-skip" class="btn inv-btn crop-btn" data-btn="skip">Skip</button>
+				<button id="js-cropper-next" class="btn inv-btn crop-btn" data-btn="next">Next</button>
 				<button class="btn inv-btn crop-btn" data-btn="toggle" title="Hide sidebar">>></button>
 			</div>
 		</div>

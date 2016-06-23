@@ -137,14 +137,14 @@ function drawRotatedArea(ctx, area, radians) {
     ctx.fill();
 }
 
-function drawCanvas(image, area, angle, areaDrawn) {
+function drawCanvas(image, area, angle, areaDrawn, strokeColor) {
     const ctx = canvasElement.getContext();
 
     drawImage(image);
 
     ctx.save();
     ctx.lineWidth = 1;
-    ctx.strokeStyle = "#006494";
+    ctx.strokeStyle = typeof strokeColor === "string" ? strokeColor : "#006494";
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     if (angle) {

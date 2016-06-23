@@ -34,6 +34,10 @@
     border-bottom: 1px solid $dark-color;
     font-size: 14px;
 }
+.crop-image-name {
+    margin-left: 50%;
+    transform: translateX(-50%);
+}
 .crop-canvas {
     display: block;
     opacity: 0;
@@ -105,8 +109,20 @@
 .crop-mouse-pos {
     font-size: 12px;
 }
+.crop-message {
+    visibility: collapse;
+    opacity: 0;
+    margin-left: auto;
+    font-size: 12px;
+    transition: all 0.2s;
+
+    &.show {
+        visibility: visible;
+        opacity: 1;
+        margin-right: 8px;
+    }
+}
 .crop-button-container {
-    float: right;
     display: flex;
     align-items: flex-end;
     width: 192px;

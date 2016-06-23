@@ -1,16 +1,18 @@
 import * as worker from "./../editor.worker.js";
 import * as dropbox from "./../dropbox/dropbox.js";
-import * as images from "./../dropbox/dropbox.images.js";
 import * as transform from "./cropper.canvas-transform.js";
 import * as canvasElement from "./cropper.canvas-element.js";
 import * as canvas from "./cropper.canvas.js";
 import * as sidebar from "./cropper.sidebar.js";
+import * as preview from "./cropper.preview.js";
 import * as dataInput from "./cropper.data-input.js";
 import * as events from "./cropper.canvas-events.js";
 import * as selectedArea from "./cropper.selected-area.js";
 import * as direction from "./cropper.direction.js";
 import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
+
+let postedToWorker = false;
 
 const cropper = (function() {
     const cropper = document.getElementById("js-crop");
@@ -26,53 +28,6 @@ const cropper = (function() {
     return {
         show: showCropper,
         hide: hideCropper
-    };
-})();
-
-const preview = (function() {
-    const cropPreview = document.getElementById("js-crop-preview");
-    const imageContainer = cropPreview.firstElementChild;
-
-    function showPreview(uri) {
-        const image = new Image();
-
-        image.onload = function() {
-            let width = image.width;
-            let height = image.height;
-            const maxWidth = window.innerWidth - 8;
-            const maxHeight = window.innerHeight - 8;
-            const ratio = width / height;
-
-            if (width > maxWidth) {
-                width = maxWidth;
-                height = Math.floor(width / ratio);
-            }
-
-            if (height > maxHeight) {
-                height = maxHeight;
-                width = Math.floor(height * ratio);
-            }
-
-            image.style.width = `${width}px`;
-            image.style.height = `${height}px`;
-        };
-        image.src = uri;
-        imageContainer.appendChild(image);
-        cropPreview.classList.add("show");
-    }
-
-    function hidePreview() {
-        cropPreview.classList.remove("show");
-
-        // remove preview image after animation finished running.
-        setTimeout(() => {
-            imageContainer.removeChild(imageContainer.lastElementChild);
-        }, 600);
-    }
-
-    return {
-        show: showPreview,
-        hide: hidePreview
     };
 })();
 
@@ -122,6 +77,45 @@ const redrawOnResize = (function() {
     };
 })();
 
+const images = (function() {
+    let images = [];
+    let active = null;
+
+    function getAll() {
+        return images;
+    }
+
+    function set(loadedImages) {
+        images = loadedImages.map((image, index) => {
+            image.index = index;
+            return image;
+        });
+    }
+
+    function setActive(image) {
+        active = image;
+    }
+
+    function getActive() {
+        return active;
+    }
+
+    function getNext() {
+        const image = images[active.index + 1] || images[0];
+
+        setActive(image);
+        return image;
+    }
+
+    return {
+        getAll,
+        set,
+        setActive,
+        getActive,
+        getNext
+    };
+})();
+
 function getImageData(image, area, ctx, angle, translated) {
     ctx.save();
     if (angle) {
@@ -163,6 +157,7 @@ function sendImageToWorker(imageToCrop) {
             const scaledArea = selectedArea.get(true);
             const croppedCanvas = getCroppedCanvas(image, scaledArea);
 
+            postedToWorker = true;
             worker.post({
                 action: "add",
                 image: {
@@ -171,24 +166,10 @@ function sendImageToWorker(imageToCrop) {
                     uri: croppedCanvas.toDataURL(imageToCrop.type, quality.get())
                 }
             });
-            images.incStoredImageCount();
             resolve();
         };
         image.src = imageToCrop.uri;
     });
-}
-
-function updateImageCount(count, multiple) {
-    const remaining = count - 1;
-    let value = "";
-
-    if (remaining > 1 || multiple) {
-        value = `${remaining} images remaining`;
-    }
-    else if (remaining === 1) {
-        value = `${remaining} image remaining`;
-    }
-    document.getElementById("js-crop-remaining").textContent = value;
 }
 
 function displayImageName(name) {
@@ -215,11 +196,12 @@ function updateTransformedArea(area, canvasReset) {
     dataInput.update(transformedArea);
 }
 
-function init() {
-    const image = images.getFirst();
-
+function init(loadedImages) {
+    images.set(loadedImages);
+    images.setActive(loadedImages[0]);
     canvasElement.resetDimensions(sidebar.isVisible());
-    setupInitialImage(image);
+    setupInitialImage(loadedImages[0]);
+    sidebar.toggleButton(loadedImages.length <= 1, "next");
     canvasElement.addEventListener("wheel", handleScroll);
     canvasElement.addEventListener("mousedown", onSelectionStart);
     canvasElement.addEventListener("mousemove", trackMousePosition);
@@ -229,13 +211,13 @@ function init() {
     cropper.show();
 }
 
-function draw() {
+function draw(strokeColor) {
     const image = canvas.image.get(quality.useImageWithQuality());
     const currentAngle = angle.get();
     const area = selectedArea.get();
     const areaDrawn = selectedArea.isDrawn();
 
-    canvas.drawCanvas(image, area, currentAngle, areaDrawn);
+    canvas.drawCanvas(image, area, currentAngle, areaDrawn, strokeColor);
     if (sidebar.isVisible()) {
         const scaledArea = selectedArea.get(true);
 
@@ -243,13 +225,9 @@ function draw() {
     }
 }
 
-function setupInitialImage(image, multiple) {
-    const imageCount = images.getCount();
-
-    updateImageCount(imageCount, multiple);
+function setupInitialImage(image) {
     displayImageName(image.name.original);
     sidebar.toggleButton(true, "crop", "preview");
-    sidebar.toggleButton(imageCount <= 1, "skip");
     canvas.drawInitialImage(image.uri, scaleImageToFitCanvas)
     .then(() => {
         const translated = transform.getTranslated();
@@ -316,7 +294,6 @@ function resetAreaAndAngle() {
 
 function resetCropper() {
     cropper.hide();
-    updateImageCount(0);
     resetData();
     selectedArea.containsArea(false);
     events.toggleCursorEvents();
@@ -325,7 +302,11 @@ function resetCropper() {
     canvasElement.removeEventListener("mousemove", trackMousePosition);
     canvasElement.removeEventListener("mouseleave", hideMousePosition);
     redrawOnResize.disable();
-    dropbox.generateZip();
+
+    if (postedToWorker) {
+        postedToWorker = false;
+        dropbox.generateZip();
+    }
 }
 
 function resetData() {
@@ -390,21 +371,21 @@ function loadNextImage(image) {
     selectedArea.containsArea(false);
     canvasElement.hide();
     setTimeout(() => {
-        setupInitialImage(image, true);
+        setupInitialImage(image);
     }, 240);
 }
 
 function cropImage() {
-    const image = images.remove(0);
+    const messageElem = document.getElementById("js-crop-message");
 
-    sendImageToWorker(image)
+    draw("crimson");
+    messageElem.classList.add("show");
+    sendImageToWorker(images.getActive())
     .then(() => {
-        if (!images.getCount()) {
-            resetCropper();
-        }
-        else {
-            loadNextImage(images.getFirst());
-        }
+        setTimeout(() => {
+            draw();
+            messageElem.classList.remove("show");
+        }, 200);
     });
 }
 
@@ -415,16 +396,6 @@ function showPreview() {
     const uri = croppedCanvas.toDataURL("image/jpeg");
 
     preview.show(uri);
-}
-
-function skipImage() {
-    images.remove(0);
-
-    const nextImage = images.getFirst();
-
-    if (nextImage) {
-        loadNextImage(nextImage);
-    }
 }
 
 function resetCanvasProperties(sidebarVisible) {
@@ -506,8 +477,8 @@ function onBottomBarBtnClick({ target }) {
         case "preview":
             showPreview();
             break;
-        case "skip":
-            skipImage();
+        case "next":
+            loadNextImage(images.getNext());
             break;
         case "toggle":
             sidebar.toggle(target);
@@ -517,7 +488,6 @@ function onBottomBarBtnClick({ target }) {
 
 document.getElementById("js-crop-top-btns").addEventListener("click", onTopBarBtnClick);
 document.getElementById("js-crop-bottom-btns").addEventListener("click", onBottomBarBtnClick);
-document.getElementById("js-crop-preview-close").addEventListener("click", preview.hide);
 
 export {
     init,
