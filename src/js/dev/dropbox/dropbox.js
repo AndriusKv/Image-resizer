@@ -36,7 +36,7 @@ function resetDropbox(newState = -1) {
 function doneReadingImages() {
     if (tools.getCurrentTool() === "cropper") {
         resetDropbox();
-        cropper.init();
+        cropper.init(images.getAll());
     }
     else {
         progress.reset();
@@ -56,11 +56,8 @@ function setImageName(name) {
 }
 
 function generateZip() {
-    if (images.getStoredImageCount()) {
-        images.resetStoredImageCount();
-        progress.setLabel("Generating archive");
-        worker.post({ action: "generate" });
-    }
+    progress.setLabel("Generating archive");
+    worker.post({ action: "generate" });
 }
 
 function readImage(image) {

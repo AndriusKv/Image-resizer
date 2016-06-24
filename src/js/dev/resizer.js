@@ -98,14 +98,13 @@ function resizeImage(image, imageToResize, adjustedDimensions, inc) {
     const dimension = adjustedDimensions.splice(0, 1)[0];
 
     return storeImage(image, imageToResize, dimension)
-    .then(() => {
-        progress.update(inc);
-        images.incStoredImageCount();
+        .then(() => {
+            progress.update(inc);
 
-        if (state.get() !== 0 && adjustedDimensions.length) {
-            resizeImage(image, imageToResize, adjustedDimensions, inc);
-        }
-    });
+            if (state.get() !== 0 && adjustedDimensions.length) {
+                resizeImage(image, imageToResize, adjustedDimensions, inc);
+            }
+        });
 }
 
 function processImage(images, measurments, inc) {
