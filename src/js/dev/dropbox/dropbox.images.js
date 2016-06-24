@@ -4,16 +4,8 @@ function getAll() {
     return images;
 }
 
-function getFirst() {
-    return images[0];
-}
-
 function getImageCount() {
     return images.length;
-}
-
-function removeImage(index) {
-    return images.splice(index, 1)[0];
 }
 
 function addImage(image) {
@@ -26,9 +18,7 @@ function resetImages() {
 
 export {
     addImage as add,
-    removeImage as remove,
     getImageCount as getCount,
     resetImages as reset,
-    getAll,
-    getFirst
+    getAll
 };
