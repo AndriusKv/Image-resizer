@@ -3,8 +3,10 @@ import * as dropbox from "./../dropbox/dropbox.js";
 import * as transform from "./cropper.canvas-transform.js";
 import * as canvasElement from "./cropper.canvas-element.js";
 import * as canvas from "./cropper.canvas.js";
-import * as sidebar from "./cropper.sidebar.js";
+import * as leftBar from "./cropper.left-bar.js";
+import * as rightBar from "./cropper.right-bar.js";
 import * as preview from "./cropper.preview.js";
+import * as images from "./cropper.images.js";
 import * as dataInput from "./cropper.data-input.js";
 import * as events from "./cropper.canvas-events.js";
 import * as selectedArea from "./cropper.selected-area.js";
@@ -51,13 +53,21 @@ const mousePosition = (function() {
 const redrawOnResize = (function() {
     let running = false;
 
+    function resetCanvasProperties() {
+        const ctx = canvasElement.getContext();
+        const xform = transform.get();
+
+        canvasElement.resetDimensions();
+        transform.set(ctx, xform.a, xform.b, xform.c, xform.d, xform.e, xform.f);
+    }
+
     function onResize() {
         if (running) {
             return;
         }
         running = true;
         requestAnimationFrame(() => {
-            resetCanvasProperties(sidebar.isVisible());
+            resetCanvasProperties();
             draw();
             running = false;
         });
@@ -74,45 +84,6 @@ const redrawOnResize = (function() {
     return {
         enable,
         disable
-    };
-})();
-
-const images = (function() {
-    let images = [];
-    let active = null;
-
-    function getAll() {
-        return images;
-    }
-
-    function set(loadedImages) {
-        images = loadedImages.map((image, index) => {
-            image.index = index;
-            return image;
-        });
-    }
-
-    function setActive(image) {
-        active = image;
-    }
-
-    function getActive() {
-        return active;
-    }
-
-    function getNext() {
-        const image = images[active.index + 1] || images[0];
-
-        setActive(image);
-        return image;
-    }
-
-    return {
-        getAll,
-        set,
-        setActive,
-        getActive,
-        getNext
     };
 })();
 
@@ -198,16 +169,15 @@ function updateTransformedArea(area, canvasReset) {
 
 function init(loadedImages) {
     images.set(loadedImages);
-    images.setActive(loadedImages[0]);
-    canvasElement.resetDimensions(sidebar.isVisible());
+    canvasElement.resetDimensions();
     setupInitialImage(loadedImages[0]);
-    sidebar.toggleButton(loadedImages.length <= 1, "next");
     canvasElement.addEventListener("wheel", handleScroll);
     canvasElement.addEventListener("mousedown", onSelectionStart);
     canvasElement.addEventListener("mousemove", trackMousePosition);
     canvasElement.addEventListener("mouseleave", hideMousePosition);
-    redrawOnResize.enable();
     worker.init();
+    leftBar.init(loadedImages);
+    redrawOnResize.enable();
     cropper.show();
 }
 
@@ -218,16 +188,16 @@ function draw(strokeColor) {
     const areaDrawn = selectedArea.isDrawn();
 
     canvas.drawCanvas(image, area, currentAngle, areaDrawn, strokeColor);
-    if (sidebar.isVisible()) {
+    if (rightBar.isVisible()) {
         const scaledArea = selectedArea.get(true);
 
-        sidebar.preview.draw(image, scaledArea);
+        rightBar.preview.draw(image, scaledArea);
     }
 }
 
 function setupInitialImage(image) {
     displayImageName(image.name.original);
-    sidebar.toggleButton(true, "crop", "preview");
+    rightBar.toggleButton(true, "crop", "preview");
     canvas.drawInitialImage(image.uri, scaleImageToFitCanvas)
     .then(() => {
         const translated = transform.getTranslated();
@@ -289,7 +259,7 @@ function resetAreaAndAngle() {
     selectedArea.reset();
     angle.reset();
     dataInput.setValue("angle", 0);
-    sidebar.preview.clean();
+    rightBar.preview.clean();
 }
 
 function resetCropper() {
@@ -398,14 +368,6 @@ function showPreview() {
     preview.show(uri);
 }
 
-function resetCanvasProperties(sidebarVisible) {
-    const ctx = canvasElement.getContext();
-    const xform = transform.get();
-
-    canvasElement.resetDimensions(sidebarVisible);
-    transform.set(ctx, xform.a, xform.b, xform.c, xform.d, xform.e, xform.f);
-}
-
 function getScale(imageDimension1, imageDimension2, canvasDimension1, canvasDimension2) {
     let scale = 100;
 
@@ -425,19 +387,41 @@ function getScale(imageDimension1, imageDimension2, canvasDimension1, canvasDime
     return scale;
 }
 
+function setDefaultImagePosition(x, y) {
+    if (rightBar.isVisible()) {
+        x -= 200;
+    }
+    if (leftBar.isVisible()) {
+        x += 100;
+    }
+    transform.setDefaultTranslation(x / 2, y / 2);
+}
+
 function scaleImageToFitCanvas(image) {
     const ctx = canvasElement.getContext();
     const { width: canvasWidth, height: canvasHeight } = canvasElement.getDimensions();
     const { width, height } = image;
+    let realWidth = canvasWidth;
     let scale = 100;
 
+    if (rightBar.isVisible()) {
+        realWidth -= 200;
+    }
+    if (leftBar.isVisible()) {
+        realWidth -= 100;
+    }
+
     if (width > height) {
-        scale = getScale(width, height, canvasWidth, canvasHeight);
+        scale = getScale(width, height, realWidth, canvasHeight);
     }
     else {
-        scale = getScale(height, width, canvasHeight, canvasWidth);
+        scale = getScale(height, width, canvasHeight, realWidth);
     }
-    canvas.setDefaultImagePosition(width * scale / 100, height * scale / 100, canvasWidth, canvasHeight);
+
+    const x = canvasWidth - width * scale / 100;
+    const y = canvasHeight - height * scale / 100;
+
+    setDefaultImagePosition(x, y);
     transform.reset(ctx);
     scaleImage(0, 0, scale);
     dataInput.setValue("scale", Math.round(scale));
@@ -451,13 +435,16 @@ function resetCanvas() {
     selectedArea.setDefaultPos(translated.x, translated.y);
     selectedArea.containsArea(false);
     scaleImageToFitCanvas(canvas.image.get());
-    sidebar.toggleButton(true, "crop", "preview");
+    rightBar.toggleButton(true, "crop", "preview");
 }
 
 function onTopBarBtnClick({ target }) {
     const btn = target.getAttribute("data-btn");
 
     switch (btn) {
+        case "images":
+            leftBar.toggle();
+            break;
         case "reset":
             resetCanvas();
             break;
@@ -477,16 +464,13 @@ function onBottomBarBtnClick({ target }) {
         case "preview":
             showPreview();
             break;
-        case "next":
-            loadNextImage(images.getNext());
-            break;
         case "toggle":
-            sidebar.toggle(target);
+            rightBar.toggle(target);
             break;
     }
 }
 
-document.getElementById("js-crop-top-btns").addEventListener("click", onTopBarBtnClick);
+document.getElementById("js-crop-top-bar").addEventListener("click", onTopBarBtnClick);
 document.getElementById("js-crop-bottom-btns").addEventListener("click", onBottomBarBtnClick);
 
 export {
@@ -496,5 +480,5 @@ export {
     updateTransformedArea,
     getCroppedCanvas,
     scaleImage,
-    resetCanvasProperties
+    loadNextImage
 };

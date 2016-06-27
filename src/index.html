@@ -53,17 +53,21 @@
         </div>
 	</div>
     <div id="js-crop" class="crop preload">
-        <div class="crop-bar crop-top-bar">
+        <div id="js-crop-top-bar" class="crop-bar crop-top-bar">
+            <button class="icon-picture btn inv-btn crop-btn" title="Toggle image list" data-btn="images"></button>
             <span id="js-crop-image-name" class="crop-image-name"></span>
-			<div id="js-crop-top-btns">
-				<button class="btn inv-btn crop-btn" data-btn="reset">Reset</button>
-				<button class="btn inv-btn crop-btn" data-btn="close">Close</button>
-			</div>
+            <div>
+                <button class="btn inv-btn crop-btn" data-btn="reset">Reset</button>
+                <button class="btn inv-btn crop-btn" data-btn="close">Close</button>
+            </div>
         </div>
         <div>
+            <div id="js-crop-left-bar" class="crop-bar crop-left-bar">
+                <ul id="js-left-bar-thumbnails" class="left-bar-thumbnails"></ul>
+            </div>
             <canvas id="js-canvas" class="crop-canvas"></canvas>
-            <div id="js-crop-sidebar" class="crop-bar crop-sidebar">
-                <canvas id="js-sidebar-preview"></canvas>
+            <div id="js-crop-right-bar" class="crop-bar crop-right-bar">
+                <canvas id="js-right-bar-preview"></canvas>
                 <div id="js-crop-data" class="crop-data">
                     <div class="crop-data-group">
                         <label for="js-crop-x" class="crop-data-measurment">X:</label>
@@ -110,13 +114,12 @@
 			<div id="js-crop-bottom-btns" class="crop-button-container">
 				<button id="js-cropper-crop" class="btn inv-btn crop-btn" data-btn="crop">Crop</button>
 				<button id="js-cropper-preview" class="btn inv-btn crop-btn" data-btn="preview">Preview</button>
-				<button id="js-cropper-next" class="btn inv-btn crop-btn" data-btn="next">Next</button>
-				<button class="btn inv-btn crop-btn" data-btn="toggle" title="Hide sidebar">>></button>
+				<button class="icon-angle-double-right btn inv-btn crop-btn" data-btn="toggle" title="Toggle sidebar"></button>
 			</div>
 		</div>
         <div id="js-crop-preview" class="crop-preview-mask">
 			<div class="crop-preview-container">
-				<button id="js-crop-preview-close" class="font-btn crop-preview-close">x</button>
+				<button id="js-crop-preview-close" class="icon-cancel font-btn crop-preview-close"></button>
 			</div>
         </div>
     </div>

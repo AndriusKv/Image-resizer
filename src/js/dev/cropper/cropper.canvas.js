@@ -1,4 +1,3 @@
-import * as transform from "./cropper.canvas-transform.js";
 import * as canvasElement from "./cropper.canvas-element.js";
 
 const canvasImage = (function() {
@@ -60,7 +59,7 @@ const addBackground = (function getPattern(ctx) {
     image.onload = function() {
         pattern = ctx.createPattern(image, "repeat");
     };
-    image.src = "images/pattern.png";
+    image.src = "assets/images/pattern.png";
 
     return function(ctx) {
         const { width, height } = canvasElement.getDimensions();
@@ -171,13 +170,6 @@ function drawInitialImage(uri, cb) {
     });
 }
 
-function setDefaultImagePosition(imageWidth, imageHeight, canvasWidth, canvasHeight) {
-    const x = (canvasWidth - imageWidth) / 2;
-    const y = (canvasHeight - imageHeight) / 2;
-
-    return transform.setDefaultTranslation(x, y);
-}
-
 export {
     canvasImage as image,
     drawInitialImage,
@@ -185,6 +177,5 @@ export {
     drawCanvas,
     addEventListener,
     removeEventListener,
-    setDefaultImagePosition,
     spareCanvas
 };

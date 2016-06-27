@@ -2,7 +2,7 @@ import * as cropper from "./cropper.js";
 import * as transform from "./cropper.canvas-transform.js";
 import * as canvasElement from "./cropper.canvas-element.js";
 import * as canvas from "./cropper.canvas.js";
-import * as sidebar from "./cropper.sidebar.js";
+import * as rightBar from "./cropper.right-bar.js";
 import * as dataInput from "./cropper.data-input.js";
 import * as selectedArea from "./cropper.selected-area.js";
 import * as direction from "./cropper.direction.js";
@@ -90,7 +90,7 @@ function onMouseup() {
         dataInput.update(area);
     }
     selectedArea.containsArea(containsArea);
-    sidebar.toggleButton(!containsArea, "crop", "preview");
+    rightBar.toggleButton(!containsArea, "crop", "preview");
 }
 
 function selectArea(area, x, y) {

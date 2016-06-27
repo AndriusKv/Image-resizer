@@ -11,8 +11,8 @@ function getCanvasDimensions() {
     };
 }
 
-function resetCanvasDimensions(sidebarVisible) {
-    canvas.width = sidebarVisible ? window.innerWidth - 200 : window.innerWidth;
+function resetCanvasDimensions() {
+    canvas.width = window.innerWidth;
 
     // -56 to account for top bar and bottom bar
     canvas.height = window.innerHeight - 56;

@@ -8,10 +8,10 @@ import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
 
 const cropData = document.getElementById("js-crop-data");
-let sidebarVisible = true;
+let rightBarVisible = true;
 
 const preview = (function(cropper) {
-    const preview = document.getElementById("js-sidebar-preview");
+    const preview = document.getElementById("js-right-bar-preview");
     const ctx = preview.getContext("2d");
     const maxWidth = 192;
     const maxHeight = 150;
@@ -69,7 +69,7 @@ function toggleButton(disabled, ...buttons) {
 }
 
 function isVisible() {
-    return sidebarVisible;
+    return rightBarVisible;
 }
 
 function insertChar(target, char) {
@@ -170,20 +170,12 @@ function adjustQuality(event) {
     quality.set(newQuality);
 }
 
-function toggleSidebar(btn) {
-    const { classList } = document.getElementById("js-crop-sidebar");
+function toggleRightBar(btn) {
+    const { classList } = document.getElementById("js-crop-right-bar");
 
-    sidebarVisible = !sidebarVisible;
-    cropper.resetCanvasProperties(sidebarVisible);
-    requestAnimationFrame(cropper.draw);
-    if (classList.contains("hide")) {
-        btn.setAttribute("title", "Hide sidebar");
-        btn.style.transform = "rotateZ(0)";
-    }
-    else {
-        btn.setAttribute("title", "Show sidebar");
-        btn.style.transform = "rotateZ(180deg)";
-    }
+    rightBarVisible = !rightBarVisible;
+    btn.classList.toggle("icon-angle-double-left");
+    btn.classList.toggle("icon-angle-double-right");
     classList.toggle("hide");
 }
 
@@ -192,7 +184,7 @@ cropData.addEventListener("keyup", updateSelectedAreaWithCropData);
 document.getElementById("js-crop-quality").addEventListener("input", adjustQuality);
 
 export {
-    toggleSidebar as toggle,
+    toggleRightBar as toggle,
     isVisible,
     preview,
     toggleButton

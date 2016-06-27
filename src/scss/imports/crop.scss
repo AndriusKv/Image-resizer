@@ -10,8 +10,8 @@
     height: 100%;
     background-color: $light-color;
     cursor: default;
-    transform: scale(.8);
-    transition: all .4s;
+    transform: scale(0.8);
+    transition: all 0.4s;
 
     &.preload { transition: none; }
     &.show {
@@ -22,7 +22,7 @@
 }
 .crop-bar {
     padding: 4px;
-    background-color: $brand-color2;
+    background-color: $brand-color-darker;
     color: $light-color;
 }
 .crop-top-bar {
@@ -35,28 +35,69 @@
     font-size: 14px;
 }
 .crop-image-name {
-    margin-left: 50%;
-    transform: translateX(-50%);
+    flex-grow: 1;
+    text-align: center;
+}
+.crop-left-bar {
+    z-index: 1;
+    position: absolute;
+    top: 28px;
+    bottom: 28px;
+    width: 100px;
+
+    &.hidden { display: none; }
+}
+.left-bar-thumbnails {
+    list-style: none;
+    overflow-y: auto;
+    padding-left: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    height: 100%;
+}
+.left-bar-thumbnail {
+    padding: 2px;
+    margin-bottom: 4px;
+    margin-right: 4px;
+    border: 1px solid transparent;
+    text-align: center;
+
+    &:last-of-type { margin-bottom: 0; }
+    &.active {
+        border: 1px solid $dark-color;
+        background-color: $brand-color-lighter;
+    }
+}
+.left-bar-thumbnail-image {
+    object-fit: scale-down;
+    width: 100%;
+    max-height: 80px;
+}
+.left-bar-thumbnail-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    text-align: left;
 }
 .crop-canvas {
     display: block;
     opacity: 0;
-    transform: scale(.94);
-    transition: all .2s;
+    transform: scale(0.96);
+    transition: all 0.2s;
 
     &.show {
         transform: scale(1);
         opacity: 1;
     }
 }
-.crop-sidebar {
+.crop-right-bar {
     user-select: none;
     position: absolute;
     top: 28px;
     right: 0;
     bottom: 28px;
     width: 200px;
-    border-left: 1px solid $dark-color;
 
     &.hide { display: none; }
 }
@@ -124,11 +165,10 @@
 }
 .crop-button-container {
     display: flex;
-    align-items: flex-end;
     width: 192px;
 
     .crop-btn {
-        flex-basis: 30%;
+        flex-basis: 45%;
         border-right: 1px solid #ccc;
 
         &:last-of-type {
@@ -161,6 +201,7 @@
     transition: all .2s;
 
     &.show {
+        z-index: 2;
         top: 0;
         height: 100%;
         opacity: 1;
