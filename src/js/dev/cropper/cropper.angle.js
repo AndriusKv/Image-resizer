@@ -16,17 +16,16 @@ function convertRadiansToDegrees(radians) {
     return degrees;
 }
 
-function setAngle(angle, convertTo) {
-    if (convertTo === "rad") {
-        theta = convertDegreesToRadians(angle);
-        return theta;
-    }
-    if (convertTo === "deg") {
-        const degrees = convertRadiansToDegrees(angle);
+function setAngleInDegrees(degrees) {
+    theta = convertDegreesToRadians(degrees);
+    return theta;
+}
 
-        theta = degrees === 0 || degrees === 360 ? 0: angle;
-        return degrees;
-    }
+function setAngleInRadians(radians) {
+    const degrees = convertRadiansToDegrees(radians);
+
+    theta = degrees === 0 || degrees === 360 ? 0: radians;
+    return degrees;
 }
 
 function getAngle() {
@@ -38,8 +37,8 @@ function resetAngle() {
 }
 
 export {
-    setAngle as set,
+    setAngleInDegrees as setInDegrees,
+    setAngleInRadians as setInRadians,
     getAngle as get,
-    resetAngle as reset,
-    convertRadiansToDegrees
+    resetAngle as reset
 };

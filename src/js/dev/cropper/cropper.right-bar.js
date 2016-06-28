@@ -1,4 +1,5 @@
 import * as cropper from "./cropper.js";
+import * as bottomBar from "./cropper.bottom-bar.js";
 import * as transform from "./cropper.canvas-transform.js";
 import * as canvasElement from "./cropper.canvas-element.js";
 import * as canvas from "./cropper.canvas.js";
@@ -62,12 +63,6 @@ const preview = (function(cropper) {
     return { clean, draw };
 })(cropper);
 
-function toggleButton(disabled, ...buttons) {
-    buttons.forEach(button => {
-        document.getElementById(`js-cropper-${button}`).disabled = disabled;
-    });
-}
-
 function isVisible() {
     return rightBarVisible;
 }
@@ -95,7 +90,7 @@ function updateCanvasOnInput(input, inputValue) {
     }
 
     if (input === "angle") {
-        angle.set(inputValue, "rad");
+        angle.setInDegrees(inputValue);
     }
     else {
         selectedArea.update(input, inputValue, transform.get());
@@ -104,7 +99,7 @@ function updateCanvasOnInput(input, inputValue) {
     const area = selectedArea.get();
     const hasArea = area.width && area.height;
 
-    toggleButton(!hasArea, "crop", "preview");
+    bottomBar.toggleButton(!hasArea, "crop", "preview");
     if (hasArea) {
         requestAnimationFrame(cropper.draw);
     }
@@ -186,6 +181,5 @@ document.getElementById("js-crop-quality").addEventListener("input", adjustQuali
 export {
     toggleRightBar as toggle,
     isVisible,
-    preview,
-    toggleButton
+    preview
 };

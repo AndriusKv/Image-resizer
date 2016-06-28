@@ -1,11 +1,11 @@
-import * as worker from "./../editor.worker.js";
-import * as dropbox from "./../dropbox/dropbox.js";
 import * as transform from "./cropper.canvas-transform.js";
 import * as canvasElement from "./cropper.canvas-element.js";
 import * as canvas from "./cropper.canvas.js";
+import * as topBar from "./cropper.top-bar.js";
 import * as leftBar from "./cropper.left-bar.js";
+import * as bottomBar from "./cropper.bottom-bar.js";
 import * as rightBar from "./cropper.right-bar.js";
-import * as preview from "./cropper.preview.js";
+import * as resize from "./cropper.resize.js";
 import * as images from "./cropper.images.js";
 import * as dataInput from "./cropper.data-input.js";
 import * as events from "./cropper.canvas-events.js";
@@ -14,23 +14,18 @@ import * as direction from "./cropper.direction.js";
 import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
 
-let postedToWorker = false;
-
-const cropper = (function() {
+const cropperElement = (function() {
     const cropper = document.getElementById("js-crop");
 
-    function showCropper() {
+    function show() {
         cropper.classList.add("show");
     }
 
-    function hideCropper() {
+    function hide() {
         cropper.classList.remove("show");
     }
 
-    return {
-        show: showCropper,
-        hide: hideCropper
-    };
+    return { show, hide };
 })();
 
 const mousePosition = (function() {
@@ -47,43 +42,6 @@ const mousePosition = (function() {
     return {
         set: setPosition,
         get: getPosition
-    };
-})();
-
-const redrawOnResize = (function() {
-    let running = false;
-
-    function resetCanvasProperties() {
-        const ctx = canvasElement.getContext();
-        const xform = transform.get();
-
-        canvasElement.resetDimensions();
-        transform.set(ctx, xform.a, xform.b, xform.c, xform.d, xform.e, xform.f);
-    }
-
-    function onResize() {
-        if (running) {
-            return;
-        }
-        running = true;
-        requestAnimationFrame(() => {
-            resetCanvasProperties();
-            draw();
-            running = false;
-        });
-    }
-
-    function enable() {
-        window.addEventListener("resize", onResize);
-    }
-
-    function disable() {
-        window.removeEventListener("resize", onResize);
-    }
-
-    return {
-        enable,
-        disable
     };
 })();
 
@@ -120,44 +78,17 @@ function getCroppedCanvas(image, area) {
     return croppedCanvas;
 }
 
-function sendImageToWorker(imageToCrop) {
-    return new Promise(resolve => {
-        const image = new Image();
-
-        image.onload = function() {
-            const scaledArea = selectedArea.get(true);
-            const croppedCanvas = getCroppedCanvas(image, scaledArea);
-
-            postedToWorker = true;
-            worker.post({
-                action: "add",
-                image: {
-                    name: imageToCrop.name.setByUser,
-                    type: imageToCrop.type.slice(6),
-                    uri: croppedCanvas.toDataURL(imageToCrop.type, quality.get())
-                }
-            });
-            resolve();
-        };
-        image.src = imageToCrop.uri;
-    });
-}
-
-function displayImageName(name) {
-    document.getElementById("js-crop-image-name").textContent = name;
-}
-
 function updateTransformedArea(area, canvasReset) {
     const { x, y } = transform.getTransformedPoint(area.x, area.y);
     const pt = transform.getTransformedPoint(area.x + area.width, area.y + area.height);
     const width = pt.x - x;
     const height = pt.y - y;
-    const transformedArea = selectedArea.set({
+    const transformedArea = selectedArea.setTransformed({
         x: x,
         y: y,
         width: width,
         height: height
-    }, true);
+    });
 
     if (canvasReset) {
         transformedArea.x = 0;
@@ -167,37 +98,41 @@ function updateTransformedArea(area, canvasReset) {
     dataInput.update(transformedArea);
 }
 
+function toggleCanvasElementEventListeners(action) {
+    canvasElement[`${action}EventListener`]("wheel", handleScroll, { passive: true });
+    canvasElement[`${action}EventListener`]("mousedown", onSelectionStart);
+    canvasElement[`${action}EventListener`]("mousemove", trackMousePosition);
+    canvasElement[`${action}EventListener`]("mouseleave", bottomBar.hideMousePosition);
+}
+
 function init(loadedImages) {
     images.set(loadedImages);
     canvasElement.resetDimensions();
     setupInitialImage(loadedImages[0]);
-    canvasElement.addEventListener("wheel", handleScroll);
-    canvasElement.addEventListener("mousedown", onSelectionStart);
-    canvasElement.addEventListener("mousemove", trackMousePosition);
-    canvasElement.addEventListener("mouseleave", hideMousePosition);
-    worker.init();
     leftBar.init(loadedImages);
-    redrawOnResize.enable();
-    cropper.show();
+    bottomBar.init();
+    resize.enable();
+    toggleCanvasElementEventListeners("add");
+    cropperElement.show();
 }
 
-function draw(strokeColor) {
+function draw() {
     const image = canvas.image.get(quality.useImageWithQuality());
     const currentAngle = angle.get();
     const area = selectedArea.get();
     const areaDrawn = selectedArea.isDrawn();
 
-    canvas.drawCanvas(image, area, currentAngle, areaDrawn, strokeColor);
+    canvas.drawCanvas(image, area, currentAngle, areaDrawn);
     if (rightBar.isVisible()) {
-        const scaledArea = selectedArea.get(true);
+        const transformed = selectedArea.getTransformed();
 
-        rightBar.preview.draw(image, scaledArea);
+        rightBar.preview.draw(image, transformed);
     }
 }
 
 function setupInitialImage(image) {
-    displayImageName(image.name.original);
-    rightBar.toggleButton(true, "crop", "preview");
+    topBar.displayImageName(image.name.original);
+    bottomBar.disableButton("crop", "preview");
     canvas.drawInitialImage(image.uri, scaleImageToFitCanvas)
     .then(() => {
         const translated = transform.getTranslated();
@@ -262,23 +197,6 @@ function resetAreaAndAngle() {
     rightBar.preview.clean();
 }
 
-function resetCropper() {
-    cropper.hide();
-    resetData();
-    selectedArea.containsArea(false);
-    events.toggleCursorEvents();
-    canvasElement.removeEventListener("wheel", handleScroll);
-    canvasElement.removeEventListener("mousedown", onSelectionStart);
-    canvasElement.removeEventListener("mousemove", trackMousePosition);
-    canvasElement.removeEventListener("mouseleave", hideMousePosition);
-    redrawOnResize.disable();
-
-    if (postedToWorker) {
-        postedToWorker = false;
-        dropbox.generateZip();
-    }
-}
-
 function resetData() {
     quality.reset();
     dataInput.setValue("scale", 100);
@@ -329,11 +247,7 @@ function trackMousePosition(event) {
     const mousePosX = Math.floor(pt.x);
     const mousePosY = Math.floor(pt.y);
 
-    document.getElementById("js-crop-mouse-pos").textContent = `${mousePosX}, ${mousePosY}`;
-}
-
-function hideMousePosition() {
-    document.getElementById("js-crop-mouse-pos").textContent = "";
+    bottomBar.setMousePosition(`${mousePosX}, ${mousePosY}`);
 }
 
 function loadNextImage(image) {
@@ -343,29 +257,6 @@ function loadNextImage(image) {
     setTimeout(() => {
         setupInitialImage(image);
     }, 240);
-}
-
-function cropImage() {
-    const messageElem = document.getElementById("js-crop-message");
-
-    draw("crimson");
-    messageElem.classList.add("show");
-    sendImageToWorker(images.getActive())
-    .then(() => {
-        setTimeout(() => {
-            draw();
-            messageElem.classList.remove("show");
-        }, 200);
-    });
-}
-
-function showPreview() {
-    const area = selectedArea.get(true);
-    const image = canvas.image.get(quality.useImageWithQuality());
-    const croppedCanvas = getCroppedCanvas(image, area);
-    const uri = croppedCanvas.toDataURL("image/jpeg");
-
-    preview.show(uri);
 }
 
 function getScale(imageDimension1, imageDimension2, canvasDimension1, canvasDimension2) {
@@ -398,7 +289,6 @@ function setDefaultImagePosition(x, y) {
 }
 
 function scaleImageToFitCanvas(image) {
-    const ctx = canvasElement.getContext();
     const { width: canvasWidth, height: canvasHeight } = canvasElement.getDimensions();
     const { width, height } = image;
     let realWidth = canvasWidth;
@@ -420,65 +310,25 @@ function scaleImageToFitCanvas(image) {
 
     const x = canvasWidth - width * scale / 100;
     const y = canvasHeight - height * scale / 100;
+    const ctx = canvasElement.getContext();
 
     setDefaultImagePosition(x, y);
     transform.reset(ctx);
     scaleImage(0, 0, scale);
     dataInput.setValue("scale", Math.round(scale));
-    canvas.drawImage(image);
+    canvas.drawImage(ctx, image);
 }
-
-function resetCanvas() {
-    const translated = transform.getTranslated();
-
-    resetData();
-    selectedArea.setDefaultPos(translated.x, translated.y);
-    selectedArea.containsArea(false);
-    scaleImageToFitCanvas(canvas.image.get());
-    rightBar.toggleButton(true, "crop", "preview");
-}
-
-function onTopBarBtnClick({ target }) {
-    const btn = target.getAttribute("data-btn");
-
-    switch (btn) {
-        case "images":
-            leftBar.toggle();
-            break;
-        case "reset":
-            resetCanvas();
-            break;
-        case "close":
-            resetCropper();
-            break;
-    }
-}
-
-function onBottomBarBtnClick({ target }) {
-    const btn = target.getAttribute("data-btn");
-
-    switch (btn) {
-        case "crop":
-            cropImage();
-            break;
-        case "preview":
-            showPreview();
-            break;
-        case "toggle":
-            rightBar.toggle(target);
-            break;
-    }
-}
-
-document.getElementById("js-crop-top-bar").addEventListener("click", onTopBarBtnClick);
-document.getElementById("js-crop-bottom-btns").addEventListener("click", onBottomBarBtnClick);
 
 export {
     init,
     draw,
+    cropperElement,
     mousePosition,
     updateTransformedArea,
     getCroppedCanvas,
+    resetData,
+    scaleImageToFitCanvas,
     scaleImage,
-    loadNextImage
+    loadNextImage,
+    toggleCanvasElementEventListeners
 };

@@ -56,7 +56,6 @@ function setImageName(name) {
 }
 
 function generateZip() {
-    progress.setLabel("Generating archive");
     worker.post({ action: "generate" });
 }
 

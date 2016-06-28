@@ -2,6 +2,7 @@
 
 import * as state from "./editor.state.js";
 import { removeMasksAndLabel } from "./dropbox/dropbox.js";
+import * as progress from "./dropbox/dropbox.progress.js";
 import * as message from "./dropbox/dropbox.message.js";
 import * as button from "./dropbox/dropbox.buttons.js";
 
@@ -33,7 +34,10 @@ function initWorker() {
         if (data.action === "download") {
             saveZip(data.content);
         }
-        else if (data.action === "notify") {
+        else if (data.action === "generating") {
+            progress.setLabel("Generating archive");
+        }
+        else if (data.action === "done") {
             state.set(-1);
             removeMasksAndLabel();
             message.show("Images are ready for downloading");
