@@ -36,10 +36,11 @@ onmessage = function(event) {
         case "generate":
             i = 0;
             if (Object.keys(zip.files).length) {
+                postMessage({ action: "generating" });
                 zip.generateAsync({ type:"blob" })
                 .then(data => {
                     content = data;
-                    postMessage({ action: "notify" });
+                    postMessage({ action: "done" });
                 });
             }
             break;

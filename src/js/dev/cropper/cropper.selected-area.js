@@ -7,21 +7,21 @@ const area = {
 const transformedArea = Object.assign({}, area);
 let isAreaDrawn = false;
 
-function getArea(transformed) {
-    return transformed ? transformedArea : area;
+function getArea() {
+    return area;
+}
+
+function getTransformedArea() {
+    return transformedArea;
 }
 
 function getAreaProp(key) {
     return area[key];
 }
 
-function setArea(newArea, transformed) {
-    if (transformed) {
-        Object.assign(transformedArea, newArea);
-        return transformedArea;
-    }
-    Object.assign(area, newArea);
-    return area;
+function setTransformedArea(newArea) {
+    Object.assign(transformedArea, newArea);
+    return transformedArea;
 }
 
 function setAreaProp(key, value) {
@@ -119,7 +119,8 @@ function isDrawn() {
 
 export {
     getArea as get,
-    setArea as set,
+    getTransformedArea as getTransformed,
+    setTransformedArea as setTransformed,
     getAreaProp as getProp,
     setAreaProp as setProp,
     resetArea as reset,

@@ -2,7 +2,7 @@ import * as cropper from "./cropper.js";
 import * as transform from "./cropper.canvas-transform.js";
 import * as canvasElement from "./cropper.canvas-element.js";
 import * as canvas from "./cropper.canvas.js";
-import * as rightBar from "./cropper.right-bar.js";
+import * as bottomBar from "./cropper.bottom-bar.js";
 import * as dataInput from "./cropper.data-input.js";
 import * as selectedArea from "./cropper.selected-area.js";
 import * as direction from "./cropper.direction.js";
@@ -84,13 +84,14 @@ function onMouseup() {
     if (!containsArea) {
         const area = selectedArea.reset();
         const image = canvas.image.get(quality.useImageWithQuality());
+        const ctx = canvasElement.getContext();
 
-        canvas.drawImage(image);
+        canvas.drawImage(ctx, image);
         canvasElement.setCursor();
         dataInput.update(area);
     }
     selectedArea.containsArea(containsArea);
-    rightBar.toggleButton(!containsArea, "crop", "preview");
+    bottomBar.toggleButton(!containsArea, "crop", "preview");
 }
 
 function selectArea(area, x, y) {
@@ -134,7 +135,7 @@ function getAngleInRadians(area, x, y) {
 
 function rotateArea(area, x, y) {
     const radians = getAngleInRadians(area, x, y);
-    const degrees = angle.set(radians, "deg");
+    const degrees = angle.setInRadians(radians);
 
     dataInput.setValue("angle", degrees);
 }

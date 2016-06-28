@@ -9,7 +9,6 @@ function init(loadedImages) {
         return `
             <li class="left-bar-thumbnail" data-index="${image.index}">
                 <img src="${image.uri}" class="left-bar-thumbnail-image">
-                <div class="left-bar-thumbnail-name">${image.name.original}</div>
             </li>
         `;
     }).join("\n");

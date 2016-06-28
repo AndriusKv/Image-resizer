@@ -70,15 +70,9 @@
 }
 .left-bar-thumbnail-image {
     object-fit: scale-down;
+    display: block;
     width: 100%;
     max-height: 80px;
-}
-.left-bar-thumbnail-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 12px;
-    text-align: left;
 }
 .crop-canvas {
     display: block;
@@ -206,7 +200,7 @@
         height: 100%;
         opacity: 1;
         visibility: visible;
-        background-color: rgba(0, 0, 0, .4);
+        background-color: rgba(0, 0, 0, 0.6);
     }
 }
 .crop-preview-container {
