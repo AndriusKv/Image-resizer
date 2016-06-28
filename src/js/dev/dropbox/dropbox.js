@@ -124,10 +124,7 @@ function onFiles(files) {
         worker.post({ action: "remove" });
     }
 
-    if (images.getCount()) {
-        images.reset();
-    }
-
+    images.reset();
     state.set(-1);
     button.hide("download");
     beforeWork();
