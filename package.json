@@ -17,9 +17,9 @@
     "build:js": "npm run js && uglifyjs ./src/js/main.js -mco ./dist/js/main.js",
     "build:lib": "cp -R ./src/js/libs ./dist/js",
     "build:worker": "babel ./src/js/workers/worker1.js -o ./dist/js/workers/worker1.js",
-    "build:img": "cp -R ./src/images ./dist/images",
-    "prebuild": "rm -rf ./dist && mkdir -p ./dist/{css,js/workers}",
-    "build": "npm run build:html && npm run build:css && npm run build:js && npm run build:img && npm run build:lib && npm run build:worker",
+    "build:assets": "cp -R ./src/assets ./dist",
+    "prebuild": "rm -rf ./dist && mkdir -p ./dist/{assets,css,js/workers}",
+    "build": "npm run build:html && npm run build:css && npm run build:js && npm run build:assets && npm run build:lib && npm run build:worker",
     "postbuild": "rm -rf ./src/css && rm ./src/js/main.js"
   },
   "author": "",
