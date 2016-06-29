@@ -24,41 +24,37 @@
 	<input type="file" id="js-image-select" class="image-select-input" multiple>
 	<div class="tools">
         <div id="js-tools-btns" class="tool-selection">
-            <button class="font-btn tool-selection-btn active" data-tool="resizer">Resizer</button>
-            <button class="font-btn tool-selection-btn" data-tool="cropper">Cropper</button>
+            <button class="btn-transparent tool-selection-btn active" data-tool="resizer">Resizer</button>
+            <button class="btn-transparent tool-selection-btn" data-tool="cropper">Cropper</button>
         </div>
         <div id="js-resizer-settings" class="tool-settings active preload">
             <div id ="js-mask" class="tool-settings-mask"></div>
             <div class="setting">
-                <label for="js-image-name" class="setting-label">Image name</label>
-                <input type="text" id="js-image-name" class="setting-action setting-input">
+                <label for="js-image-name">Image name</label>
+                <input type="text" id="js-image-name" class="input setting-input">
             </div>
             <div class="setting">
-                <label for="js-image-name-seperator" class="setting-label">Image name seperator</label>
-                <input type="text" id="js-image-name-seperator" class="setting-action setting-input">
+                <label for="js-image-name-seperator">Image name seperator</label>
+                <input type="text" id="js-image-name-seperator" class="input setting-input">
             </div>
             <div class="setting">
-                <label for="js-image-quality" class="setting-label">Image quality</label>
-                <input type="range" id="js-image-quality" class="setting-action setting-slider" step="1" min="0" max="100" value="92">
+                <label for="js-image-quality">Image quality</label>
+                <input type="range" id="js-image-quality" class="slider setting-input" step="1" min="0" max="100" value="92">
             </div>
-            <div class="setting">
-                <div class="label-container">
-                    <div class="dimension-label">Image width</div>
-                    <div class="dimension-label">Image height</div>
-                </div>
-                <div id="js-dimension-inputs" class="dimension-inputs">
-					<input type="text" class="image-input"><input type="text" class="image-input">
-                </div>
+            <div class="dimension-label">Image width</div>
+            <div class="dimension-label">Image height</div>
+            <div id="js-dimension-inputs" class="dimension-inputs">
+				<input type="text" class="input image-input"><input type="text" class="input image-input">
             </div>
         </div>
 	</div>
     <div id="js-crop" class="crop preload">
         <div id="js-crop-top-bar" class="crop-bar crop-top-bar">
-            <button class="icon-picture btn inv-btn crop-btn" title="Toggle image list" data-btn="images"></button>
+            <button class="icon-picture btn-inv crop-btn" title="Toggle image list" data-btn="images"></button>
             <span id="js-crop-image-name" class="crop-image-name"></span>
             <div>
-                <button class="btn inv-btn crop-btn" data-btn="reset">Reset</button>
-                <button class="btn inv-btn crop-btn" data-btn="close">Close</button>
+                <button class="btn-inv crop-btn" data-btn="reset">Reset</button>
+                <button class="btn-inv crop-btn" data-btn="close">Close</button>
             </div>
         </div>
         <div>
@@ -101,7 +97,7 @@
                     </div>
                     <div class="crop-data-block">
                         <label for="js-crop-quality">Quality</label>
-                        <input type="range" id="js-crop-quality" class="crop-data-quality-slider"
+                        <input type="range" id="js-crop-quality" class="slider crop-data-quality-slider"
                             step="0.01" min="0" max="1" value="0.92">
                         <div id="js-crop-quality-display">0.92</div>
                     </div>
@@ -112,14 +108,14 @@
 			<div id="js-crop-mouse-pos" class="crop-mouse-pos"></div>
             <div id="js-crop-message" class="crop-message">Cropped</div>
 			<div id="js-crop-bottom-btns" class="crop-button-container">
-				<button id="js-cropper-crop" class="btn inv-btn crop-btn" data-btn="crop">Crop</button>
-				<button id="js-cropper-preview" class="btn inv-btn crop-btn" data-btn="preview">Preview</button>
-				<button class="icon-angle-double-right btn inv-btn crop-btn" data-btn="toggle" title="Toggle sidebar"></button>
+				<button id="js-cropper-crop" class="btn-inv crop-btn" data-btn="crop">Crop</button>
+				<button id="js-cropper-preview" class="btn-inv crop-btn" data-btn="preview">Preview</button>
+				<button class="icon-angle-double-right btn-inv crop-btn" data-btn="toggle" title="Toggle sidebar"></button>
 			</div>
 		</div>
         <div id="js-crop-preview" class="crop-preview-mask">
 			<div class="crop-preview-container">
-				<button id="js-crop-preview-close" class="icon-cancel font-btn crop-preview-close"></button>
+				<button id="js-crop-preview-close" class="icon-cancel btn-transparent crop-preview-close"></button>
 			</div>
         </div>
     </div>

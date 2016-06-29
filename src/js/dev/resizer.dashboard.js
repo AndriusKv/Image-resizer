@@ -90,7 +90,7 @@ function createInput() {
     const input = document.createElement("input");
 
     input.setAttribute("type", "text");
-    input.classList.add("image-input");
+    input.classList.add("input", "image-input");
 
     return input;
 }
