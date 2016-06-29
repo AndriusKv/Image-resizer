@@ -4,29 +4,24 @@
     margin: 0 auto;
 }
 .tool-selection {
-    @extend %container;
-
     padding: 4px;
     margin-bottom: 8px;
-    background-color: $brand-color2;
+    background-color: $brand-color;
     text-align: center;
 }
 .tool-selection-btn {
     vertical-align: top;
-    opacity: .4;
-    transition: opacity .2s;
+    opacity: 0.4;
 
     &.active { opacity: 1; }
 }
 .tool-settings {
-    @extend %container;
-
-    position: absolute;
-    width: 100%;
     visibility: collapse;
     opacity: 0;
-	padding: 4px;
-    background-color: $brand-color2;
+    position: absolute;
+    width: 100%;
+	padding: 0 4px 4px 4px;
+    background-color: $brand-color;
     color: $light-color;
     transform: translateY(-14px) scale(0.9);
     transition: all .2s;
@@ -36,6 +31,5 @@
         opacity: 1;
         transform: translateY(0) scale(1);
     }
-
     &.preload { transition: none; }
 }
