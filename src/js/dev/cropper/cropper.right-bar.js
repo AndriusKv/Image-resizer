@@ -67,24 +67,11 @@ function isVisible() {
     return rightBarVisible;
 }
 
-function insertChar(target, char) {
-    const start = target.selectionStart;
-    const end = target.selectionEnd;
-    let string = target.value;
-
-    if (start === end) {
-        string = string.slice(0, start) + char + string.slice(start, string.length);
-    }
-    else {
-        string = string.slice(0, start) + char + string.slice(end, string.length);
-    }
-    return Number.parseInt(string, 10);
-}
-
 function updateCanvasOnInput(input, inputValue) {
     if (input === "scale") {
         const { width, height } = canvasElement.getDimensions();
 
+        inputValue = inputValue ? cropper.adjustScale(inputValue) : 100;
         cropper.scaleImage(width / 2, height / 2, inputValue);
         return;
     }
@@ -134,26 +121,13 @@ function updateCanvasWithCropData(event) {
             event.preventDefault();
             return;
         }
-
-        const inputValue = insertChar(target, key);
-
-        updateCanvasOnInput(input, inputValue);
     }
-    else if (!backspace && !enter) {
+    else if (enter) {
+        updateCanvasOnInput(input, Number.parseInt(target.value, 10));
+    }
+    else if (!backspace) {
         event.preventDefault();
-    }
-}
-
-function updateSelectedAreaWithCropData(event) {
-    const key = getKey(event);
-    const backspace = key === "Backspace" || key === 8;
-    const enter = key === "Enter" || key === 13;
-
-    if (backspace || enter) {
-        const target = event.target;
-        const input = target.getAttribute("data-input");
-
-        updateCanvasOnInput(input, target.value);
+        return;
     }
 }
 
@@ -175,7 +149,6 @@ function toggleRightBar(btn) {
 }
 
 cropData.addEventListener("keypress", updateCanvasWithCropData);
-cropData.addEventListener("keyup", updateSelectedAreaWithCropData);
 document.getElementById("js-crop-quality").addEventListener("input", adjustQuality);
 
 export {
