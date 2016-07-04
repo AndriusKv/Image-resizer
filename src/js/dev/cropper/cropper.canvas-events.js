@@ -186,13 +186,14 @@ function changeResizeCursor(area, x, y) {
 function changeCursor(event) {
     const { x, y } = canvasElement.getMousePosition(event);
     const area = selectedArea.get();
-    const currentAngle = angle.get();
 
     cropper.mousePosition.set({ x, y });
 
     if (!area.width || !area.height) {
         return;
     }
+
+    const currentAngle = angle.get();
 
     if (event.ctrlKey) {
         let cursor = "default";

@@ -4,13 +4,13 @@
     margin: 0 auto;
 }
 .tool-selection {
+    display: flex;
+    justify-content: center;
     padding: 4px;
     margin-bottom: 8px;
     background-color: $brand-color;
-    text-align: center;
 }
 .tool-selection-btn {
-    vertical-align: top;
     opacity: 0.4;
 
     &.active { opacity: 1; }

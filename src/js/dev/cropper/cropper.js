@@ -83,18 +83,12 @@ function updateTransformedArea(area, canvasReset) {
     const pt = transform.getTransformedPoint(area.x + area.width, area.y + area.height);
     const width = pt.x - x;
     const height = pt.y - y;
-    const transformedArea = selectedArea.setTransformed({
-        x: x,
-        y: y,
-        width: width,
-        height: height
-    });
+    const transformedArea = selectedArea.setTransformed({ x, y, width, height });
 
     if (canvasReset) {
         transformedArea.x = 0;
         transformedArea.y = 0;
     }
-
     dataInput.update(transformedArea);
 }
 
@@ -206,13 +200,18 @@ function resetData() {
     updateTransformedArea(selectedArea.get(), true);
 }
 
-function scaleImage(x, y, scale) {
+function scaleToPoint(x, y, scale) {
     const ctx = canvasElement.getContext();
-    const area = selectedArea.get();
 
     transform.translate(ctx, x, y);
     transform.scale(ctx, scale / 100);
     transform.translate(ctx, -x, -y);
+}
+
+function scaleImage(x, y, scale) {
+    const area = selectedArea.get();
+
+    scaleToPoint(x, y, scale);
 
     if (area.width && area.height) {
         updateTransformedArea(area);
@@ -223,13 +222,24 @@ function scaleImage(x, y, scale) {
         selectedArea.setProp("x", translatedX);
         selectedArea.setProp("y", translatedY);
     }
+    dataInput.setValue("scale", scale);
     requestAnimationFrame(draw);
+}
+
+function adjustScale(scale) {
+    if (scale < 10) {
+        scale = 10;
+    }
+    else if (scale > 4000) {
+        scale = 4000;
+    }
+    return scale;
 }
 
 function handleScroll(event) {
     const { x, y } = canvasElement.getMousePosition(event);
     const pt = transform.getTransformedPoint(x, y);
-    let scale = dataInput.getValue("scale");
+    let scale = Number.parseInt(dataInput.getValue("scale"), 10) || 100;
 
     if (event.deltaY > 0) {
         scale *= 0.8;
@@ -237,8 +247,8 @@ function handleScroll(event) {
     else {
         scale /= 0.8;
     }
+    scale = adjustScale(Math.floor(scale));
     scaleImage(pt.x, pt.y, scale);
-    dataInput.setValue("scale", Math.round(scale));
 }
 
 function trackMousePosition(event) {
@@ -288,18 +298,21 @@ function setDefaultImagePosition(x, y) {
     transform.setDefaultTranslation(x / 2, y / 2);
 }
 
+function getRealCanvasWidth(width) {
+    if (rightBar.isVisible()) {
+        width -= 200;
+    }
+    if (leftBar.isVisible()) {
+        width -= 100;
+    }
+    return width;
+}
+
 function scaleImageToFitCanvas(image) {
     const { width: canvasWidth, height: canvasHeight } = canvasElement.getDimensions();
     const { width, height } = image;
-    let realWidth = canvasWidth;
+    const realWidth = getRealCanvasWidth(canvasWidth);
     let scale = 100;
-
-    if (rightBar.isVisible()) {
-        realWidth -= 200;
-    }
-    if (leftBar.isVisible()) {
-        realWidth -= 100;
-    }
 
     if (width > height) {
         scale = getScale(width, height, realWidth, canvasHeight);
@@ -315,7 +328,6 @@ function scaleImageToFitCanvas(image) {
     setDefaultImagePosition(x, y);
     transform.reset(ctx);
     scaleImage(0, 0, scale);
-    dataInput.setValue("scale", Math.round(scale));
     canvas.drawImage(ctx, image);
 }
 
@@ -328,6 +340,7 @@ export {
     getCroppedCanvas,
     resetData,
     scaleImageToFitCanvas,
+    adjustScale,
     scaleImage,
     loadNextImage,
     toggleCanvasElementEventListeners
