@@ -7,6 +7,7 @@ import * as canvas from "./cropper.canvas.js";
 import * as selectedArea from "./cropper.selected-area.js";
 import * as events from "./cropper.canvas-events.js";
 import * as resize from "./cropper.resize.js";
+import * as scale from "./cropper.scale.js";
 
 function displayImageName(name) {
     document.getElementById("js-crop-image-name").textContent = name;
@@ -18,7 +19,7 @@ function resetCanvas() {
     cropper.resetData();
     selectedArea.setDefaultPos(translated.x, translated.y);
     selectedArea.containsArea(false);
-    cropper.scaleImageToFitCanvas(canvas.image.get());
+    scale.scaleImageToFitCanvas(canvas.image.get());
     bottomBar.disableButton("crop", "preview");
 }
 

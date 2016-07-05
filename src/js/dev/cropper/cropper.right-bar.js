@@ -7,6 +7,7 @@ import * as dataInput from "./cropper.data-input.js";
 import * as selectedArea from "./cropper.selected-area.js";
 import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
+import * as scale from "./cropper.scale.js";
 
 const cropData = document.getElementById("js-crop-data");
 let rightBarVisible = true;
@@ -71,8 +72,8 @@ function updateCanvasOnInput(input, inputValue) {
     if (input === "scale") {
         const { width, height } = canvasElement.getDimensions();
 
-        inputValue = inputValue ? cropper.adjustScale(inputValue) : 100;
-        cropper.scaleImage(width / 2, height / 2, inputValue);
+        inputValue = inputValue ? scale.adjustScale(inputValue) : 100;
+        scale.scaleImage(width / 2, height / 2, inputValue);
         return;
     }
 
