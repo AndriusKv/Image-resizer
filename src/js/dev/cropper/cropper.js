@@ -13,6 +13,7 @@ import * as selectedArea from "./cropper.selected-area.js";
 import * as direction from "./cropper.direction.js";
 import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
+import * as scale from "./cropper.scale.js";
 
 const cropperElement = (function() {
     const cropper = document.getElementById("js-crop");
@@ -127,7 +128,7 @@ function draw() {
 function setupInitialImage(image) {
     topBar.displayImageName(image.name.original);
     bottomBar.disableButton("crop", "preview");
-    canvas.drawInitialImage(image.uri, scaleImageToFitCanvas)
+    canvas.drawInitialImage(image.uri, scale.scaleImageToFitCanvas)
     .then(() => {
         const translated = transform.getTranslated();
 
@@ -200,55 +201,14 @@ function resetData() {
     updateTransformedArea(selectedArea.get(), true);
 }
 
-function scaleToPoint(x, y, scale) {
-    const ctx = canvasElement.getContext();
-
-    transform.translate(ctx, x, y);
-    transform.scale(ctx, scale / 100);
-    transform.translate(ctx, -x, -y);
-}
-
-function scaleImage(x, y, scale) {
-    const area = selectedArea.get();
-
-    scaleToPoint(x, y, scale);
-
-    if (area.width && area.height) {
-        updateTransformedArea(area);
-    }
-    else {
-        const { e: translatedX, f: translatedY } = transform.get();
-
-        selectedArea.setProp("x", translatedX);
-        selectedArea.setProp("y", translatedY);
-    }
-    dataInput.setValue("scale", scale);
-    requestAnimationFrame(draw);
-}
-
-function adjustScale(scale) {
-    if (scale < 10) {
-        scale = 10;
-    }
-    else if (scale > 4000) {
-        scale = 4000;
-    }
-    return scale;
-}
-
 function handleScroll(event) {
     const { x, y } = canvasElement.getMousePosition(event);
     const pt = transform.getTransformedPoint(x, y);
-    let scale = Number.parseInt(dataInput.getValue("scale"), 10) || 100;
+    const currentScale = Number.parseInt(dataInput.getValue("scale"), 10) || 100;
+    const multiplier = event.deltaY > 0 ? 0.8: 1.25;
+    const newScale = scale.adjustScale(Math.floor(currentScale * multiplier));
 
-    if (event.deltaY > 0) {
-        scale *= 0.8;
-    }
-    else {
-        scale /= 0.8;
-    }
-    scale = adjustScale(Math.floor(scale));
-    scaleImage(pt.x, pt.y, scale);
+    scale.scaleImage(pt.x, pt.y, newScale);
 }
 
 function trackMousePosition(event) {
@@ -269,68 +229,6 @@ function loadNextImage(image) {
     }, 240);
 }
 
-function getScale(imageDimension1, imageDimension2, canvasDimension1, canvasDimension2) {
-    let scale = 100;
-
-    function getDimensionScale(scale, imageDimension, canvasDimension) {
-        const excess = imageDimension - canvasDimension;
-
-        return scale - 100 / (imageDimension / excess);
-    }
-
-    if (imageDimension1 > canvasDimension1) {
-        scale = getDimensionScale(scale, imageDimension1, canvasDimension1);
-
-        if (imageDimension2 * scale / 100 > canvasDimension2) {
-            scale = getDimensionScale(100, imageDimension2, canvasDimension2);
-        }
-    }
-    return scale;
-}
-
-function setDefaultImagePosition(x, y) {
-    if (rightBar.isVisible()) {
-        x -= 200;
-    }
-    if (leftBar.isVisible()) {
-        x += 100;
-    }
-    transform.setDefaultTranslation(x / 2, y / 2);
-}
-
-function getRealCanvasWidth(width) {
-    if (rightBar.isVisible()) {
-        width -= 200;
-    }
-    if (leftBar.isVisible()) {
-        width -= 100;
-    }
-    return width;
-}
-
-function scaleImageToFitCanvas(image) {
-    const { width: canvasWidth, height: canvasHeight } = canvasElement.getDimensions();
-    const { width, height } = image;
-    const realWidth = getRealCanvasWidth(canvasWidth);
-    let scale = 100;
-
-    if (width > height) {
-        scale = getScale(width, height, realWidth, canvasHeight);
-    }
-    else {
-        scale = getScale(height, width, canvasHeight, realWidth);
-    }
-
-    const x = canvasWidth - width * scale / 100;
-    const y = canvasHeight - height * scale / 100;
-    const ctx = canvasElement.getContext();
-
-    setDefaultImagePosition(x, y);
-    transform.reset(ctx);
-    scaleImage(0, 0, scale);
-    canvas.drawImage(ctx, image);
-}
-
 export {
     init,
     draw,
@@ -339,9 +237,6 @@ export {
     updateTransformedArea,
     getCroppedCanvas,
     resetData,
-    scaleImageToFitCanvas,
-    adjustScale,
-    scaleImage,
     loadNextImage,
     toggleCanvasElementEventListeners
 };
