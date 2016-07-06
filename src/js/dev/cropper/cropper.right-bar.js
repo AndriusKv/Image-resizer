@@ -12,17 +12,16 @@ import * as scale from "./cropper.scale.js";
 const cropData = document.getElementById("js-crop-data");
 let rightBarVisible = true;
 
-const preview = (function(cropper) {
+const preview = (function(transform) {
     const preview = document.getElementById("js-right-bar-preview");
-    const ctx = preview.getContext("2d");
+    const previewCtx = preview.getContext("2d");
     const maxWidth = 192;
     const maxHeight = 150;
-    let updating = false;
 
     preview.width = maxWidth;
     preview.height = maxHeight;
 
-    function getImageSize({width, height }, maxWidth, maxHeight) {
+    function getImageSize(width, height, maxWidth, maxHeight) {
         const ratio = width / height;
 
         if (width >= height) {
@@ -37,32 +36,60 @@ const preview = (function(cropper) {
     }
 
     function clean() {
-        ctx.clearRect(0, 0, maxWidth, maxHeight);
+        previewCtx.clearRect(0, 0, maxWidth, maxHeight);
     }
 
-    function draw(image, area) {
-        if (updating) {
-            return;
-        }
-        if (!area.width || !area.height) {
-            clean();
-            return;
-        }
-        updating = true;
-        requestAnimationFrame(() => {
-            const croppedCanvas = cropper.getCroppedCanvas(image, area);
-            const { width, height } = getImageSize(croppedCanvas, maxWidth, maxHeight);
-            const x = (maxWidth - width) / 2;
-            const y = (maxHeight - height) / 2;
+    function getCroppedCanvasCtx(image) {
+        const croppedCanvas = document.createElement("canvas");
+        const { x, y } = transform.getTranslated();
 
-            clean();
-            ctx.drawImage(croppedCanvas, x, y, width, height);
-            updating = false;
-        });
+        croppedCanvas.width = image.width + x * 2;
+        croppedCanvas.height = image.height + y * 2;
+        return croppedCanvas.getContext("2d");
+    }
+
+    function getImageData(image, area, angle) {
+        const xform = transform.get();
+        const ctx = getCroppedCanvasCtx(image);
+
+        ctx.save();
+        if (angle) {
+            const centerX = area.x + area.width / 2;
+            const centerY = area.y + area.height / 2;
+
+            ctx.translate(centerX, centerY);
+            ctx.rotate(-angle);
+            ctx.translate(-centerX, -centerY);
+        }
+        ctx.translate(xform.e, xform.f);
+        ctx.scale(xform.a, xform.a);
+        ctx.drawImage(image, 0, 0, image.width, image.height);
+        ctx.restore();
+        return ctx.getImageData(area.x, area.y, area.width, area.height);
+    }
+
+    function drawPreview(imageData) {
+        const croppedCanvas = document.createElement("canvas");
+        const croppedCanvasCtx = croppedCanvas.getContext("2d");
+        const { width, height } = getImageSize(imageData.width, imageData.height, maxWidth, maxHeight);
+        const x = (maxWidth - width) / 2;
+        const y = (maxHeight - height) / 2;
+
+        croppedCanvas.width = imageData.width;
+        croppedCanvas.height = imageData.height;
+        croppedCanvasCtx.putImageData(imageData, 0, 0);
+        previewCtx.drawImage(croppedCanvas, x, y, width, height);
+    }
+
+    function draw(image, area, angle) {
+        const imageData = getImageData(image, area, angle);
+
+        clean();
+        drawPreview(imageData);
     }
 
     return { clean, draw };
-})(cropper);
+})(transform);
 
 function isVisible() {
     return rightBarVisible;

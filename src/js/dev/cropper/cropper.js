@@ -118,10 +118,8 @@ function draw() {
     const areaDrawn = selectedArea.isDrawn();
 
     canvas.drawCanvas(image, area, currentAngle, areaDrawn);
-    if (rightBar.isVisible()) {
-        const transformed = selectedArea.getTransformed();
-
-        rightBar.preview.draw(image, transformed);
+    if (rightBar.isVisible() && area.width && area.height) {
+        rightBar.preview.draw(image, area, currentAngle);
     }
 }
 
