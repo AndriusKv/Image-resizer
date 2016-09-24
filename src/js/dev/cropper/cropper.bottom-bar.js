@@ -54,11 +54,11 @@ function sendImageToWorker(imageToCrop) {
 function cropImage() {
     const messageElem = document.getElementById("js-crop-message");
 
-    messageElem.classList.add("show");
+    messageElem.classList.add("visible");
     sendImageToWorker(images.getActive())
     .then(() => {
         setTimeout(() => {
-            messageElem.classList.remove("show");
+            messageElem.classList.remove("visible");
         }, 200);
     });
 }

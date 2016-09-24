@@ -27,11 +27,11 @@ function removeEventListener(event, cb) {
 }
 
 function showCanvas() {
-    canvas.classList.add("show");
+    canvas.classList.add("visible");
 }
 
 function hideCanvas() {
-    canvas.classList.remove("show");
+    canvas.classList.remove("visible");
 }
 
 function setCursor(name = "default") {

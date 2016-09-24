@@ -5,12 +5,12 @@ import * as progress from "./dropbox.progress.js";
 import * as message from "./dropbox.message.js";
 import * as button from "./dropbox.buttons.js";
 import * as resizer from "./../resizer.js";
-import * as tools from "./../tools.js";
+import { getCurrentTool } from "./../tools.js";
 import * as cropper from "./../cropper/cropper.js";
 
 function toggleMasks(action) {
     document.getElementById("js-dropbox-label").classList[action]("mask");
-    document.getElementById("js-mask").classList[action]("show");
+    document.getElementById("js-mask").classList[action]("visible");
 }
 
 function removeMasksAndLabel() {
@@ -34,7 +34,7 @@ function resetDropbox(newState = -1) {
 }
 
 function doneReadingImages() {
-    if (tools.getCurrentTool() === "cropper") {
+    if (getCurrentTool() === "cropper") {
         resetDropbox();
         cropper.init(images.getAll());
     }

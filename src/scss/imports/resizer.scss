@@ -8,7 +8,7 @@
     visibility: collapse;
     transition: all 0.2s;
 
-    &.show {
+    &.visible {
         visibility: visible;
         background-color: rgba(0, 52, 89, 0.8);
     }

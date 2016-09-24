@@ -26,11 +26,11 @@ function showPreview(uri) {
     };
     image.src = uri;
     imageContainer.appendChild(image);
-    cropPreview.classList.add("show");
+    cropPreview.classList.add("visible");
 }
 
 function hidePreview() {
-    cropPreview.classList.remove("show");
+    cropPreview.classList.remove("visible");
 
     // remove preview image after animation finished running.
     setTimeout(() => {
