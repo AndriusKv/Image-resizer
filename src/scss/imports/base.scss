@@ -18,7 +18,6 @@ body {
 	margin-bottom: 0;
     padding-bottom: 8px;
     background-color: $brand-color;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
 	text-align: center;
 	color: $light-color;
 	font-size: 48px;
@@ -33,17 +32,23 @@ body {
 .btn {
     @include btn($brand-color-darker);
 
-    &:hover { background-color: $brand-color; }
+    &:hover {
+        background-color: $brand-color;
+    }
 }
 .btn-inv {
     @include btn($light-color, $brand-color);
 
-    &:hover { background-color: #bbb; }
+    &:hover {
+        background-color: #bbb;
+    }
 }
 .btn-transparent {
     @include btn(transparent);
 
-    &:hover { color: #bbb; }
+    &:hover {
+        color: #bbb;
+    }
 }
 .slider {
     appearance: none;

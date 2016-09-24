@@ -1,5 +1,5 @@
 function toggleButton(action, button) {
-    document.getElementById(`js-${button}`).classList[action]("show");
+    document.getElementById(`js-${button}`).classList[action]("visible");
 }
 
 function showButton(button) {

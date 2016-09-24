@@ -13,8 +13,10 @@
     transform: scale(0.8);
     transition: all 0.4s;
 
-    &.preload { transition: none; }
-    &.show {
+    &.preload {
+        transition: none;
+    }
+    &.visible {
         opacity: 1;
         visibility: visible;
         transform: scale(1);
@@ -46,7 +48,9 @@
     width: 100px;
     background-color: $brand-color-darker;
 
-    &.hidden { display: none; }
+    &.hidden {
+        display: none;
+    }
 }
 .left-bar-thumbnails {
     list-style: none;
@@ -63,8 +67,12 @@
     border-radius: 2px;
     text-align: center;
 
-    &:last-of-type { margin-bottom: 0; }
-    &.active { background-color: $brand-color-lighter; }
+    &:last-of-type {
+        margin-bottom: 0;
+    }
+    &.active {
+        background-color: $brand-color-lighter;
+    }
 }
 .left-bar-thumbnail-image {
     object-fit: scale-down;
@@ -78,7 +86,7 @@
     transform: scale(0.96);
     transition: all 0.2s;
 
-    &.show {
+    &.visible {
         transform: scale(1);
         opacity: 1;
     }
@@ -92,7 +100,9 @@
     width: 200px;
     background-color: $brand-color-darker;
 
-    &.hide { display: none; }
+    &.hide {
+        display: none;
+    }
 }
 .crop-data {
     margin-top: 4px;
@@ -147,7 +157,7 @@
     font-size: 12px;
     transition: all 0.2s;
 
-    &.show {
+    &.visible {
         visibility: visible;
         opacity: 1;
         margin-right: 8px;
@@ -170,7 +180,9 @@
 .crop-btn:disabled {
     color: #aaa;
 
-    &:hover { background-color: $light-color; }
+    &:hover {
+        background-color: $light-color;
+    }
 }
 .crop-preview-mask {
     opacity: 0;
@@ -186,7 +198,7 @@
     height: 104%;
     transition: all 0.2s;
 
-    &.show {
+    &.visible {
         z-index: 2;
         top: 0;
         height: 100%;

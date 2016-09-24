@@ -10,6 +10,10 @@
 </head>
 <body>
 	<h1 class="title">Image Editor</h1>
+	<div id="js-tool-selection" class="tool-selection">
+		<button class="btn-transparent tool-selection-btn active" data-tool="resizer">Resizer</button>
+		<button class="btn-transparent tool-selection-btn" data-tool="cropper">Cropper</button>
+	</div>
 	<label for="js-image-select" id="js-dropbox" class="dropbox">
         <progress id="js-progress" class="progress-bar" value="0" max="100"></progress>
         <div id="js-progress-label" class="progress-label"></div>
@@ -22,12 +26,8 @@
         </div>
 	</label>
 	<input type="file" id="js-image-select" class="image-select-input" multiple>
-	<div class="tools">
-        <div id="js-tools-btns" class="tool-selection">
-            <button class="btn-transparent tool-selection-btn active" data-tool="resizer">Resizer</button>
-            <button class="btn-transparent tool-selection-btn" data-tool="cropper">Cropper</button>
-        </div>
-        <div id="js-resizer-settings" class="tool-settings active preload">
+	<div class="tool-setting-container">
+        <div id="js-resizer-settings" class="tool-setting-item active preload">
             <div id ="js-mask" class="tool-settings-mask"></div>
             <div class="setting">
                 <label for="js-image-name">Image name</label>

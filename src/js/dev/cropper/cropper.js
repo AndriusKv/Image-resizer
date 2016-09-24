@@ -19,11 +19,11 @@ const cropperElement = (function() {
     const cropper = document.getElementById("js-crop");
 
     function show() {
-        cropper.classList.add("show");
+        cropper.classList.add("visible");
     }
 
     function hide() {
-        cropper.classList.remove("show");
+        cropper.classList.remove("visible");
     }
 
     return { show, hide };

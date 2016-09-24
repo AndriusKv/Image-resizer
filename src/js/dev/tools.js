@@ -6,40 +6,30 @@ function getCurrentTool() {
     return activeTool;
 }
 
-function toggleTool(tool, elem) {
+function toggleToolSettings(tool) {
     const toolSettings = document.getElementById(`js-${tool}-settings`);
 
-    elem.classList.toggle("active");
     if (toolSettings) {
         toolSettings.classList.toggle("active");
     }
 }
 
-function removeActiveTool() {
-    const btns = [...document.querySelectorAll(".tool-selection-btn")];
-
-    btns.forEach(btn => {
-        if (btn.classList.contains("active")) {
-            const tool = btn.getAttribute("data-tool");
-
-            toggleTool(tool, btn);
-        }
-    });
-}
-
-function switchTool(event) {
-    const target = event.target;
+function switchTool({ target }) {
     const tool = target.getAttribute("data-tool");
 
     if (!tool || tool === activeTool) {
         return;
     }
-    activeTool = tool;
-    removeActiveTool();
-    toggleTool(tool, target);
+    document.querySelector(`[data-tool=${activeTool}]`).classList.remove("active");
+    target.classList.add("active");
+    toggleToolSettings(activeTool);
+    toggleToolSettings(tool);
     message.show(`${tool} enabled`);
+    activeTool = tool;
 }
 
-document.getElementById("js-tools-btns").addEventListener("click", switchTool, false);
+document.getElementById("js-tool-selection").addEventListener("click", switchTool);
 
-export { getCurrentTool };
+export {
+    getCurrentTool
+};

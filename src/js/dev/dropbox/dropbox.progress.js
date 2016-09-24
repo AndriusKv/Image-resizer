@@ -2,11 +2,11 @@ const progressBar = document.getElementById("js-progress");
 const progressLabel = document.getElementById("js-progress-label");
 
 function showProgressBar() {
-    progressBar.classList.add("show");
+    progressBar.classList.add("visible");
 }
 
 function hideProgressBar() {
-    progressBar.classList.remove("show");
+    progressBar.classList.remove("visible");
 }
 
 function setProgressLabel(text) {
@@ -18,7 +18,7 @@ function updateProgress(value) {
 }
 
 function resetProgress() {
-    progressBar.classList.remove("show");
+    progressBar.classList.remove("visible");
     progressBar.value = 0;
 }
 
@@ -27,5 +27,5 @@ export {
     hideProgressBar as hide,
     setProgressLabel as setLabel,
     updateProgress as update,
-    resetProgress as reset 
+    resetProgress as reset
 };

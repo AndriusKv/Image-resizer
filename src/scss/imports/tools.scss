@@ -1,4 +1,4 @@
-.tools {
+.tool-setting-container {
     position: relative;
     width: 480px;
     margin: 0 auto;
@@ -6,30 +6,33 @@
 .tool-selection {
     display: flex;
     justify-content: center;
+    margin: 2px auto 0 auto;
     padding: 4px;
-    margin-bottom: 8px;
     background-color: $brand-color;
 }
 .tool-selection-btn {
     opacity: 0.4;
 
-    &.active { opacity: 1; }
+    &.active {
+        opacity: 1;
+    }
 }
-.tool-settings {
+.tool-setting-item {
     visibility: collapse;
     opacity: 0;
-    position: absolute;
     width: 100%;
 	padding: 0 4px 4px 4px;
     background-color: $brand-color;
     color: $light-color;
     transform: translateY(-14px) scale(0.9);
-    transition: all .2s;
+    transition: all 0.2s;
 
     &.active {
         visibility: visible;
         opacity: 1;
         transform: translateY(0) scale(1);
     }
-    &.preload { transition: none; }
+    &.preload {
+        transition: none;
+    }
 }
