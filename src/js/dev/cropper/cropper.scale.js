@@ -58,7 +58,7 @@ function getScale(imageDimension1, imageDimension2, canvasDimension1, canvasDime
             scale = getDimensionScale(100, imageDimension2, canvasDimension2);
         }
     }
-    return scale;
+    return Math.floor(scale);
 }
 
 function setDefaultImagePosition(x, y) {
