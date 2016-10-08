@@ -103,7 +103,6 @@ function toggleCanvasElementEventListeners(action) {
 function init(loadedImages) {
     images.set(loadedImages);
     canvasElement.resetDimensions();
-    setupInitialImage(loadedImages[0]);
     leftBar.init(loadedImages);
     bottomBar.init();
     resize.enable();
