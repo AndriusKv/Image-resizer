@@ -4,7 +4,6 @@ import * as canvas from "./cropper.canvas.js";
 import * as topBar from "./cropper.top-bar.js";
 import * as leftBar from "./cropper.left-bar.js";
 import * as bottomBar from "./cropper.bottom-bar.js";
-import * as rightBar from "./cropper.right-bar.js";
 import * as resize from "./cropper.resize.js";
 import * as images from "./cropper.images.js";
 import * as dataInput from "./cropper.data-input.js";
@@ -117,9 +116,6 @@ function draw() {
     const areaDrawn = selectedArea.isDrawn();
 
     canvas.drawCanvas(image, area, currentAngle, areaDrawn);
-    if (rightBar.isVisible() && area.width && area.height) {
-        rightBar.preview.draw(image, area, currentAngle);
-    }
 }
 
 function setupInitialImage(image) {
@@ -186,7 +182,6 @@ function resetAreaAndAngle() {
     selectedArea.reset();
     angle.reset();
     dataInput.setValue("angle", 0);
-    rightBar.preview.clean();
 }
 
 function resetData() {

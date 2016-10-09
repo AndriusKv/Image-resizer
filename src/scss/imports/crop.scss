@@ -97,6 +97,9 @@
     top: 28px;
     right: 0;
     bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     width: 200px;
     background-color: $brand-color-darker;
 
