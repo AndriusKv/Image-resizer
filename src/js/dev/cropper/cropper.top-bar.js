@@ -8,6 +8,9 @@ import * as selectedArea from "./cropper.selected-area.js";
 import * as events from "./cropper.canvas-events.js";
 import * as resize from "./cropper.resize.js";
 import * as scale from "./cropper.scale.js";
+import { postMessageToWorker } from "./../editor.worker.js";
+import { getAllCroppedImages, removeCroppedImages } from "./cropper.cropped-images.js";
+import { displayCroppedImages } from "./cropper.right-bar.js";
 
 function displayImageName(name) {
     document.getElementById("js-crop-image-name").textContent = name;
@@ -23,6 +26,17 @@ function resetCanvas() {
     bottomBar.disableButton("crop", "preview");
 }
 
+function addImagesToFolder() {
+    const images = getAllCroppedImages();
+
+    postMessageToWorker({
+        action: "add-bulk",
+        images
+    });
+    removeCroppedImages();
+    displayCroppedImages();
+}
+
 function resetCropper() {
     cropper.cropperElement.hide();
     cropper.resetData();
@@ -30,6 +44,7 @@ function resetCropper() {
     events.toggleCursorEvents();
     cropper.toggleCanvasElementEventListeners("remove");
     resize.disable();
+    addImagesToFolder();
     dropbox.generateZip();
 }
 

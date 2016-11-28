@@ -8,9 +8,10 @@ import * as selectedArea from "./cropper.selected-area.js";
 import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
 import * as scale from "./cropper.scale.js";
+import { getAllCroppedImages, removeCroppedImage } from "./cropper.cropped-images.js";
 
-const cropData = document.getElementById("js-crop-data");
 let rightBarVisible = true;
+let isFirstCrop = true;
 
 function isVisible() {
     return rightBarVisible;
@@ -97,10 +98,57 @@ function toggleRightBar(btn) {
     classList.toggle("hide");
 }
 
-cropData.addEventListener("keypress", updateCanvasWithCropData);
+function toggleSection({ target }) {
+    const button = target.getAttribute("data-section-btn");
+
+    if (button) {
+        const sectionElement = target.parentElement;
+        const sectionElementBody = sectionElement.children[1];
+
+        if (sectionElementBody.children.length) {
+            sectionElementBody.classList.toggle("hidden");
+        }
+    }
+}
+
+function displayCroppedImages() {
+    const containerElement = document.getElementById("js-cropped-image-items");
+    const images = getAllCroppedImages();
+
+    containerElement.innerHTML = images.map((image, index) => {
+        return `
+            <li class="cropped-image-item">
+                <button class="icon-cancel btn-transparent remove-cropped-image-btn"
+                    data-index="${index}"></button>
+                <image src=${image.uri} class="cropped-image">
+            </li>
+        `;
+    }).join("");
+
+    if (isFirstCrop) {
+        containerElement.classList.remove("hidden");
+        isFirstCrop = false;
+    }
+    if (!images.length) {
+        isFirstCrop = true;
+        document.getElementById("js-cropped-image-items").classList.add("hidden");
+    }
+}
+
+document.getElementById("js-crop-right-bar").addEventListener("click", toggleSection);
+document.getElementById("js-crop-data").addEventListener("keypress", updateCanvasWithCropData);
 document.getElementById("js-crop-quality").addEventListener("input", adjustQuality);
+document.getElementById("js-cropped-image-items").addEventListener("click", function({ target }) {
+    const index = target.getAttribute("data-index");
+
+    if (index) {
+        removeCroppedImage(index);
+        displayCroppedImages();
+    }
+});
 
 export {
-    toggleRightBar as toggle,
-    isVisible
+    isVisible,
+    toggleRightBar,
+    displayCroppedImages
 };
