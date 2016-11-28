@@ -6,28 +6,10 @@ import * as progress from "./dropbox/dropbox.progress.js";
 import * as message from "./dropbox/dropbox.message.js";
 import * as button from "./dropbox/dropbox.buttons.js";
 
-let worker;
+let worker = null;
 
-function saveZip(data) {
-    try {
-        saveAs(data, "images.zip");
-    }
-    catch (error) {
-        const script = document.createElement("script");
-
-        script.setAttribute("src", "js/libs/FileSaver.min.js");
-        document.getElementsByTagName("body")[0].appendChild(script);
-        script.onload = function() {
-            saveAs(data, "images.zip");
-        };
-    }
-}
-
-function initWorker() {
-    if (worker) {
-        return;
-    }
-    worker = new Worker("js/workers/worker1.js");
+(function () {
+    worker = new Worker("js/ww.js");
     worker.onmessage = function(event) {
         const data = event.data;
 
@@ -47,18 +29,27 @@ function initWorker() {
     worker.onerror = function(event) {
         console.log(event);
     };
-}
+})();
 
-function postMessage(message) {
+function postMessageToWorker(message) {
     worker.postMessage(message);
 }
 
-function isWorkerInitialized() {
-    return !!worker;
+function saveZip(data) {
+    try {
+        saveAs(data, "images.zip");
+    }
+    catch (error) {
+        const script = document.createElement("script");
+
+        script.setAttribute("src", "js/libs/FileSaver.min.js");
+        document.getElementsByTagName("body")[0].appendChild(script);
+        script.onload = function() {
+            saveAs(data, "images.zip");
+        };
+    }
 }
 
 export {
-    initWorker as init,
-    postMessage as post,
-    isWorkerInitialized as isInited
+    postMessageToWorker
 };

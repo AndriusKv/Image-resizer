@@ -1,12 +1,12 @@
 /* global importScripts, JSZip, onmessage, postMessage */
 
-importScripts("../libs/jszip.min.js");
+importScripts("../js/libs/jszip.min.js");
 
 const zip = new JSZip();
 let content = null;
 let i = 0;
 
-function zipImages(name, uri, type) {
+function addToFolder(name, uri, type) {
     zip.folder("images").file(`${name}.${type}`, uri, { base64: true });
 }
 
@@ -21,17 +21,24 @@ function truncateUri(uri, type) {
     return uri.slice(22);
 }
 
+function zipImage(image, i) {
+    const type = changeFileType(image.type);
+    const uri = truncateUri(image.uri, type);
+    const name = image.name + i;
+
+    addToFolder(name, uri, type);
+}
+
 onmessage = function(event) {
     const data = event.data;
 
     switch (data.action) {
         case "add":
-            const image = data.image;
-            const type = changeFileType(image.type);
-            const uri = truncateUri(image.uri, type);
-
-            zipImages(image.name + i, uri, type);
+            zipImage(data.image, i);
             i += 1;
+            break;
+        case "add-bulk":
+            data.images.forEach(zipImage);
             break;
         case "generate":
             i = 0;

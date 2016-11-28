@@ -103,7 +103,6 @@ function init(loadedImages) {
     images.set(loadedImages);
     canvasElement.resetDimensions();
     leftBar.init(loadedImages);
-    bottomBar.init();
     resize.enable();
     toggleCanvasElementEventListeners("add");
     cropperElement.show();

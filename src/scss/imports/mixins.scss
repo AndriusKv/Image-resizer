@@ -6,3 +6,8 @@
     font-size: 14px;
     transition: all 0.1s;
 }
+@mixin scrollbar-color($color) {
+    &::-webkit-scrollbar-thumb {
+        background-color: $color;
+    }
+}

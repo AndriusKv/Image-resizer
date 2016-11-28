@@ -1,12 +1,12 @@
 import * as state from "./../editor.state.js";
-import * as worker from "./../editor.worker.js";
 import * as images from "./dropbox.images.js";
 import * as progress from "./dropbox.progress.js";
 import * as message from "./dropbox.message.js";
 import * as button from "./dropbox.buttons.js";
 import * as resizer from "./../resizer.js";
-import { getCurrentTool } from "./../tools.js";
 import * as cropper from "./../cropper/cropper.js";
+import { getCurrentTool } from "./../tools.js";
+import { postMessageToWorker } from "./../editor.worker.js";
 
 function toggleMasks(action) {
     document.getElementById("js-dropbox-label").classList[action]("mask");
@@ -56,7 +56,7 @@ function setImageName(name) {
 }
 
 function generateZip() {
-    worker.post({ action: "generate" });
+    postMessageToWorker({ action: "generate" });
 }
 
 function readImage(image) {
@@ -120,10 +120,7 @@ function readFiles(files) {
 }
 
 function onFiles(files) {
-    if (worker.isInited()) {
-        worker.post({ action: "remove" });
-    }
-
+    postMessageToWorker({ action: "remove" });
     images.reset();
     state.set(-1);
     button.hide("download");
@@ -138,7 +135,7 @@ function onBtnClick(event) {
         resizer.processImages();
     }
     else if (btn === "download") {
-        worker.post({ action: "download" });
+        postMessageToWorker({ action: "download" });
     }
     else if (btn === "cancel") {
         cancelWork();
