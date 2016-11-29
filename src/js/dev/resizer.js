@@ -1,10 +1,10 @@
 import * as state from "./editor.state.js";
-import * as worker from "./editor.worker.js";
 import * as dropbox from "./dropbox/dropbox.js";
 import * as images from "./dropbox/dropbox.images.js";
 import * as progress from "./dropbox/dropbox.progress.js";
 import * as button from "./dropbox/dropbox.buttons.js";
 import * as dashboard from "./resizer.dashboard.js";
+import { postMessageToWorker } from "./editor.worker.js";
 
 function getSecondDimension(dimension) {
     return dimension === "width" ? "height" : "width";
@@ -82,7 +82,7 @@ function doneResizing() {
 
 function storeImage(image, imageToResize, dimension) {
     return new Promise(resolve => {
-        worker.post({
+        postMessageToWorker({
             action: "add",
             image: {
                 name: imageToResize.name.setByUser,
@@ -148,7 +148,6 @@ function processImages() {
     const imageTotal = imagesToProcess.length * inputValues.length;
     const inc = 100 / imageTotal;
 
-    worker.init();
     dropbox.beforeWork();
     processImage(imagesToProcess, inputValues, inc);
     dashboard.saveToLocalStorage(inputValues);
