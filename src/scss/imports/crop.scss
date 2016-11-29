@@ -31,7 +31,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 28px;
+    height: 29px;
     background-color: #ccc;
 }
 .crop-top-bar {
@@ -45,8 +45,8 @@
 .crop-left-bar, .crop-right-bar {
     z-index: 1;
     position: absolute;
-    top: 28px;
-    bottom: 28px;
+    top: 29px;
+    bottom: 29px;
     display: flex;
     flex-direction: column;
     background-color: $light-color;

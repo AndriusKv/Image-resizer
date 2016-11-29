@@ -9,7 +9,6 @@
     background-color: #eee;
     box-shadow: 0 0 4px rgba(0, 0 ,0, 0.4);
     color: $dark-color;
-	font-size: 28px;
 	text-align: center;
     transition: 0.1s all;
 
@@ -33,6 +32,10 @@
 
     &.mask {
         opacity: 0.2;
+    }
+
+    .icon-download {
+        font-size: 36px;
     }
 }
 .info-msg {
