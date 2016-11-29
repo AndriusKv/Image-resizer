@@ -38,7 +38,8 @@
     "mocha": "^3.2.0",
     "node-sass": "^3.13.0",
     "onchange": "^3.0.2",
-    "postcss-cli": "^2.6.0"
+    "postcss-cli": "^2.6.0",
+    "uglifyjs": "^2.4.10"
   },
   "browserify": {
     "transform": [
