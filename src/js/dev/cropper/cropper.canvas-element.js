@@ -14,8 +14,8 @@ function getCanvasDimensions() {
 function resetCanvasDimensions() {
     canvas.width = window.innerWidth;
 
-    // -56 to account for top bar and bottom bar
-    canvas.height = window.innerHeight - 56;
+    // -58 to account for top bar and bottom bar
+    canvas.height = window.innerHeight - 58;
 }
 
 function addEventListener(event, cb) {
