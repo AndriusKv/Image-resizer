@@ -41,5 +41,5 @@ function hidePreview() {
 document.getElementById("js-crop-preview-close").addEventListener("click", hidePreview);
 
 export {
-    showPreview as show
+    showPreview
 };

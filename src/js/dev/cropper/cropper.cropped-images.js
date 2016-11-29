@@ -4,6 +4,10 @@ function getAllCroppedImages() {
     return images;
 }
 
+function getCroppedImage(index) {
+    return images[index];
+}
+
 function addCroppedImage(image) {
     images.unshift(image);
 }
@@ -18,6 +22,7 @@ function removeCroppedImages() {
 
 export {
     getAllCroppedImages,
+    getCroppedImage,
     addCroppedImage,
     removeCroppedImage,
     removeCroppedImages

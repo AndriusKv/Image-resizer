@@ -91,7 +91,7 @@ function onMouseup() {
         dataInput.update(area);
     }
     selectedArea.containsArea(containsArea);
-    bottomBar.toggleButton(!containsArea, "crop", "preview");
+    bottomBar.toggleButton(!containsArea, "crop");
 }
 
 function selectArea(area, x, y) {
