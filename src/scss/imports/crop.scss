@@ -24,34 +24,40 @@
 }
 .crop-bar {
     padding: 4px;
-    color: $light-color;
+    color: $dark-color;
 }
-.crop-top-bar {
+.crop-top-bar, .crop-bottom-bar {
     user-select: none;
     display: flex;
     justify-content: space-between;
     align-items: center;
     height: 28px;
-    font-size: 14px;
-    background-color: $brand-color;
+    background-color: #ccc;
+}
+.crop-top-bar {
+    border-bottom: 1px solid #bbb;
 }
 .crop-image-name {
     flex-grow: 1;
+    font-size: 14px;
     text-align: center;
 }
-.crop-left-bar {
+.crop-left-bar, .crop-right-bar {
     z-index: 1;
     position: absolute;
     top: 28px;
     bottom: 28px;
-    width: 100px;
     display: flex;
     flex-direction: column;
     background-color: $light-color;
+    user-select: none;
 
     &.hidden {
         display: none;
     }
+}
+.crop-left-bar {
+    width: 100px;
 }
 .left-bar-thumbnails {
     @include scrollbar-color(#aaa);
@@ -91,19 +97,8 @@
     }
 }
 .crop-right-bar {
-    user-select: none;
-    position: absolute;
-    top: 28px;
     right: 0;
-    bottom: 28px;
-    display: flex;
-    flex-direction: column;
     width: 200px;
-    background-color: $light-color;
-
-    &.hide {
-        display: none;
-    }
 }
 .crop-right-bar-section {
     padding: 3px;
@@ -128,10 +123,8 @@
         text-shadow: 0 0 1px #fff;
     }
 }
-.crop-right-bar-section-body {
-    &.hidden {
-        display: none;
-    }
+.crop-right-bar-section-body.hidden {
+    display: none;
 }
 .crop-data-group {
     display: flex;
@@ -173,6 +166,7 @@
 }
 .cropped-image-items {
     @include scrollbar-color(#aaa);
+
     overflow-y: auto;
     padding: 3px;
     border: 1px solid #aaa;
@@ -187,16 +181,16 @@
     border: 1px solid #aaa;
     background-color: #fff;
 
-    &:hover .remove-cropped-image-btn {
+    &:hover .cropped-image-item-btns {
         display: block;
     }
 }
-.remove-cropped-image-btn {
+.cropped-image-item-btns {
     position: absolute;
     top: 4px;
     right: 4px;
     display: none;
-    text-shadow: 0 0 5px $dark-color;
+    background-color: $dark-color;
 }
 .cropped-image {
     width: 100%;
@@ -204,35 +198,21 @@
     object-fit: scale-down;
 }
 .crop-bottom-bar {
-    overflow: hidden;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 28px;
-    background-color: $brand-color;
+    border-top: 1px solid #bbb;
 }
 .crop-mouse-pos {
     font-size: 12px;
 }
 .crop-button-container {
     display: flex;
-    width: 192px;
-
-    .crop-btn {
-        flex-basis: 45%;
-        border-right: 1px solid #bbb;
-
-        &:last-of-type {
-            flex-basis: 10%;
-            border-right: 0;
-        }
-    }
+    justify-content: flex-end;
 }
-.crop-btn:disabled {
-    color: #aaa;
+.crop-btn {
+    border: 1px solid #aaa;
+    background-color: #bbb;
 
-    &:hover {
-        background-color: $light-color;
+    &:disabled {
+        color: #aaa;
     }
 }
 .crop-preview-mask {

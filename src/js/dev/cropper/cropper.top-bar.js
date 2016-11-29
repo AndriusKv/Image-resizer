@@ -23,7 +23,7 @@ function resetCanvas() {
     selectedArea.setDefaultPos(translated.x, translated.y);
     selectedArea.containsArea(false);
     scale.scaleImageToFitCanvas(canvas.image.get());
-    bottomBar.disableButton("crop", "preview");
+    bottomBar.disableButton("crop");
 }
 
 function addImagesToFolder() {

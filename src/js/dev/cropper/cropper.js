@@ -119,7 +119,7 @@ function draw() {
 
 function setupInitialImage(image) {
     topBar.displayImageName(image.name.original);
-    bottomBar.disableButton("crop", "preview");
+    bottomBar.disableButton("crop");
     canvas.drawInitialImage(image.uri, scale.scaleImageToFitCanvas)
     .then(() => {
         const translated = transform.getTranslated();
