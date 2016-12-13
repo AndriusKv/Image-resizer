@@ -5,13 +5,11 @@ const thumbnails = document.getElementById("js-left-bar-thumbnails");
 let visible = true;
 
 function init(loadedImages) {
-    thumbnails.innerHTML = loadedImages.map(image => {
-        return `
-            <li class="left-bar-thumbnail" data-index="${image.index}">
-                <img src="${image.uri}" class="left-bar-thumbnail-image">
-            </li>
-        `;
-    }).join("\n");
+    thumbnails.innerHTML = loadedImages.map(image =>
+        `<li class="left-bar-thumbnail" data-index="${image.index}">
+            <img src="${image.uri}" class="left-bar-thumbnail-image">
+        </li>`
+    ).join("\n");
     setActiveThumbnail(0, thumbnails.children);
 }
 
@@ -27,12 +25,9 @@ function isVisible() {
 }
 
 function removeActiveThumbnail(thumbnails) {
-    for (const thumbnail of thumbnails) {
-        if (thumbnail.classList.contains("active")) {
-            thumbnail.classList.remove("active");
-            return;
-        }
-    }
+    Array.from(thumbnails).forEach(thumbnail => {
+        thumbnail.classList.remove("active");
+    });
 }
 
 function setActiveThumbnail(index, thumbnails) {
