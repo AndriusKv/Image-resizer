@@ -148,6 +148,7 @@ function onUpload(event) {
     event.preventDefault();
     if (files.length) {
         onFiles(files);
+        event.target.value = "";
     }
 }
 
