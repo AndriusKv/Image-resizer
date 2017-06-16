@@ -53,3 +53,11 @@ dropboxElem.addEventListener("dragenter", onDragenter, false);
 dropboxElem.addEventListener("dragleave", onDragleave, false);
 dropboxElem.addEventListener("drop", onDrop, false);
 dropboxElem.addEventListener("click", onClick, false);
+
+// prevent file drop outside dropbox
+window.addEventListener("drop", event => {
+    event.preventDefault();
+}, false);
+window.addEventListener("dragover", event => {
+    event.preventDefault();
+}, false);

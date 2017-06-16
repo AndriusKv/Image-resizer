@@ -1,6 +1,6 @@
 /* global importScripts, JSZip, onmessage, postMessage */
 
-importScripts("../js/libs/jszip.min.js");
+importScripts("./libs/jszip.min.js");
 
 const zip = new JSZip();
 let content = null;
@@ -29,7 +29,7 @@ function zipImage(image, i) {
     addToFolder(name, uri, type);
 }
 
-onmessage = function(event) {
+self.onmessage = function(event) {
     const data = event.data;
 
     switch (data.action) {

@@ -195,7 +195,7 @@ function resetData() {
 function handleScroll(event) {
     const { x, y } = canvasElement.getMousePosition(event);
     const pt = transform.getTransformedPoint(x, y);
-    const currentScale = Number.parseInt(dataInput.getValue("scale"), 10) || 100;
+    const currentScale = parseInt(dataInput.getValue("scale"), 10) || 100;
     const multiplier = event.deltaY > 0 ? 0.8: 1.25;
     const newScale = scale.adjustScale(Math.floor(currentScale * multiplier));
 

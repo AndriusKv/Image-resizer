@@ -13,6 +13,7 @@
         background-color: rgba(0, 52, 89, 0.8);
     }
 }
+
 .setting {
     display: flex;
     justify-content: space-between;
@@ -21,20 +22,24 @@
     padding-bottom: 4px;
     border-bottom: 1px solid $light-color;
 }
+
 .setting-input {
     width: 200px;
 }
+
 .dimension-label {
 	display: inline-block;
 	width: calc(50% - 4px);
     margin-top: 4px;
     text-align: center;
 }
+
 .dimension-inputs {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
 }
+
 .image-input {
     flex-basis: calc(50% - 2px);
 	margin-top: 4px;

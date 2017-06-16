@@ -5,7 +5,12 @@
     color: $text-color;
     font-size: 14px;
     transition: all 0.1s;
+
+    &:hover {
+        cursor: pointer;
+    }
 }
+
 @mixin scrollbar-color($color) {
     &::-webkit-scrollbar-thumb {
         background-color: $color;
