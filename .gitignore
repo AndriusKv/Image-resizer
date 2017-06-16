@@ -1,6 +1,0 @@
-node_modules
-src
-test
-.babelrc
-.eslintrc.json
-package.json
