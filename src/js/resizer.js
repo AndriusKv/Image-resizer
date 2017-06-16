@@ -16,15 +16,15 @@ function convertMeasurement(dimension, measurement, originalMeasurement) {
     const originalValue = originalMeasurement[dimension];
 
     if (value.includes("%")) {
-        return originalValue * (Number.parseInt(value, 10) / 100);
+        return originalValue * (parseInt(value, 10) / 100);
     }
     else if (value === "original" || value === dimension) {
-        return Number.parseInt(originalValue, 10);
+        return parseInt(originalValue, 10);
     }
     else if (value === dimension2) {
-        return Number.parseInt(originalMeasurement[dimension2], 10);
+        return parseInt(originalMeasurement[dimension2], 10);
     }
-    return Number.parseInt(value, 10);
+    return parseInt(value, 10);
 }
 
 function convertMeasurements(measurement, originalMeasurement) {

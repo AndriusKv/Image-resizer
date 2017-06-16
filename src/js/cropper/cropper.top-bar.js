@@ -48,7 +48,7 @@ function resetCropper() {
     dropbox.generateZip();
 }
 
-document.getElementById("js-crop-top-bar").addEventListener("click", ({target}) => {
+document.getElementById("js-crop-top-bar").addEventListener("click", ({ target }) => {
     const btn = target.getAttribute("data-btn");
 
     switch (btn) {

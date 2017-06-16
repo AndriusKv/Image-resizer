@@ -2,7 +2,7 @@ import * as cropper from "./cropper.js";
 import * as images from "./cropper.images.js";
 import * as selectedArea from "./cropper.selected-area.js";
 import * as quality from "./cropper.quality.js";
-import { toggleRightBar, displayCroppedImages} from "./cropper.right-bar.js";
+import { toggleRightBar, displayCroppedImages } from "./cropper.right-bar.js";
 import { addCroppedImage } from "./cropper.cropped-images.js";
 
 function setMousePosition(position) {
@@ -47,7 +47,7 @@ function cropImage() {
     .then(displayCroppedImages);
 }
 
-document.getElementById("js-crop-bottom-btns").addEventListener("click", ({target}) => {
+document.getElementById("js-crop-bottom-btns").addEventListener("click", ({ target }) => {
     const btn = target.getAttribute("data-btn");
 
     switch (btn) {

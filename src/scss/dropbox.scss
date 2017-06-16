@@ -21,6 +21,7 @@
         }
     }
 }
+
 .label-title {
 	position: absolute;
 	top: 50%;
@@ -38,6 +39,7 @@
         font-size: 36px;
     }
 }
+
 .info-msg {
     font-size: 18px;
 
@@ -45,11 +47,13 @@
         text-transform: uppercase;
     }
 }
+
 .progress-label {
     margin-top: 2px;
     vertical-align: top;
     font-size: 12px;
 }
+
 .progress-bar {
     appearance: none;
     vertical-align: top;
@@ -60,16 +64,20 @@
 	&::-webkit-progress-bar {
         background-color: inherit;
     }
+
 	&::-webkit-progress-value {
         background-color: $brand-color-darker;
     }
+
     &.visible {
         display: block;
     }
 }
+
 .image-select-input {
     display: none;
 }
+
 .btn-container {
     position: absolute;
     left: 0;
@@ -77,6 +85,7 @@
     bottom: 4px;
 	text-align: center;
 }
+
 .dropbox-btn {
     display: none;
 	font-size: 18px;

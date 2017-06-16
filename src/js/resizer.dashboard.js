@@ -81,7 +81,7 @@ function isDimensionsValid(width, height) {
 }
 
 function assignValuesToInputs(inputs, values) {
-    Array.prototype.forEach.call(inputs, (input, index) => {
+    Array.from(inputs).forEach((input, index) => {
         input.value = values[index];
     });
 }

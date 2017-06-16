@@ -74,7 +74,7 @@ function updateCanvasWithCropData(event) {
         }
     }
     else if (enter) {
-        updateCanvasOnInput(input, Number.parseInt(target.value, 10));
+        updateCanvasOnInput(input, parseInt(target.value, 10));
     }
     else if (!backspace) {
         event.preventDefault();
@@ -83,7 +83,7 @@ function updateCanvasWithCropData(event) {
 }
 
 function adjustQuality(event) {
-    const newQuality = Number.parseFloat(event.target.value);
+    const newQuality = parseFloat(event.target.value);
 
     canvas.spareCanvas.adjustQuality(newQuality, cropper.draw);
     dataInput.setValue("quality-display", newQuality);
@@ -141,7 +141,7 @@ function displayCroppedImages() {
 document.getElementById("js-crop-right-bar").addEventListener("click", toggleSection);
 document.getElementById("js-crop-data").addEventListener("keypress", updateCanvasWithCropData);
 document.getElementById("js-crop-quality").addEventListener("input", adjustQuality);
-document.getElementById("js-cropped-image-items").addEventListener("click", function({ target }) {
+document.getElementById("js-cropped-image-items").addEventListener("click", ({ target }) => {
     const previewIndex = target.getAttribute("data-preview");
     const removeIndex = target.getAttribute("data-remove");
 

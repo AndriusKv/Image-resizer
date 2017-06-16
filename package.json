@@ -4,46 +4,34 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --compilers js:babel-register",
-    "js": "browserify -d ./src/js/dev/main.js -o ./src/js/main.js",
-    "scss": "node-sass ./src/scss/main.scss --source-map-embed ./src/css/main.css && npm run autoprefixer",
-    "autoprefixer": "postcss --use autoprefixer ./src/css/main.css -d ./src/css",
-    "watch:scss": "onchange './src/scss/*.scss' './src/scss/imports/*.scss' -- npm run scss",
-    "watch:js": "onchange './src/js/dev/*.js' './src/js/dev/**/*.js' -- npm run js",
-    "watch": "npm run watch:js & npm run watch:scss",
-    "start": "npm run js & npm run scss && npm run watch & live-server",
-    "build:html": "cp ./src/index.html dist",
-    "build:css": "npm run scss && csso ./src/css/main.css ./dist/css/main.css",
-    "build:js": "npm run js && uglifyjs ./src/js/main.js -mco ./dist/js/main.js",
-    "build:lib": "cp -R ./src/js/libs ./dist/js",
-    "build:worker": "babel ./src/js/ww.js -o ./dist/js/ww.js",
-    "build:assets": "cp -R ./src/assets ./dist",
-    "prebuild": "rm -rf ./dist && mkdir -p ./dist/{assets,css,js}",
-    "build": "npm run build:html && npm run build:css && npm run build:js && npm run build:assets && npm run build:lib && npm run build:worker",
-    "postbuild": "rm -rf ./src/css && rm ./src/js/main.js"
+    "start": "npm run dist && npm run watch & live-server dist",
+    "watch": "npm run watch:js & npm run watch:scss & npm run watch:html",
+    "build": "npm run dist && npm run build:css && npm run build:js",
+    "webpack": "webpack --progress --colors",
+    "postcss": "postcss -u autoprefixer -r dist/main.css",
+    "dist": "rm -rf dist && mkdir dist && cp -R src/assets src/libs src/index.html dist",
+    "scss": "node-sass --source-map-embed src/scss/index.scss dist/main.css && npm run postcss",
+    "watch:js": "npm run webpack -- --watch",
+    "watch:scss": "onchange 'src/scss/*.scss' -i -- npm run scss",
+    "watch:html": "onchange 'src/index.html' -- cp src/index.html dist",
+    "build:css": "npm run scss && csso ./dist/main.css ./dist/main.css",
+    "build:js": "npm run webpack -- --env.prod"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "autoprefixer": "^6.5.3",
-    "babel-cli": "^6.18.0",
-    "babel-eslint": "^7.1.1",
-    "babel-preset-es2015": "^6.18.0",
-    "babelify": "^7.3.0",
-    "browserify": "^13.1.1",
-    "chai": "^3.5.0",
-    "csso": "^2.3.0",
-    "eslint": "^3.12.0",
-    "live-server": "^1.1.0",
-    "mocha": "^3.2.0",
-    "node-sass": "^4.0.0",
-    "onchange": "^3.2.0",
-    "postcss-cli": "^2.6.0",
-    "uglifyjs": "^2.4.10"
+    "autoprefixer": "^7.1.1",
+    "babel-eslint": "^7.2.3",
+    "csso": "^3.1.1",
+    "eslint": "^4.0.0",
+    "live-server": "^1.2.0",
+    "node-sass": "^4.5.3",
+    "onchange": "^3.2.1",
+    "postcss-cli": "^4.1.0",
+    "webpack": "^2.6.1"
   },
-  "browserify": {
-    "transform": [
-      "babelify"
-    ]
-  }
+  "browserslist": [
+    "last 2 versions",
+    "IE >= 11"
+  ]
 }
