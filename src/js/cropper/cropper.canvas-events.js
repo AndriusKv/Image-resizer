@@ -10,6 +10,7 @@ import * as angle from "./cropper.angle.js";
 import * as quality from "./cropper.quality.js";
 
 let currentEvent = "";
+let latestAngle = 0;
 
 function toggleCursorEvents(addEvents) {
     if (addEvents) {
@@ -35,6 +36,10 @@ function toggleEvent(event = currentEvent) {
         currentEvent = event;
         cropping.addEventListener("mousemove", onMousemove);
         cropping.addEventListener("mouseup", onMouseup);
+
+        if (event === "rotate") {
+            latestAngle = angle.get();
+        }
     }
     toggleCursorEvents(removeEvents);
 }
@@ -81,6 +86,7 @@ function onMouseup() {
     const containsArea = area.width && area.height;
 
     toggleEvent();
+
     if (!containsArea) {
         const area = selectedArea.reset();
         const image = canvas.image.get(quality.useImageWithQuality());
@@ -122,20 +128,21 @@ function resizeArea(area, x, y) {
     if (newDirection.length > 1) {
         const selectedDirection = direction.reverse(newDirection, area);
 
-        canvasElement.setCursor(selectedDirection + "-resize");
+        canvasElement.setCursor(`${selectedDirection}-resize`);
     }
 }
 
 function getAngleInRadians(area, x, y) {
     const x2 = area.x + area.width / 2;
     const y2 = area.y + area.height / 2;
-
-    return Math.atan2(y2 - y, x2 - x);
+    const { x: x3, y: y3 } = cropper.mousePosition.get();
+    const startAngle = Math.atan2(y2 - y3, x2 - x3);
+    return Math.atan2(y2 - y, x2 - x) - startAngle;
 }
 
 function rotateArea(area, x, y) {
     const radians = getAngleInRadians(area, x, y);
-    const degrees = angle.setInRadians(radians);
+    const degrees = angle.setInRadians(latestAngle + radians);
 
     dataInput.setValue("angle", degrees);
 }

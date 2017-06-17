@@ -7,8 +7,21 @@ function convertDegreesToRadians(degrees) {
     return degrees * Math.PI / 180;
 }
 
+function normalizeRadians(radians) {
+    const max = Math.PI * 2;
+    const min = -max;
+
+    if (radians > max) {
+        radians -= max;
+    }
+    else if (radians < min) {
+        radians -= min;
+    }
+    return radians;
+}
+
 function convertRadiansToDegrees(radians) {
-    let degrees = Math.round(radians * 180 / Math.PI);
+    let degrees = Math.round(normalizeRadians(radians) * 180 / Math.PI);
 
     if (degrees < 0) {
         degrees += 360;
