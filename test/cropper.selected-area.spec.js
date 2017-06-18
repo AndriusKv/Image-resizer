@@ -1,5 +1,4 @@
-import { expect } from "chai";
-import * as area from "./../src/js/dev/cropper/cropper.selected-area.js";
+import * as area from "./../src/js/cropper/cropper.selected-area.js";
 
 describe("Cropper selected area", () => {
     afterEach(() => {
@@ -16,7 +15,7 @@ describe("Cropper selected area", () => {
 
         area.setTransformed(selectedArea);
 
-        expect(area.getTransformed()).to.deep.equal(selectedArea);
+        expect(area.getTransformed()).toEqual(selectedArea);
     });
 
     it("should get area property", () => {
@@ -25,10 +24,10 @@ describe("Cropper selected area", () => {
         area.setProp("width", 300);
         area.setProp("height", 400);
 
-        expect(area.getProp("x")).to.equal(100);
-        expect(area.getProp("y")).to.equal(200);
-        expect(area.getProp("width")).to.equal(300);
-        expect(area.getProp("height")).to.equal(400);
+        expect(area.getProp("x")).toBe(100);
+        expect(area.getProp("y")).toBe(200);
+        expect(area.getProp("width")).toBe(300);
+        expect(area.getProp("height")).toBe(400);
     });
 
     it("should set area property", () => {
@@ -37,17 +36,17 @@ describe("Cropper selected area", () => {
         area.setProp("width", 300);
         area.setProp("height", 400);
 
-        expect(area.getProp("x")).to.equal(100);
-        expect(area.getProp("y")).to.equal(200);
-        expect(area.getProp("width")).to.equal(300);
-        expect(area.getProp("height")).to.equal(400);
+        expect(area.getProp("x")).toBe(100);
+        expect(area.getProp("y")).toBe(200);
+        expect(area.getProp("width")).toBe(300);
+        expect(area.getProp("height")).toBe(400);
     });
 
     it("should set default area position", () => {
         area.setDefaultPos(150, 250);
 
-        expect(area.getProp("x")).to.equal(150);
-        expect(area.getProp("y")).to.equal(250);
+        expect(area.getProp("x")).toBe(150);
+        expect(area.getProp("y")).toBe(250);
     });
 
     it("should reset area", () => {
@@ -57,7 +56,7 @@ describe("Cropper selected area", () => {
         area.setProp("height", 400);
         area.reset();
 
-        expect(area.get()).to.deep.equal({
+        expect(area.get()).toEqual({
             x: 0,
             y: 0,
             width: 0,
@@ -76,7 +75,7 @@ describe("Cropper selected area", () => {
         area.setTransformed(selectedArea);
         area.reset();
 
-        expect(area.getTransformed()).to.deep.equal({
+        expect(area.getTransformed()).toEqual({
             x: 0,
             y: 0,
             width: 0,
@@ -92,15 +91,15 @@ describe("Cropper selected area", () => {
             height: 400
         };
 
-        expect(area.isInside(selectedArea, 150, 490)).to.be.true;
-        expect(area.isInside(selectedArea, 150, 180)).to.be.false;
-        expect(area.isInside(selectedArea, 450, 180)).to.be.false;
-        expect(area.isInside(selectedArea, 450, 250)).to.be.false;
-        expect(area.isInside(selectedArea, 450, 650)).to.be.false;
-        expect(area.isInside(selectedArea, 150, 650)).to.be.false;
-        expect(area.isInside(selectedArea, 80, 650)).to.be.false;
-        expect(area.isInside(selectedArea, 80, 250)).to.be.false;
-        expect(area.isInside(selectedArea, 80, 180)).to.be.false;
+        expect(area.isInside(selectedArea, 150, 490)).toBeTruthy();
+        expect(area.isInside(selectedArea, 150, 180)).toBeFalsy();
+        expect(area.isInside(selectedArea, 450, 180)).toBeFalsy();
+        expect(area.isInside(selectedArea, 450, 250)).toBeFalsy();
+        expect(area.isInside(selectedArea, 450, 650)).toBeFalsy();
+        expect(area.isInside(selectedArea, 150, 650)).toBeFalsy();
+        expect(area.isInside(selectedArea, 80, 650)).toBeFalsy();
+        expect(area.isInside(selectedArea, 80, 250)).toBeFalsy();
+        expect(area.isInside(selectedArea, 80, 180)).toBeFalsy();
     });
 
     it("should check if mouse is inside rotated area", () => {
@@ -111,15 +110,15 @@ describe("Cropper selected area", () => {
             height: 400
         };
 
-        expect(area.isInside(selectedArea, 150, 490), true).to.be.true;
-        expect(area.isInside(selectedArea, 150, 180), true).to.be.false;
-        expect(area.isInside(selectedArea, 450, 180), true).to.be.false;
-        expect(area.isInside(selectedArea, 450, 250), true).to.be.false;
-        expect(area.isInside(selectedArea, 450, 650), true).to.be.false;
-        expect(area.isInside(selectedArea, 150, 650), true).to.be.false;
-        expect(area.isInside(selectedArea, 80, 650), true).to.be.false;
-        expect(area.isInside(selectedArea, 80, 250), true).to.be.false;
-        expect(area.isInside(selectedArea, 80, 180), true).to.be.false;
+        expect(area.isInside(selectedArea, 150, 490, 1)).toBeTruthy();
+        expect(area.isInside(selectedArea, 150, 180, 1)).toBeFalsy();
+        expect(area.isInside(selectedArea, 450, 180, 1)).toBeFalsy();
+        expect(area.isInside(selectedArea, 450, 250, 1)).toBeFalsy();
+        expect(area.isInside(selectedArea, 450, 650, 1)).toBeFalsy();
+        expect(area.isInside(selectedArea, 150, 650, 1)).toBeFalsy();
+        expect(area.isInside(selectedArea, 80, 650, 1)).toBeFalsy();
+        expect(area.isInside(selectedArea, 80, 250, 1)).toBeFalsy();
+        expect(area.isInside(selectedArea, 80, 180, 1)).toBeFalsy();
     });
 
     describe("area.update", () => {
@@ -142,9 +141,9 @@ describe("Cropper selected area", () => {
             const transformedArea = area.getTransformed();
             const expectedValue = transform.e + transformedArea.x * transform.a;
 
-            expect(area.getProp("x")).to.equal(expectedValue);
-            expect(transformedArea.x).to.equal(250);
-            expect(area.getProp("width")).to.equal(300);
+            expect(area.getProp("x")).toBe(expectedValue);
+            expect(transformedArea.x).toBe(250);
+            expect(area.getProp("width")).toBe(300);
         });
 
         it("should update area.y and area.height if negative", () => {
@@ -153,9 +152,9 @@ describe("Cropper selected area", () => {
             const transformedArea = area.getTransformed();
             const expectedValue = transform.f + transformedArea.y * transform.a;
 
-            expect(area.getProp("y")).to.equal(expectedValue);
-            expect(transformedArea.y).to.equal(250);
-            expect(area.getProp("height")).to.equal(400);
+            expect(area.getProp("y")).toBe(expectedValue);
+            expect(transformedArea.y).toBe(250);
+            expect(area.getProp("height")).toBe(400);
         });
 
         it("should update area.width and area.x if area.width is negative", () => {
@@ -167,9 +166,9 @@ describe("Cropper selected area", () => {
             const transformedArea = area.getTransformed();
             const expectedValue = transformedArea.width * transform.a;
 
-            expect(area.getProp("width")).to.equal(expectedValue);
-            expect(transformedArea.width).to.equal(250);
-            expect(area.getProp("x")).to.equal(x + width);
+            expect(area.getProp("width")).toBe(expectedValue);
+            expect(transformedArea.width).toBe(250);
+            expect(area.getProp("x")).toBe(x + width);
         });
 
         it("should update area.height and area.y if area.height is negative", () => {
@@ -181,9 +180,18 @@ describe("Cropper selected area", () => {
             const transformedArea = area.getTransformed();
             const expectedValue = transformedArea.height * transform.a;
 
-            expect(area.getProp("height")).to.equal(expectedValue);
-            expect(transformedArea.height).to.equal(250);
-            expect(area.getProp("y")).to.equal(y + height);
+            expect(area.getProp("height")).toBe(expectedValue);
+            expect(transformedArea.height).toBe(250);
+            expect(area.getProp("y")).toBe(y + height);
         });
+    });
+
+    it("should get area draw state", () => {
+        expect(area.containsArea(true)).toBeTruthy();
+    });
+
+    it("should check if area is drawn", () => {
+        area.containsArea(false);
+        expect(area.isDrawn()).toBeFalsy();
     });
 });
