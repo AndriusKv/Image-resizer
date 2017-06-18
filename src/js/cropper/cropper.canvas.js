@@ -98,9 +98,11 @@ function drawArea(ctx, area, { width: canvasWidth, height: canvasHeight }, areaW
 
     if (hasArea) {
         imageData = ctx.getImageData(x, y, width, height);
+
         if (width < 0) {
             x = x + width;
         }
+
         if (height < 0) {
             y = y + height;
         }
@@ -108,6 +110,7 @@ function drawArea(ctx, area, { width: canvasWidth, height: canvasHeight }, areaW
     if (hasArea || areaWasDrawn) {
         addMask(ctx, canvasWidth, canvasHeight);
     }
+
     if (imageData) {
         ctx.putImageData(imageData, x, y);
     }

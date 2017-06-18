@@ -120,8 +120,7 @@ function draw() {
 function setupInitialImage(image) {
     topBar.displayImageName(image.name.original);
     bottomBar.disableButton("crop");
-    canvas.drawInitialImage(image.uri, scale.scaleImageToFitCanvas)
-    .then(() => {
+    canvas.drawInitialImage(image.uri, scale.scaleImageToFitCanvas).then(() => {
         const translated = transform.getTranslated();
 
         selectedArea.setDefaultPos(translated.x, translated.y);

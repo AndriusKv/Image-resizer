@@ -1,5 +1,4 @@
-import { expect } from "chai";
-import * as images from "./../src/js/dev/dropbox/dropbox.images.js";
+import * as images from "./../src/js/dropbox/dropbox.images.js";
 
 describe("Dropbox images", () => {
     afterEach(() => {
@@ -7,7 +6,7 @@ describe("Dropbox images", () => {
     });
 
     it("should get array", () => {
-        expect(images.getAll()).to.be.a("array");
+        expect(images.getAll()).toEqual([]);
     });
 
     it("should add value to array", () => {
@@ -15,7 +14,7 @@ describe("Dropbox images", () => {
         images.add(5);
         images.add(6);
 
-        expect(images.getAll().length).to.equal(3);
+        expect(images.getAll()).toHaveLength(3);
     });
 
     it("should reset array", () => {
@@ -24,6 +23,6 @@ describe("Dropbox images", () => {
         images.add(6);
         images.reset();
 
-        expect(images.getAll().length).to.equal(0);
+        expect(images.getAll()).toHaveLength(0);
     });
 });

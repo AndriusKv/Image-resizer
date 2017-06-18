@@ -21,7 +21,7 @@ function reverseIntercardinalDirection(direction, area) {
     const y2 = y + area.height;
 
     if (x2 > x && y2 < y || x2 < x && y2 > y) {
-        return direction[1] === "w" ? direction[0] + "e": direction[0] + "w";
+        return `${direction[0]}${direction[1] === "w" ? "e" :"w"}`;
     }
     return direction;
 }
