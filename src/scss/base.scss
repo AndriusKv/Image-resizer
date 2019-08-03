@@ -1,122 +1,102 @@
 *, *:after, *:before {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
-html,
-body {
-    height: 100%;
+html {
+  font-size: 62.5%;
+}
+
+html, body {
+  height: 100%;
 }
 
 body {
-    font-family: sans-serif;
-    background-color: $light-color;
+  background-color: var(--color-brand);
+  font-family: var(--font-family);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ul {
-    padding-left: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-    list-style: none;
+  padding-left: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  list-style: none;
 }
 
-::-webkit-scrollbar {
-    width: 8px;
+h1, h2, h3 {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-weight: normal;
 }
 
-::-webkit-scrollbar-thumb {
-    background-color: $brand-color-lighter;
+svg {
+  box-sizing: content-box;
+  display: block;
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
 }
 
-::-webkit-scrollbar-track {
-    background: $light-color;
+canvas {
+  display: block;
 }
 
-.title {
-	margin-top: 0;
-	margin-bottom: 0;
-    padding-bottom: 8px;
-    background-color: $brand-color;
-	text-align: center;
-	color: $light-color;
-	font-size: 48px;
-	font-weight: 200;
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button, input {
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  color: inherit;
+  font-size: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.js-focus-visible :focus:not(.focus-visible) {
+  outline: 0;
 }
 
 .input {
-	border: none;
-    padding: 2px 4px;
-	background-color: $light-color;
-    color: $dark-color;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 1.4rem;
 }
 
 .btn {
-    @include btn($brand-color-darker);
-
-    &:hover {
-        background-color: $brand-color;
-    }
+  padding: 8px 16px;
+  border-radius: 999px;
+  background-color: var(--color-brand);
+  color: var(--color-light);
+  font-size: 1.3rem;
+  font-weight: 500;
 }
 
-.btn-inv {
-    @include btn($light-color, $brand-color);
-
-    &:hover {
-        background-color: #bbb;
-    }
+.icon-btn {
+  padding: 4px 8px;
+  color: var(--color-brand);
 }
 
-.btn-transparent {
-    @include btn(transparent);
-
-    &:hover {
-        color: #bbb;
-    }
+.icon-btn-round {
+  padding: 8px;
+  border-radius: 50%;
+  background-color: var(--color-light);
+  color: var(--color-brand);
 }
 
-.slider {
-    appearance: none;
-    cursor: pointer;
+.editor {
+  overflow: hidden;
+  height: 100%;
+  background-image: url("./assets/images/pattern.png");
 
-    &::-webkit-slider-thumb {
-        appearance: none;
-        width: 8px;
-        height: 12px;
-        margin-top: -4px;
-        border-radius: 2px;
-        background-color: #fff;
-        border: 1px solid #bbb;
-    }
-
-    &::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 4px;
-        background-color: #fff;
-    }
-
-    &::-ms-track {
-        width: 100%;
-        height: 4px;
-        border-color: transparent;
-        background: #fff;
-        color: transparent;
-    }
-
-    &::-ms-thumb {
-        appearance: none;
-        width: 8px;
-        height: 12px;
-        margin-top: -2px;
-        border-radius: 2px;
-        background-color: #fff;
-        border: 1px solid #bbb;
-    }
-
-    &::-moz-range-thumb {
-        width: 8px;
-        height: 12px;
-        border: none;
-        border-radius: 2px;
-        background-color: #fff;
-        border: 1px solid #bbb;
-    }
+  &.hidden {
+    display: none;
+  }
 }
