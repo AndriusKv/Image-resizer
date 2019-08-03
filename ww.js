@@ -1,1 +1,20 @@
-!function(e){function n(r){if(t[r])return t[r].exports;var o=t[r]={i:r,l:!1,exports:{}};return e[r].call(o.exports,o,o.exports,n),o.l=!0,o.exports}var t={};n.m=e,n.c=t,n.i=function(e){return e},n.d=function(e,t,r){n.o(e,t)||Object.defineProperty(e,t,{configurable:!1,enumerable:!0,get:r})},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,"a",t),t},n.o=function(e,n){return Object.prototype.hasOwnProperty.call(e,n)},n.p="",n(n.s=31)}({31:function(e,n,t){"use strict";function r(e,n,t){s.folder("images").file(e+"."+t,n,{base64:!0})}function o(e){return"jpeg"!==e?e:"jpg"}function a(e,n){return 4===n.length?e.slice(23):e.slice(22)}function i(e,n){var t=o(e.type),i=a(e.uri,t);r(e.name+n,i,t)}importScripts("./libs/jszip.min.js");var s=new JSZip,c=null,u=0;self.onmessage=function(e){var n=e.data;switch(n.action){case"add":i(n.image,u),u+=1;break;case"add-bulk":n.images.forEach(i);break;case"generate":u=0,Object.keys(s.files).length&&(postMessage({action:"generating"}),s.generateAsync({type:"blob"}).then(function(e){c=e,postMessage({action:"done"})}));break;case"download":c&&postMessage({action:"download",content:c});break;case"remove":c=null,s.remove("images")}}}});
+/* global JSZip */
+
+importScripts("./libs/jszip.min.js");
+
+const zip = new JSZip();
+
+self.onmessage = async function(event) {
+  event.data.forEach((image, index) => {
+    const arr = image.name.split(".");
+    arr[0] += `-${index}`;
+    const name = arr.join(".");
+
+    zip.folder("images").file(name, image.file);
+  });
+  postMessage(await zip.generateAsync({ type:"blob" }));
+  // postMessage({
+  //   action: "download",
+  //   content: await zip.generateAsync({ type:"blob" })
+  // });
+};
