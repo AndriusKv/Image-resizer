@@ -1,5 +1,15 @@
-$light-color: #ddd;
-$dark-color: #222;
-$brand-color: #003459;
-$brand-color-lighter: lighten($brand-color, 8%);
-$brand-color-darker: darken($brand-color, 4%);
+:root {
+  --font-family: "Roboto", sans-serif;;
+
+  --color-brand: hsl(219, 44%, 30%);
+
+  --color-accent: hsl(34, 80%, 58%);
+
+  --color-light: hsl(210, 11%, 96%);
+  --color-light-dark: hsl(210, 3%, 86%);
+
+  --color-dark-light: hsl(218, 9%, 80%);
+  --color-dark: hsl(222, 9%, 22%);
+
+  --color-black-40: rgba(0, 0, 0, 0.4);
+}
