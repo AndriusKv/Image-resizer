@@ -1,21 +1,28 @@
-.right-bar-header {
+.top-bar-header {
   position: absolute;
   top: 8px;
+  left: 8px;
   right: 8px;
   display: flex;
   pointer-events: none;
 }
 
-.right-bar-header-item:first-of-type {
-  margin-right: 8px;
+.top-bar-header-item {
+  &:first-of-type {
+    margin-right: auto;
+  }
+
+  &:last-of-type {
+    margin-left: 8px;
+  }
 }
 
-.right-bar-header-item-btn {
+.top-bar-header-item-btn {
   box-shadow: 0 2px 4px 0 var(--color-black-40);
   pointer-events: auto;
 }
 
-.right-bar-tab {
+.top-bar-tab {
   z-index: 1;
   position: absolute;
   top: 56px;
@@ -35,12 +42,56 @@
   }
 }
 
-.right-bar-tab-title {
+.top-bar-tab-title {
   margin-top: 8px;
   margin-bottom: 12px;
   font-size: 1.6rem;
   font-weight: 500;
   text-align: center;
+}
+
+.upload-modal {
+  left: 8px;
+  right: auto;
+  width: 332px;
+}
+
+.uploaded-images-list {
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 4px;
+  max-height: 220px;
+  padding: 2px 4px;
+}
+
+.uploaded-images-list-item {
+  overflow: hidden;
+  border-radius: 2px;
+  background-image: url("./assets/images/pattern.png");
+
+  &.active {
+    box-shadow: 0 0 0 2px var(--color-accent);
+  }
+}
+
+.uploaded-images-list-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.uploaded-images-list-image {
+  max-width: 76px;
+  max-height: 48px;
+}
+
+.uploaded-images-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 4px 0 4px;
 }
 
 .resizer-group {

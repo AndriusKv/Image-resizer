@@ -7,7 +7,7 @@ import "./utils.js";
 import "./zoom.js";
 import "./rotation.js";
 import "./uploaded-images.js";
-import "./right-bar.js";
+import "./top-bar.js";
 import "./image-resizer.js";
 import "./image-folder.js";
 import "./canvas.js";
