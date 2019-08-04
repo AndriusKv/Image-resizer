@@ -60,37 +60,39 @@
     </ul>
   </div>
   <div id="js-editor" class="editor hidden">
-    <button id="js-uploaded-images-toggle-btn" class="icon-btn-round uploaded-images-toggle-btn">
-      <svg viewBox="0 0 24 24">
-        <use href="#picture"></use>
-      </svg>
-    </button>
-    <div id="js-uploaded-images-modal" class="uploaded-images-modal">
-      <h3 class="uploaded-images-modal-title">Uploaded Images</h3>
-      <ul id="js-uploaded-images-list" class="uploaded-images-list"></ul>
-      <div class="uploaded-images-footer">
-        <button id="js-uploaded-images-upload-btn" class="btn">Upload New Image</button>
-        <input type="file" id="js-uploaded-images-file-input" style="display:none" accept="image/*" multiple>
-      </div>
-    </div>
-    <ul id="js-right-bar-header" class="js-right-bar-item right-bar-header">
-      <li class="right-bar-header-item">
-        <button class="icon-btn-round right-bar-header-item-btn" data-tab-name="resize">
+    <ul id="js-top-bar-header" class="js-top-bar-item top-bar-header">
+      <li class="top-bar-header-item" data-tab-name="upload">
+        <button class="icon-btn-round top-bar-header-item-btn">
+          <svg viewBox="0 0 24 24">
+            <use href="#picture"></use>
+          </svg>
+        </button>
+      </li>
+      <li class="top-bar-header-item">
+        <button class="icon-btn-round top-bar-header-item-btn" data-tab-name="resize">
           <svg viewBox="0 0 24 24">
             <use href="#resize"></use>
           </svg>
         </button>
       </li>
-      <li class="right-bar-header-item">
-        <button class="icon-btn-round right-bar-header-item-btn" data-tab-name="images">
+      <li class="top-bar-header-item">
+        <button class="icon-btn-round top-bar-header-item-btn" data-tab-name="images">
           <svg viewBox="0 0 24 24">
             <use href="#folder"></use>
           </svg>
         </button>
       </li>
     </ul>
-    <div id="js-right-bar-resize-tab" class="js-right-bar-item right-bar-tab">
-      <h3 class="right-bar-tab-title">Resize Image</h3>
+    <div id="js-top-bar-upload-tab" class="js-top-bar-item top-bar-tab upload-modal">
+      <h3 class="top-bar-tab-title">Uploaded Images</h3>
+      <ul id="js-uploaded-images-list" class="uploaded-images-list"></ul>
+      <div class="uploaded-images-footer">
+        <button id="js-uploaded-images-upload-btn" class="btn">Upload New Image</button>
+        <input type="file" id="js-uploaded-images-file-input" style="display:none" accept="image/*" multiple>
+      </div>
+    </div>
+    <div id="js-top-bar-resize-tab" class="js-top-bar-item top-bar-tab">
+      <h3 class="top-bar-tab-title">Resize Image</h3>
       <div class="resizer-group">
         <label class="resizer-setting">
           <input type="checkbox" id="js-resizer-aspect-ratio" checked>
@@ -112,8 +114,8 @@
       </ul>
       <button id="js-resize-btn" class="btn resizer-resize-btn">Resize</button>
     </div>
-    <div id="js-right-bar-images-tab" class="js-right-bar-item right-bar-tab image-folder">
-      <h3 class="right-bar-tab-title">Image Folder</h3>
+    <div id="js-top-bar-images-tab" class="js-top-bar-item top-bar-tab image-folder">
+      <h3 class="top-bar-tab-title">Image Folder</h3>
       <p id="js-image-folder-message" class="image-folder-empty-list-message">You have nothing here yet.</p>
       <ul id="js-image-folder-list" class="image-folder-list"></ul>
       <button id="js-image-folder-download-btn" class="btn image-folder-download-btn">Download Folder</button>

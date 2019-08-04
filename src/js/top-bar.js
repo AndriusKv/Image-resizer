@@ -4,14 +4,10 @@ let activeTabName = "";
 let keepVisible = false;
 
 function getTabElement(name) {
-  return document.getElementById(`js-right-bar-${name}-tab`);
+  return document.getElementById(`js-top-bar-${name}-tab`);
 }
 
-function handleClickOutsideModal(event) {
-  if (keepVisible || event.target.closest(".js-right-bar-item")) {
-    keepVisible = false;
-    return;
-  }
+function hideModal() {
   const element = getTabElement(activeTabName);
   activeTabName = "";
   element.classList.remove("visible");
@@ -19,13 +15,21 @@ function handleClickOutsideModal(event) {
   window.removeEventListener("mousedown", preventModalHiding, true);
 }
 
+function handleClickOutsideModal(event) {
+  if (keepVisible || event.target.closest(".js-top-bar-item")) {
+    keepVisible = false;
+    return;
+  }
+  hideModal();
+}
+
 function preventModalHiding(event) {
-  if (event.target.closest(".js-right-bar-item")) {
+  if (event.target.closest(".js-top-bar-item")) {
     keepVisible = true;
   }
 }
 
-document.getElementById("js-right-bar-header").addEventListener("click", event => {
+document.getElementById("js-top-bar-header").addEventListener("click", event => {
   const element = getElementByAttr("data-tab-name", event.target, event.currentTarget);
 
   if (!element) {
@@ -51,3 +55,7 @@ document.getElementById("js-right-bar-header").addEventListener("click", event =
     window.addEventListener("mousedown", preventModalHiding, true);
   }
 });
+
+export {
+  hideModal
+};

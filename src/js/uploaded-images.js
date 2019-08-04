@@ -1,13 +1,12 @@
 import { getElementByAttr } from "./utils.js";
+import { hideModal } from "./top-bar.js";
 import { initCanvas, loadImageFile } from "./canvas.js";
 
-const toggleBtnElement = document.getElementById("js-uploaded-images-toggle-btn");
-const modalElement = document.getElementById("js-uploaded-images-modal");
+const modalElement = document.getElementById("js-top-bar-upload-tab");
 const fileInputElement = document.getElementById("js-uploaded-images-file-input");
 let images = [];
 let activeImageIndex = 0;
 let activeListItem = null;
-let visible = false;
 
 function addImages(loadedImages) {
   images = images.concat(loadedImages);
@@ -74,12 +73,6 @@ function setDocumentTitle(title) {
   document.title = `${title} | Imagis`;
 }
 
-function hideModal() {
-  visible = false;
-  modalElement.classList.remove("visible");
-  window.removeEventListener("click", handleClickOutsideModal, true);
-}
-
 function renderUploadedImage(image) {
   const element = document.getElementById("js-uploaded-images-list");
   const index = images.length - 1;
@@ -99,13 +92,6 @@ function highlightImage(element) {
   }
   activeListItem = element;
   activeListItem.classList.add("active");
-}
-
-function handleClickOutsideModal(event) {
-  if (toggleBtnElement.contains(event.target) || modalElement.contains(event.target)) {
-    return;
-  }
-  hideModal();
 }
 
 function handleFileUpload({ target }) {
@@ -132,18 +118,6 @@ modalElement.addEventListener("click", event => {
     setDocumentTitle(file.name);
     loadImageFile(file);
     hideModal();
-  }
-});
-
-toggleBtnElement.addEventListener("click", () => {
-  modalElement.classList.toggle("visible");
-  visible = !visible;
-
-  if (visible) {
-    window.addEventListener("click", handleClickOutsideModal, true);
-  }
-  else {
-    window.removeEventListener("click", handleClickOutsideModal, true);
   }
 });
 
