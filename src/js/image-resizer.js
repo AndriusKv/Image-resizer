@@ -1,5 +1,5 @@
 import { imageToBlob } from "./utils.js";
-import { renderAddedFolderImage } from "./image-folder.js";
+import { getUniqueImageName, renderAddedFolderImage } from "./image-folder.js";
 import { getActiveImage } from "./uploaded-images.js";
 
 const resizerListElement = document.getElementById("js-resizer-list");
@@ -10,8 +10,10 @@ function resizeImage(file, width, height) {
 
     image.onload = async function() {
       renderAddedFolderImage({
-        name: file.name,
+        name: getUniqueImageName(file.name),
         type: file.type,
+        width,
+        height,
         file: await imageToBlob(image, file.type, { width, height })
       });
       URL.revokeObjectURL(image.src);

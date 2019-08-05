@@ -1,6 +1,6 @@
 import { getRotation, resetRotation } from "./rotation.js";
 import { applyScaleMultiplier, scaleImageToFitCanvas } from "./zoom.js";
-import { renderAddedFolderImage } from "./image-folder.js";
+import { getUniqueImageName, renderAddedFolderImage } from "./image-folder.js";
 import { getActiveImage } from "./uploaded-images.js";
 import { getArea, resetArea, isMouseInsideArea, setDirection, getDirection } from "./area.js";
 import { setTransformContext, getTransform, setTransform, translateContext, getTransformedPoint } from "./transform.js";
@@ -367,7 +367,13 @@ function getCanvasSlice(image, type) {
   return new Promise(resolve => {
     const croppedCanvas = getCroppedCanvas(image);
 
-    croppedCanvas.toBlob(resolve, type);
+    croppedCanvas.toBlob(blob => {
+      resolve({
+        file: blob,
+        width: croppedCanvas.width,
+        height: croppedCanvas.height
+      });
+    }, type);
   });
 }
 
@@ -386,9 +392,9 @@ cropBtnElement.addEventListener("click", () => {
 
   image.onload = async function() {
     renderAddedFolderImage({
-      name: file.name,
+      name: getUniqueImageName(file.name),
       type: file.type,
-      file: await getCanvasSlice(image, file.type)
+      ...await getCanvasSlice(image, file.type)
     });
     URL.revokeObjectURL(image.src);
   };
