@@ -3,6 +3,8 @@ const { DefinePlugin } = require("webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { InjectManifest } = require("workbox-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 module.exports = function(env = {}) {
   const mode = env.prod ? "production" : "development";
@@ -22,6 +24,15 @@ module.exports = function(env = {}) {
         collapseWhitespace: true,
         collapseInlineTagWhitespace: true
       } : undefined
+    }),
+    new InjectManifest({
+      swSrc: "./src/sw.js",
+      swDest: "./sw.js",
+      globDirectory: "./dist",
+      globPatterns: ["./assets/images/*", "./libs/*", "./ww.js", "./*.png", "./favicon.ico", "./manifest.json"]
+    }),
+    new CleanWebpackPlugin({
+      cleanOnceBeforeBuildPatterns: ["precache*"]
     })
   ];
 

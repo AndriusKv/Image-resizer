@@ -125,11 +125,13 @@ modalElement.addEventListener("click", event => {
   if (element.attrValue === "image") {
     const index = parseInt(element.elementRef.getAttribute("data-index"), 10);
     const { file, blobUrl } = images[index];
-    activeImageIndex = index;
 
-    updateImagePreview(images[index]);
-    highlightImage(element.elementRef);
-    setDocumentTitle(file.name);
+    if (index !== activeImageIndex) {
+      activeImageIndex = index;
+      updateImagePreview(images[index]);
+      highlightImage(element.elementRef);
+      setDocumentTitle(file.name);
+    }
     loadImageFile(blobUrl);
   }
 });
