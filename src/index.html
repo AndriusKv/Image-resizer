@@ -94,7 +94,10 @@
     </ul>
     <div id="js-top-bar-upload-tab" class="js-top-bar-item top-bar-tab upload-modal">
       <h3 class="top-bar-tab-title">Uploaded Images</h3>
-      <ul id="js-uploaded-images-list" class="uploaded-images-list"></ul>
+      <div class="uploaded-images-body">
+        <ul id="js-uploaded-images-list" class="uploaded-images-list"></ul>
+        <div id="js-uploaded-images-preview" class="uploaded-images-list-item-preview"></div>
+      </div>
       <div class="uploaded-images-footer">
         <button id="js-uploaded-images-upload-btn" class="btn">Upload New Image</button>
         <input type="file" id="js-uploaded-images-file-input" style="display:none" accept="image/*" multiple>

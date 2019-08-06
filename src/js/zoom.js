@@ -43,7 +43,7 @@ function clampScale(imageDimension1, imageDimension2, canvasDimension1, canvasDi
       scale = getDimensionScale(imageDimension2, canvasDimension2);
     }
   }
-  return scale;
+  return clampZoomLevel(scale);
 }
 
 function scaleImageToFitCanvas(image) {
