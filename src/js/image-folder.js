@@ -39,10 +39,10 @@ function showFolderImageViewer(index) {
 
   document.getElementById("js-editor").insertAdjacentHTML("beforeend", `
     <div id="js-image-folder-viewer" class="js-top-bar-item image-folder-viewer">
-      <div id="js-b" class="image-folder-viewer-header">${getImageViewerHeader(image, index)}</div>
-      <img src="${url}" id="js-a" class="image-folder-viewer-image" alt="">
+      <div id="js-image-folder-viewer-header" class="image-folder-viewer-header">${getImageViewerHeader(image, index)}</div>
+      <img src="${url}" id="js-image-folder-viewer-image" class="image-folder-viewer-image" alt="">
       <div class="image-folder-viewer-footer">
-        <a href="${url}" id="js-c" class="icon-btn-round" target="_blank" title="Open image in a new tab">
+        <a href="${url}" id="js-image-folder-viewer-image-link" class="icon-btn-round" target="_blank" title="Open image in a new tab">
           <svg viewBox="0 0 24 24">
             <use href="#open-in-new"></use>
           </svg>
@@ -103,12 +103,12 @@ function changeImage(direction) {
 function loadImage(index) {
   const image = images[index];
   const url = URL.createObjectURL(image.file);
-  const imageElement = document.getElementById("js-a");
+  const imageElement = document.getElementById("js-image-folder-viewer-image");
 
   URL.revokeObjectURL(imageElement.src);
   imageElement.src = url;
-  document.getElementById("js-c").href = url;
-  document.getElementById("js-b").textContent = getImageViewerHeader(image, index);
+  document.getElementById("js-image-folder-viewer-image-link").href = url;
+  document.getElementById("js-image-folder-viewer-header").textContent = getImageViewerHeader(image, index);
 }
 
 function handleContainerClick(event) {

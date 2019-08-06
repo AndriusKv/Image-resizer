@@ -32,16 +32,16 @@ const mousePosition = (function() {
   };
 })();
 
-function initCanvasElement(file) {
+function initCanvasElement(blobUrl) {
   canvas = document.getElementById("js-canvas");
   setTransformContext(canvas.getContext("2d"));
   resetCanvasDimensions();
-  loadImageFile(file);
+  loadImageFile(blobUrl);
   canvas.addEventListener("wheel", handleScroll, { passive: true });
   canvas.addEventListener("mousedown", handleMousedown);
 }
 
-function initCanvas(file) {
+function initCanvas(blobUrl) {
   if (initialized) {
     return;
   }
@@ -49,7 +49,7 @@ function initCanvas(file) {
   editorElement.insertAdjacentHTML("beforeend", `<canvas id="js-canvas"></canvas>`);
   editorElement.classList.remove("hidden");
   document.getElementById("js-intro").remove();
-  initCanvasElement(file);
+  initCanvasElement(blobUrl);
   enableViewportResizeHandler();
 }
 
@@ -306,7 +306,7 @@ function dragImage(x, y) {
   }
 }
 
-function loadImageFile(file) {
+function loadImageFile(blobUrl) {
   keepMask = false;
   cropBtnElement.classList.remove("visible");
 
@@ -314,9 +314,8 @@ function loadImageFile(file) {
   resetArea();
   canvasImage.onload = function() {
     scaleImageToFitCanvas(canvasImage);
-    URL.revokeObjectURL(canvasImage.src);
   };
-  canvasImage.src = URL.createObjectURL(file);
+  canvasImage.src = blobUrl;
 }
 
 function getImageData(image, area, ctx) {
@@ -387,7 +386,7 @@ function enableViewportResizeHandler() {
 }
 
 cropBtnElement.addEventListener("click", () => {
-  const { file } = getActiveImage();
+  const { file, blobUrl } = getActiveImage();
   const image = new Image();
 
   image.onload = async function() {
@@ -396,9 +395,8 @@ cropBtnElement.addEventListener("click", () => {
       type: file.type,
       ...await getCanvasSlice(image, file.type)
     });
-    URL.revokeObjectURL(image.src);
   };
-  image.src = URL.createObjectURL(file);
+  image.src = blobUrl;
 });
 
 

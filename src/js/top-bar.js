@@ -55,7 +55,3 @@ document.getElementById("js-top-bar-header").addEventListener("click", event => 
     window.addEventListener("mousedown", preventModalHiding, true);
   }
 });
-
-export {
-  hideModal
-};

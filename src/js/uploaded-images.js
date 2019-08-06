@@ -1,5 +1,4 @@
 import { getElementByAttr } from "./utils.js";
-import { hideModal } from "./top-bar.js";
 import { initCanvas, loadImageFile } from "./canvas.js";
 
 const modalElement = document.getElementById("js-top-bar-upload-tab");
@@ -17,19 +16,33 @@ function getActiveImage() {
 }
 
 function doneReadingImages() {
-  initCanvas(images[0].file);
-  setDocumentTitle(images[0].name);
+  const [image] = images;
+
+  updateImagePreview(image);
   highlightImage(document.querySelector(".uploaded-images-list-item"));
+  setDocumentTitle(image.name);
+  initCanvas(image.blobUrl);
+}
+
+function updateImagePreview(image) {
+  const element = document.getElementById("js-uploaded-images-preview");
+
+  element.innerHTML = `
+    <div class="uploaded-images-preview-info">${image.name}</div>
+    <div class="uploaded-images-preview-info">${image.width}x${image.height}</div>
+    <img src="${image.blobUrl}" class="uploaded-images-preview-image" alt="">
+  `;
 }
 
 function readImage(file) {
   return new Promise(resolve => {
     const image = new Image();
+    const blobUrl = URL.createObjectURL(file);
 
     image.onload = function() {
-      URL.revokeObjectURL(image.src);
       resolve({
         file,
+        blobUrl,
         name: file.name,
         type: file.type,
         width: image.width,
@@ -37,7 +50,7 @@ function readImage(file) {
         aspectRatio: image.width / image.height
       });
     };
-    image.src = URL.createObjectURL(file);
+    image.src = blobUrl;
   });
 }
 
@@ -51,7 +64,7 @@ async function readImages(imagesToRead) {
   if (imagesToRead.length) {
     readImages(imagesToRead);
   }
-  else {
+  else if (!activeListItem) {
     doneReadingImages();
   }
 }
@@ -80,7 +93,7 @@ function renderUploadedImage(image) {
   element.insertAdjacentHTML("beforeend", `
     <li class="uploaded-images-list-item" data-index="${index}" data-type="image">
         <button class="uploaded-images-list-btn">
-          <img src="${URL.createObjectURL(image.file)}" class="uploaded-images-list-image">
+          <img src="${image.blobUrl}" class="uploaded-images-list-image">
         </button>
     </li>
   `);
@@ -111,13 +124,13 @@ modalElement.addEventListener("click", event => {
 
   if (element.attrValue === "image") {
     const index = parseInt(element.elementRef.getAttribute("data-index"), 10);
-    const { file } = images[index];
+    const { file, blobUrl } = images[index];
     activeImageIndex = index;
 
+    updateImagePreview(images[index]);
     highlightImage(element.elementRef);
     setDocumentTitle(file.name);
-    loadImageFile(file);
-    hideModal();
+    loadImageFile(blobUrl);
   }
 });
 
