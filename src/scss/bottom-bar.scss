@@ -17,6 +17,16 @@
   }
 }
 
+.bottom-bar-selection-toggle-btn {
+  display: none;
+  margin: 4px auto;
+  pointer-events: auto;
+
+  &.visible {
+    display: block;
+  }
+}
+
 .bottom-bar-items {
   display: flex;
 }

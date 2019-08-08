@@ -2,35 +2,21 @@ import { getRotation, resetRotation } from "./rotation.js";
 import { applyScaleMultiplier, scaleImageToFitCanvas } from "./zoom.js";
 import { getUniqueImageName, renderAddedFolderImage } from "./image-folder.js";
 import { getActiveImage } from "./uploaded-images.js";
-import { getArea, resetArea, isMouseInsideArea, setDirection, getDirection } from "./area.js";
+import { getArea, resetArea, isInsideArea, setDirection, getDirection } from "./area.js";
 import { setTransformContext, getTransform, setTransform, translateContext, getTransformedPoint } from "./transform.js";
 
 const canvasImage = new Image();
 const editorElement = document.getElementById("js-editor");
 const cropBtnElement = document.getElementById("js-crop-btn");
-let initialized = false;
+const selectionToggleBtn = document.getElementById("js-selection-toggle-btn");
+const isMobile = window.orientation !== undefined;
 let canvas = null;
 let canvasWidth = 0;
 let canvasHeight = 0;
+let pointerPosition = null;
 let eventToEnable = "";
 let keepMask = false;
-
-const mousePosition = (function() {
-  let mousePosition = null;
-
-  function setPosition(position) {
-    mousePosition = position;
-  }
-
-  function getPosition() {
-    return mousePosition;
-  }
-
-  return {
-    set: setPosition,
-    get: getPosition
-  };
-})();
+let selectionDisabled = false;
 
 function initCanvasElement(blobUrl) {
   canvas = document.getElementById("js-canvas");
@@ -38,19 +24,16 @@ function initCanvasElement(blobUrl) {
   resetCanvasDimensions();
   loadImageFile(blobUrl);
   canvas.addEventListener("wheel", handleScroll, { passive: true });
-  canvas.addEventListener("mousedown", handleMousedown);
+  canvas.addEventListener("pointerdown", handlePointerdown);
 }
 
 function initCanvas(blobUrl) {
-  if (initialized) {
-    return;
-  }
-  initialized = true;
   editorElement.insertAdjacentHTML("beforeend", `<canvas id="js-canvas"></canvas>`);
   editorElement.classList.remove("hidden");
   document.getElementById("js-intro").remove();
   initCanvasElement(blobUrl);
   enableViewportResizeHandler();
+  selectionToggleBtn.classList.toggle("visible", isMobile);
 }
 
 function getCanvasElement() {
@@ -98,10 +81,10 @@ function drawImage(ctx) {
 
 function drawArea(ctx) {
   const area = getArea();
-  const areaWidth = area.width;
-  const areaHeight = area.height;
-  let x = area.x;
-  let y = area.y;
+  const areaWidth = Math.round(area.width);
+  const areaHeight = Math.round(area.height);
+  let x = Math.round(area.x);
+  let y = Math.round(area.y);
   let imageData;
 
   ctx.save();
@@ -154,7 +137,7 @@ function handleScroll(event) {
   applyScaleMultiplier(event.deltaY > 0 ? 0.8 : 1.25, event.clientX, event.clientY);
 }
 
-function handleMousedown(event) {
+function handlePointerdown(event) {
   if (event.which !== 1) {
     return;
   }
@@ -165,15 +148,15 @@ function handleMousedown(event) {
   eventToEnable = "select";
   keepMask = areaDrawn;
 
-  if (event.shiftKey) {
-    mousePosition.set(getTransformedPoint(x, y));
+  if (event.shiftKey || selectionDisabled) {
+    pointerPosition = getTransformedPoint(x, y);
     eventToEnable = "drag";
   }
-  else if (event.ctrlKey && areaDrawn && isMouseInsideArea(x, y)) {
-    mousePosition.set({
+  else if ((event.ctrlKey || isMobile) && areaDrawn && isInsideArea(x, y)) {
+    pointerPosition = {
       x: x - area.x,
       y: y - area.y
-    });
+    };
     eventToEnable = "move";
   }
   else if (direction && areaDrawn) {
@@ -185,13 +168,12 @@ function handleMousedown(event) {
   requestAnimationFrame(drawCanvas);
   cropBtnElement.classList.remove("visible");
   editorElement.style.userSelect = "none";
-  window.addEventListener("mousemove", handleMousemove);
-  window.addEventListener("mouseup", handleMouseup);
-  window.removeEventListener("mousemove", changeCursor);
-  window.removeEventListener("keydown", changeCursorToMove);
+  window.addEventListener("pointermove", handlePointermove);
+  window.addEventListener("pointerup", handlePointerup);
+  window.removeEventListener("pointermove", changeCursor);
 }
 
-function handleMousemove(event) {
+function handlePointermove(event) {
   const { clientX: x, clientY: y } = event;
 
   switch (eventToEnable) {
@@ -202,58 +184,38 @@ function handleMousemove(event) {
       resizeArea(x, y);
       break;
     case "move":
-      if (!event.ctrlKey) {
-        return;
-      }
       moveArea(x, y);
       break;
     case "drag":
-      if (!event.shiftKey) {
-        return;
-      }
       dragImage(x, y);
       break;
   }
   requestAnimationFrame(drawCanvas);
 }
 
-function handleMouseup() {
+function handlePointerup() {
   const area = getArea();
   eventToEnable = "";
   editorElement.style.userSelect = "auto";
 
   if (area.width && area.height) {
     cropBtnElement.classList.add("visible");
-    window.addEventListener("mousemove", changeCursor);
-    window.addEventListener("keydown", changeCursorToMove);
+    window.addEventListener("pointermove", changeCursor);
   }
   else {
     keepMask = false;
     drawImage(canvas.getContext("2d"));
-    resetCanvasCursor();
+    setCanvasCursor();
   }
-  window.removeEventListener("mousemove", handleMousemove);
-  window.removeEventListener("mouseup", handleMouseup);
-}
-
-function resetCanvasCursor() {
-  setCanvasCursor();
-}
-
-function changeCursorToMove(event) {
-  const mousePos = mousePosition.get();
-
-  if (mousePos && event.ctrlKey && isMouseInsideArea(mousePos.x, mousePos.y)) {
-    setCanvasCursor("move");
-    window.addEventListener("keyup", resetCanvasCursor, { once: true });
-  }
+  window.removeEventListener("pointermove", handlePointermove);
+  window.removeEventListener("pointerup", handlePointerup);
 }
 
 function changeCursor(event) {
   const { clientX: x, clientY: y } = event;
 
   if (event.ctrlKey) {
-    setCanvasCursor(isMouseInsideArea(x, y) ? "move" : "default");
+    setCanvasCursor(isInsideArea(x, y) ? "move" : "default");
   }
   else {
     const direction = setDirection(x, y);
@@ -291,18 +253,15 @@ function resizeArea(x, y) {
 
 function moveArea(x, y) {
   const area = getArea();
-  const mousePos = mousePosition.get();
-  area.x = x - mousePos.x;
-  area.y = y - mousePos.y;
+  area.x = x - pointerPosition.x;
+  area.y = y - pointerPosition.y;
 }
 
 function dragImage(x, y) {
-  const mousePos = mousePosition.get();
-
-  if (mousePos) {
+  if (pointerPosition) {
     const pt = getTransformedPoint(x, y);
 
-    translateContext(pt.x - mousePos.x, pt.y - mousePos.y);
+    translateContext(pt.x - pointerPosition.x, pt.y - pointerPosition.y);
   }
 }
 
@@ -399,6 +358,16 @@ cropBtnElement.addEventListener("click", () => {
   image.src = blobUrl;
 });
 
+selectionToggleBtn.addEventListener("click" , ({ currentTarget }) => {
+  selectionDisabled = !selectionDisabled;
+
+  if (selectionDisabled) {
+    currentTarget.textContent = "Enable Selection";
+  }
+  else {
+    currentTarget.textContent = "Disabled Selection";
+  }
+});
 
 export {
   initCanvas,

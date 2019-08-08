@@ -60,7 +60,7 @@ function resetArea(a = {}) {
   area = { x: 0, y: 0, width: 0, height: 0, ...a };
 }
 
-function isMouseInsideArea(x, y) {
+function isInsideArea(x, y) {
   const x2 = area.x;
   const y2 = area.y;
   const x3 = x2 + area.width;
@@ -76,5 +76,5 @@ export {
   resetArea,
   getDirection,
   setDirection,
-  isMouseInsideArea
+  isInsideArea
 };

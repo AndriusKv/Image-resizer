@@ -59,7 +59,8 @@
 .uploaded-images-body {
   display: flex;
   align-items: flex-start;
-  height: calc(100% - 70px);
+  flex-grow: 1;
+  min-height: 0;
 }
 
 .uploaded-images-list {
@@ -315,7 +316,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  @media (max-width: 38rem) {
+  @include breakpoint {
     width: 100%;
     margin-right: auto;
     text-align: center;
