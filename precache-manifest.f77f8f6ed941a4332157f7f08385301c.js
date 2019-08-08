@@ -32,7 +32,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "favicon.ico"
   },
   {
-    "revision": "6b960fa84c5a104d84d8ef6748223835",
+    "revision": "830d3614ebfcd7ca907552cb07915ec1",
     "url": "index.html"
   },
   {
@@ -40,11 +40,11 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "libs/jszip.min.js"
   },
   {
-    "revision": "162edd103c19a2285ceb",
+    "revision": "fcc77c6618e6d4c7205d",
     "url": "main.css"
   },
   {
-    "revision": "162edd103c19a2285ceb",
+    "revision": "fcc77c6618e6d4c7205d",
     "url": "main.js"
   },
   {
