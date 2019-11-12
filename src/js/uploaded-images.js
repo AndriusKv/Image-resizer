@@ -60,6 +60,7 @@ async function readImages(imagesToRead) {
 
   images.push(image);
   renderUploadedImage(image);
+  indicateImageUpload();
 
   if (imagesToRead.length) {
     readImages(imagesToRead);
@@ -67,6 +68,17 @@ async function readImages(imagesToRead) {
   else if (!activeListItem) {
     doneReadingImages();
   }
+}
+
+function indicateImageUpload() {
+  const element = document.createElement("div");
+
+  element.classList.add("ping");
+  element.style.setProperty("--delay", `${Math.random() * 2}s`);
+  document.getElementById("js-top-bar-upload-btn-container").appendChild(element);
+  setTimeout(() => {
+    element.remove();
+  }, 4000);
 }
 
 function filterOutNonImages(files) {
