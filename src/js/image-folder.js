@@ -15,7 +15,11 @@ function getUniqueImageName(fullName) {
 }
 
 function renderAddedFolderImage(image) {
+  const countElement = document.getElementById("js-image-folder-item-count");
   const length = images.push(image);
+
+  countElement.classList.remove("hidden");
+  countElement.innerText = length;
 
   listElement.insertAdjacentHTML("beforeend", `
     <li class="image-folder-list-item" data-index="${length - 1}">
@@ -162,12 +166,16 @@ function removeImageViewer() {
 }
 
 function updateFolderImageList() {
+  const countElement = document.getElementById("js-image-folder-item-count");
+
   if (images.length === 0) {
     document.getElementById("js-image-folder-message").classList.remove("hidden");
     listElement.classList.remove("visible");
+    countElement.classList.add("hidden");
   }
   else {
     const listItems = [...listElement.children];
+    countElement.innerText = images.length;
 
     listItems.forEach((item, index) => {
       item.setAttribute("data-index", index);

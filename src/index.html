@@ -61,7 +61,9 @@
     <img src="./assets/images/logo.png" class="intro-logo" alt="">
     <h1 class="intro-title">Imagis</h1>
     <h2 class="intro-subtitle">Image cropper and resizer</h2>
-    <button id="js-intro-file-select-btn" class="intro-file-select-btn">Drag and drop or select an image</button>
+    <button id="js-intro-file-select-btn" class="intro-file-select-btn">
+      <div class="intro-file-select-btn-inner">Drag and drop or select an image</div>
+    </button>
     <input type="file" id="js-intro-file-input" style="display: none" accept="image/*" multiple>
     <ul class="intro-footer">
       <li class="intro-footer-item">
@@ -74,7 +76,7 @@
   </div>
   <div id="js-editor" class="editor hidden">
     <ul id="js-top-bar-header" class="js-top-bar-item top-bar-header">
-      <li class="top-bar-header-item" data-tab-name="upload">
+      <li id="js-top-bar-upload-btn-container" class="top-bar-header-item top-bar-upload-btn-container" data-tab-name="upload">
         <button class="icon-btn-round top-bar-header-item-btn">
           <svg viewBox="0 0 24 24">
             <use href="#picture"></use>
@@ -89,10 +91,11 @@
         </button>
       </li>
       <li class="top-bar-header-item">
-        <button class="icon-btn-round top-bar-header-item-btn" data-tab-name="images">
+        <button class="icon-btn-round top-bar-header-item-btn top-bar-image-folder-toggle-btn" data-tab-name="images">
           <svg viewBox="0 0 24 24">
             <use href="#folder"></use>
           </svg>
+          <span id="js-image-folder-item-count" class="image-folder-item-count hidden"></span>
         </button>
       </li>
     </ul>
