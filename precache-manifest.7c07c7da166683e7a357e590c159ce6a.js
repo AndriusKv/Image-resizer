@@ -40,11 +40,11 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "libs/jszip.min.js"
   },
   {
-    "revision": "99382bbd564e5dd82bc8",
+    "revision": "041594519389343c58fe",
     "url": "main.css"
   },
   {
-    "revision": "99382bbd564e5dd82bc8",
+    "revision": "041594519389343c58fe",
     "url": "main.js"
   },
   {
@@ -52,7 +52,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "manifest.json"
   },
   {
-    "revision": "90e8c6c31ebacfd8ba22",
+    "revision": "5d96f807464925a65982",
     "url": "vendor.js"
   },
   {
