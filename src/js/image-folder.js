@@ -6,6 +6,16 @@ const images = [];
 const imageNames = {};
 let activeIndex = 0;
 
+function indicateFolderUpdate() {
+  const element = document.createElement("div");
+
+  element.classList.add("ping");
+  document.querySelector(".top-bar-image-folder-toggle-btn").appendChild(element);
+  setTimeout(() => {
+    element.remove();
+  }, 4000);
+}
+
 function getUniqueImageName(fullName) {
   const arr = fullName.split(".");
   const count = imageNames[arr[0]] || 0;
@@ -20,6 +30,7 @@ function renderAddedFolderImage(image) {
 
   countElement.classList.remove("hidden");
   countElement.innerText = length;
+  indicateFolderUpdate();
 
   listElement.insertAdjacentHTML("beforeend", `
     <li class="image-folder-list-item" data-index="${length - 1}">
