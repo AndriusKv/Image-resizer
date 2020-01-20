@@ -68,7 +68,6 @@
       "prefer-spread": 2,
       "prefer-rest-params": 2,
       "prefer-arrow-callback": 2,
-      "padded-blocks": [2, "never"],
       "quote-props": [2, "as-needed"],
       "quotes": [2, "double", {
         "avoidEscape": true,
@@ -76,7 +75,6 @@
         }],
         "radix": [2, "always"],
         "semi": 2,
-        "space-before-blocks": 2,
         "strict": [2, "safe"],
         "space-in-parens": [2, "never"],
         "space-before-function-paren": [2, {

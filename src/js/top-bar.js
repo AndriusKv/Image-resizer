@@ -1,57 +1,63 @@
-import { getElementByAttr } from "./utils.js";
+import { getElementByAttr } from "./utils";
+import { updateCropPanelInputs } from "./crop-panel";
 
-let activeTabName = "";
-let keepVisible = false;
+let activePanelName = "";
+let panelVisible = false;
 
-function getTabElement(name) {
-  return document.getElementById(`js-top-bar-${name}-tab`);
+function getPanelElement(name) {
+  return document.getElementById(`js-top-bar-${name}-panel`);
 }
 
-function hideModal() {
-  const element = getTabElement(activeTabName);
-  activeTabName = "";
+function hidePanel() {
+  const element = getPanelElement(activePanelName);
+  panelVisible = false;
+  activePanelName = "";
   element.classList.remove("visible");
-  window.removeEventListener("click", handleClickOutsideModal, true);
-  window.removeEventListener("mousedown", preventModalHiding, true);
+  window.removeEventListener("mousedown", handleClickOutsidePanel);
 }
 
-function handleClickOutsideModal(event) {
-  if (keepVisible || event.target.closest(".js-top-bar-item")) {
-    keepVisible = false;
+function handleClickOutsidePanel(event) {
+  if (event.target.closest(".js-top-bar-item")) {
     return;
   }
-  hideModal();
+  hidePanel();
 }
 
-function preventModalHiding(event) {
-  if (event.target.closest(".js-top-bar-item")) {
-    keepVisible = true;
-  }
+function isPanelVisible() {
+  return panelVisible;
 }
 
 document.getElementById("js-top-bar-header").addEventListener("click", event => {
-  const element = getElementByAttr("data-tab-name", event.target, event.currentTarget);
+  const element = getElementByAttr("data-panel-name", event.target, event.currentTarget);
 
   if (!element) {
     return;
   }
   const { attrValue } = element;
 
-  if (activeTabName) {
-    const element = getTabElement(activeTabName);
+  if (activePanelName) {
+    const element = getPanelElement(activePanelName);
     element.classList.remove("visible");
   }
 
-  if (attrValue === activeTabName) {
-    activeTabName = "";
-    window.removeEventListener("click", handleClickOutsideModal, true);
-    window.removeEventListener("mousedown", preventModalHiding, true);
+  if (attrValue === activePanelName) {
+    panelVisible = false;
+    activePanelName = "";
+    window.removeEventListener("mousedown", handleClickOutsidePanel);
   }
   else {
-    const element = getTabElement(attrValue);
-    activeTabName = attrValue;
+    const element = getPanelElement(attrValue);
+    panelVisible = true;
+    activePanelName = attrValue;
     element.classList.add("visible");
-    window.addEventListener("click", handleClickOutsideModal, true);
-    window.addEventListener("mousedown", preventModalHiding, true);
+    window.addEventListener("mousedown", handleClickOutsidePanel);
+
+    if (attrValue === "crop") {
+      updateCropPanelInputs();
+    }
   }
 });
+
+export {
+  isPanelVisible
+};

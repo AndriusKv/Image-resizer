@@ -56,6 +56,9 @@
     <symbol id="arrow-right" viewBox="0 0 24 24">
         <path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" />
     </symbol>
+    <symbol id="crop-panel" viewBox="0 0 24 24">
+        <path d="M23,15H21V17H23V15M23,11H21V13H23V11M23,19H21V21C22,21 23,20 23,19M15,3H13V5H15V3M23,7H21V9H23V7M21,3V5H23C23,4 22,3 21,3M3,21H11V15H1V19A2,2 0 0,0 3,21M3,7H1V9H3V7M15,19H13V21H15V19M19,3H17V5H19V3M19,19H17V21H19V19M3,3C2,3 1,4 1,5H3V3M3,11H1V13H3V11M11,3H9V5H11V3M7,3H5V5H7V3Z"/>
+    </symbol>
   </svg>
   <div id="js-intro" class="intro">
     <img src="./assets/images/logo.png" class="intro-logo" alt="">
@@ -76,31 +79,38 @@
   </div>
   <div id="js-editor" class="editor hidden">
     <ul id="js-top-bar-header" class="js-top-bar-item top-bar-header">
-      <li id="js-top-bar-upload-btn-container" class="top-bar-header-item top-bar-upload-btn-container" data-tab-name="upload">
-        <button class="icon-btn-round top-bar-header-item-btn">
+      <li id="js-top-bar-upload-btn-container" class="top-bar-upload-btn-container" data-panel-name="upload">
+        <button class="icon-btn-round top-bar-header-item-btn" title="Show uploaded images">
           <svg viewBox="0 0 24 24">
             <use href="#picture"></use>
           </svg>
         </button>
       </li>
-      <li class="top-bar-header-item">
-        <button class="icon-btn-round top-bar-header-item-btn" data-tab-name="resize">
+      <li>
+        <button class="icon-btn-round top-bar-header-item-btn" title="Show resize panel" data-panel-name="resize">
           <svg viewBox="0 0 24 24">
             <use href="#resize"></use>
           </svg>
         </button>
       </li>
-      <li class="top-bar-header-item">
-        <button class="icon-btn-round top-bar-header-item-btn top-bar-image-folder-toggle-btn" data-tab-name="images">
+      <li>
+        <button class="icon-btn-round top-bar-header-item-btn top-bar-image-folder-toggle-btn" title="Show image folder" data-panel-name="images">
           <svg viewBox="0 0 24 24">
             <use href="#folder"></use>
           </svg>
           <span id="js-image-folder-item-count" class="image-folder-item-count hidden"></span>
         </button>
       </li>
+      <li class="top-bar-info-item">
+        <button class="icon-btn-round top-bar-header-item-btn" title="Show crop panel" data-panel-name="crop">
+          <svg viewBox="0 0 24 24">
+            <use href="#crop-panel"></use>
+          </svg>
+        </button>
+      </li>
     </ul>
-    <div id="js-top-bar-upload-tab" class="js-top-bar-item top-bar-tab upload-modal">
-      <h3 class="top-bar-tab-title">Uploaded Images</h3>
+    <div id="js-top-bar-upload-panel" class="js-top-bar-item top-bar-panel upload-panel">
+      <h3 class="top-bar-panel-title">Uploaded Images</h3>
       <div class="uploaded-images-body">
         <ul id="js-uploaded-images-list" class="uploaded-images-list"></ul>
         <div id="js-uploaded-images-preview" class="uploaded-images-list-item-preview"></div>
@@ -110,8 +120,8 @@
         <input type="file" id="js-uploaded-images-file-input" style="display:none" accept="image/*" multiple>
       </div>
     </div>
-    <div id="js-top-bar-resize-tab" class="js-top-bar-item top-bar-tab">
-      <h3 class="top-bar-tab-title">Resize Image</h3>
+    <div id="js-top-bar-resize-panel" class="js-top-bar-item top-bar-panel">
+      <h3 class="top-bar-panel-title">Resize Image</h3>
       <div class="resizer-group">
         <label class="resizer-setting">
           <input type="checkbox" id="js-resizer-aspect-ratio" checked>
@@ -133,14 +143,38 @@
       </ul>
       <button id="js-resize-btn" class="btn resizer-resize-btn">Resize</button>
     </div>
-    <div id="js-top-bar-images-tab" class="js-top-bar-item top-bar-tab image-folder">
-      <h3 class="top-bar-tab-title">Image Folder</h3>
+    <div id="js-top-bar-images-panel" class="js-top-bar-item top-bar-panel image-folder">
+      <h3 class="top-bar-panel-title">Image Folder</h3>
       <p id="js-image-folder-message" class="image-folder-empty-list-message">You have nothing here yet.</p>
       <ul id="js-image-folder-list" class="image-folder-list"></ul>
       <button id="js-image-folder-download-btn" class="btn image-folder-download-btn">Download Folder</button>
     </div>
+    <div id="js-top-bar-crop-panel" class="js-top-bar-item top-bar-panel top-bar-crop-panel">
+      <h3 class="top-bar-panel-title">Crop Area</h3>
+      <div class="crop-panel-input-group">
+        <label>
+          <div class="crop-panel-input-label">X</div>
+          <input type="number" class="input crop-panel-input" data-value="x">
+        </label>
+        <label>
+          <div class="crop-panel-input-label">Y</div>
+          <input type="number" class="input crop-panel-input" data-value="y">
+        </label>
+        <label>
+          <div class="crop-panel-input-label">Width</div>
+          <input type="number" class="input crop-panel-input" data-value="width" min="1" required/>
+          <div class="crop-panel-input-message">Value must be greater than or equal to 1.</div>
+        </label>
+        <label>
+          <div class="crop-panel-input-label">Height</div>
+          <input type="number" class="input crop-panel-input" data-value="height" min="1" required/>
+          <div class="crop-panel-input-message">Value must be greater than or equal to 1.</div>
+        </label>
+      </div>
+      <button id="js-crop-panel-btn" class="btn crop-panel-btn">Set</button>
+    </div>
     <div class="bottom-bar">
-      <button id="js-crop-btn" class="icon-btn-round bottom-bar-crop-btn" title="Crop selected area">
+      <button id="js-crop-btn" class="icon-btn-round bottom-bar-crop-btn" title="Crop area">
         <svg viewBox="0 0 24 24">
           <use href="#crop"></use>
         </svg>
