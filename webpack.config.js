@@ -112,8 +112,7 @@ module.exports = function(env = {}) {
               loose: true,
               useBuiltIns: "usage",
               corejs: 3
-            }]],
-            plugins: ["@babel/plugin-syntax-dynamic-import"]
+            }]]
           }
         }
       ]

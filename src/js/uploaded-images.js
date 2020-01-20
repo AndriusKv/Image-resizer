@@ -1,7 +1,7 @@
 import { getElementByAttr } from "./utils.js";
 import { initCanvas, loadImageFile } from "./canvas.js";
 
-const modalElement = document.getElementById("js-top-bar-upload-tab");
+const modalElement = document.getElementById("js-top-bar-upload-panel");
 const fileInputElement = document.getElementById("js-uploaded-images-file-input");
 let images = [];
 let activeImageIndex = 0;

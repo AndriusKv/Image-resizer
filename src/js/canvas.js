@@ -4,6 +4,8 @@ import { getUniqueImageName, renderAddedFolderImage } from "./image-folder.js";
 import { getActiveImage } from "./uploaded-images.js";
 import { getArea, resetArea, isInsideArea, setDirection, getDirection } from "./area.js";
 import { setTransformContext, getTransform, setTransform, translateContext, getTransformedPoint } from "./transform.js";
+import { resetCropPanelInputs } from "./crop-panel";
+import { isPanelVisible } from "./top-bar";
 
 const canvasImage = new Image();
 const editorElement = document.getElementById("js-editor");
@@ -138,7 +140,7 @@ function handleScroll(event) {
 }
 
 function handlePointerdown(event) {
-  if (event.which !== 1) {
+  if (event.which !== 1 || isPanelVisible()) {
     return;
   }
   const { clientX: x, clientY: y } = event;
@@ -199,16 +201,21 @@ function handlePointerup() {
   editorElement.style.userSelect = "auto";
 
   if (area.width && area.height) {
-    cropBtnElement.classList.add("visible");
-    window.addEventListener("pointermove", changeCursor);
+    allowCropAreaModification();
   }
   else {
     keepMask = false;
     drawImage(canvas.getContext("2d"));
     setCanvasCursor();
+    resetCropPanelInputs();
   }
   window.removeEventListener("pointermove", handlePointermove);
   window.removeEventListener("pointerup", handlePointerup);
+}
+
+function allowCropAreaModification() {
+  cropBtnElement.classList.add("visible");
+  window.addEventListener("pointermove", changeCursor);
 }
 
 function changeCursor(event) {
@@ -375,5 +382,6 @@ export {
   getCanvasDimensions,
   resetCanvasDimensions,
   drawCanvas,
+  allowCropAreaModification,
   loadImageFile
 };
