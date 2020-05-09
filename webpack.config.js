@@ -3,8 +3,8 @@ const { DefinePlugin } = require("webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { InjectManifest } = require("workbox-webpack-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const { GenerateSW } = require("workbox-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = function(env = {}) {
   const mode = env.prod ? "production" : "development";
@@ -18,21 +18,23 @@ module.exports = function(env = {}) {
       filename: "[name].css"
     }),
     new HtmlWebpackPlugin({
-      template: "./src/index.html",
+      template: "./public/index.html",
       minify: env.prod ? {
         keepClosingSlash: true,
         collapseWhitespace: true,
         collapseInlineTagWhitespace: true
       } : undefined
     }),
-    new InjectManifest({
-      swSrc: "./src/sw.js",
-      swDest: "./sw.js",
-      globDirectory: "./dist",
-      globPatterns: ["./assets/images/*", "./libs/*", "./ww.js", "./*.png", "./favicon.ico", "./manifest.json"]
-    }),
-    new CleanWebpackPlugin({
-      cleanOnceBeforeBuildPatterns: ["precache*"]
+    new CopyPlugin([
+      { from: "./src/libs", to: "./libs" },
+      { from: "./src/assets", to: "./assets" },
+      { from: "./public" }
+    ]),
+    new GenerateSW({
+      swDest:  "./sw.js",
+      skipWaiting: true,
+      clientsClaim: true,
+      disableDevLogs: true
     })
   ];
 
@@ -110,6 +112,7 @@ module.exports = function(env = {}) {
             presets: [["@babel/preset-env", {
               modules: false,
               loose: true,
+              bugfixes: true,
               useBuiltIns: "usage",
               corejs: 3
             }]]

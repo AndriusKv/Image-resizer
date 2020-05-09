@@ -1,8 +1,8 @@
-import { saveAs } from "file-saver";
-
 const worker = new Worker("./ww.js");
 
-worker.onmessage = function(event) {
+worker.onmessage = async function(event) {
+  const { saveAs } = await import("file-saver");
+
   saveAs(event.data, "images.zip");
 };
 

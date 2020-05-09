@@ -1,5 +1,6 @@
 import { getElementByAttr } from "./utils.js";
 import { initCanvas, loadImageFile } from "./canvas.js";
+import { resetCropPanelInputs } from "./crop-panel";
 
 const modalElement = document.getElementById("js-top-bar-upload-panel");
 const fileInputElement = document.getElementById("js-uploaded-images-file-input");
@@ -143,6 +144,7 @@ modalElement.addEventListener("click", event => {
       updateImagePreview(images[index]);
       highlightImage(element.elementRef);
       setDocumentTitle(file.name);
+      resetCropPanelInputs();
     }
     loadImageFile(blobUrl);
   }
