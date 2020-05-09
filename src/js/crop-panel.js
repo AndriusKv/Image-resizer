@@ -69,10 +69,11 @@ function updateCropArea() {
     const { a: scale, e: x, f: y } = getTransform();
     const area = getArea();
 
-    area.x = Math.round(values[0] * scale + x);
-    area.y = Math.round(values[1] * scale + y);
-    area.width = Math.round(values[2] * scale);
-    area.height = Math.round(values[3] * scale);
+    area.x = values[0] * scale + x;
+    area.y = values[1] * scale + y;
+    area.width = values[2] * scale;
+    area.height = values[3] * scale;
+
     requestAnimationFrame(drawCanvas);
     allowCropAreaModification();
   }
