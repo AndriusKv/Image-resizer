@@ -1,12 +1,1 @@
-/* global JSZip */
-
-importScripts("./libs/jszip.min.js");
-
-const zip = new JSZip();
-
-self.onmessage = async function(event) {
-  event.data.forEach(image => {
-    zip.folder("images").file(image.name, image.file);
-  });
-  postMessage(await zip.generateAsync({ type:"blob" }));
-};
+importScripts("./libs/jszip.min.js");const zip=new JSZip;self.onmessage=async function(e){e.data.forEach(e=>{zip.folder("images").file(e.name,e.file)}),postMessage(await zip.generateAsync({type:"blob"}))};
