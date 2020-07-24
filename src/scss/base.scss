@@ -80,6 +80,24 @@ button {
   font-weight: 500;
 }
 
+.btn-invert {
+  background-color: var(--color-light);
+  color: var(--color-brand);
+
+  &:hover {
+    background-color: var(--color-light-dark);
+  }
+}
+
+.icon-text-btn {
+  display: flex;
+  align-items: center;
+
+  svg {
+    margin-right: 8px;
+  }
+}
+
 .icon-btn {
   padding: 4px 8px;
   color: var(--color-brand);

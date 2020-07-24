@@ -8,7 +8,7 @@
 
 .bottom-bar-crop-btn {
   display: none;
-  margin: 0 auto;
+  margin: 0 auto 8px auto;
   box-shadow: 0 2px 4px 0 var(--color-black-40);
   pointer-events: auto;
 
@@ -19,7 +19,7 @@
 
 .bottom-bar-selection-toggle-btn {
   display: none;
-  margin: 4px auto;
+  margin: 0 auto 4px auto;
   pointer-events: auto;
 
   &.visible {
@@ -38,9 +38,37 @@
   background-color: var(--color-light);
   box-shadow: 0 2px 4px 0 var(--color-black-40);
   pointer-events: auto;
+}
 
-  &:first-of-type {
-    margin-right: 8px;
+.bottom-bar-flip-item {
+  position: relative;
+  margin: 0 8px;
+}
+
+.bottom-bar-flip-btn {
+  padding: 4px;
+}
+
+.bottom-bar-flip-items {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  display: none;
+  padding: 8px 0;
+  border-radius: 4px;
+  background-color: var(--color-light);
+  box-shadow: 0 2px 4px 0 var(--color-black-40);
+  transform: translate(-50%, -8px);
+
+  &.visible {
+    display: block;
+  }
+
+  .btn {
+    display: flex;
+    width: 100%;
+    border-radius: 0;
+    white-space: nowrap;
   }
 }
 

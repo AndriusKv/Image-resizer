@@ -1,6 +1,6 @@
 import "focus-visible";
 
-import "../scss/normalize.css";
+import "normalize.css";
 import "../scss/index.scss";
 
 import "./utils.js";
@@ -15,6 +15,6 @@ import "./transform.js";
 import "./area.js";
 import "./web-worker.js";
 
-if ("serviceWorker" in navigator) {
+if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch(console.log);
 }
