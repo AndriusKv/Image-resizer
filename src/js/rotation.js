@@ -92,9 +92,9 @@ rotationElement.addEventListener("click", event => {
   else if (element.attrValue === "right") {
     theta += radians;
   }
-  const degress = convertRadiansToDegrees(theta);
+  const degrees = convertRadiansToDegrees(theta);
   requestAnimationFrame(drawCanvas);
-  updateRotationValue(degress);
+  updateRotationValue(degrees);
 });
 
 rotationElement.addEventListener("focus", ({ target }) => {

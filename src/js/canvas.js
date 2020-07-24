@@ -1,5 +1,6 @@
 import { getRotation, resetRotation } from "./rotation.js";
 import { applyScaleMultiplier, scaleImageToFitCanvas } from "./zoom.js";
+import { getFlip } from "./flip.js";
 import { getUniqueImageName, renderAddedFolderImage } from "./image-folder.js";
 import { getActiveImage } from "./uploaded-images.js";
 import { getArea, resetArea, isInsideArea, setDirection, getDirection } from "./area.js";
@@ -67,17 +68,24 @@ function addMask(ctx) {
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 }
 
-function drawImage(ctx) {
+function drawImage(ctx, image = canvasImage) {
   const radians = getRotation();
-  const w = canvasImage.width / 2;
-  const h = canvasImage.height / 2;
+  const { flipH, flipV } = getFlip();
 
   clearCanvas(ctx);
   ctx.save();
-  ctx.translate(w, h);
-  ctx.rotate(radians);
-  ctx.translate(-w, -h);
-  ctx.drawImage(canvasImage, 0, 0, canvasImage.width, canvasImage.height);
+
+  if (radians) {
+    const centerX = image.width / 2;
+    const centerY = image.height / 2;
+
+    ctx.translate(centerX, centerY);
+    ctx.rotate(radians);
+    ctx.translate(-centerX, -centerY);
+  }
+  ctx.scale(flipH, flipV);
+  ctx.translate(flipH === -1 ? -image.width : 0, flipV === -1 ? -image.height : 0);
+  ctx.drawImage(image, 0, 0, image.width, image.height);
   ctx.restore();
 }
 
@@ -285,20 +293,7 @@ function loadImageFile(blobUrl) {
 }
 
 function getImageData(image, area, ctx) {
-  const radians = getRotation();
-
-  ctx.save();
-
-  if (radians) {
-    const centerX = image.width / 2;
-    const centerY = image.height / 2;
-
-    ctx.translate(centerX, centerY);
-    ctx.rotate(radians);
-    ctx.translate(-centerX, -centerY);
-  }
-  ctx.drawImage(image, 0, 0, image.width, image.height);
-  ctx.restore();
+  drawImage(ctx, image);
   return ctx.getImageData(area.x, area.y, area.width, area.height);
 }
 
