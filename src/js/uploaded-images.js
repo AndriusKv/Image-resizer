@@ -1,4 +1,4 @@
-import { getElementByAttr } from "./utils.js";
+import { getElementByAttr, getFileSizeString } from "./utils.js";
 import { initCanvas, loadImageFile } from "./canvas.js";
 import { resetCropPanelInputs } from "./crop-panel";
 
@@ -30,7 +30,7 @@ function updateImagePreview(image) {
 
   element.innerHTML = `
     <div class="uploaded-images-preview-info">${image.name}</div>
-    <div class="uploaded-images-preview-info">${image.width}x${image.height}</div>
+    <div class="uploaded-images-preview-info">${image.width}x${image.height} | ${image.sizeString}</div>
     <img src="${image.blobUrl}" class="uploaded-images-preview-image" alt="">
   `;
 }
@@ -45,6 +45,7 @@ function readImage(file) {
         file,
         blobUrl,
         name: file.name,
+        sizeString: getFileSizeString(file.size),
         type: file.type,
         width: image.width,
         height: image.height,

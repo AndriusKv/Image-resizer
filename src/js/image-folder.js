@@ -1,4 +1,4 @@
-import { getElementByAttr } from "./utils.js";
+import { getElementByAttr, getFileSizeString } from "./utils.js";
 import { postMessageToWorker } from "./web-worker.js";
 
 const listElement = document.getElementById("js-image-folder-list");
@@ -90,7 +90,8 @@ function showFolderImageViewer(index) {
 }
 
 function getImageViewerHeader(image, index) {
-  return `${image.name} | ${index + 1} / ${images.length} | ${image.width}x${image.height}`;
+  const size = getFileSizeString(image.file.size);
+  return `${image.name} | ${index + 1} / ${images.length} | ${image.width}x${image.height} | ${size}`;
 }
 
 function handleKeydown({ key }) {
