@@ -183,8 +183,9 @@ function handlePointerdown(event) {
   window.removeEventListener("pointermove", changeCursor);
 }
 
-function handlePointermove(event) {
-  const { clientX: x, clientY: y } = event;
+function handlePointermove({ clientX, clientY }) {
+  const x = clientX > 0 ? clientX : 0;
+  const y = clientY > 0 ? clientY : 0;
 
   switch (eventToEnable) {
     case "select":

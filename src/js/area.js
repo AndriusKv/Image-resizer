@@ -25,7 +25,7 @@ function getVerticalDirection(direction, inWestBound, inEastBound) {
 }
 
 function setDirection(x, y) {
-  const margin = 4;
+  const margin = 8;
   const x2 = area.x;
   const y2 = area.y;
   const x3 = x2 + area.width;
