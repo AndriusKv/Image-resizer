@@ -3,6 +3,7 @@ const { DefinePlugin } = require("webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const { GenerateSW } = require("workbox-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 
@@ -44,6 +45,7 @@ module.exports = function(env = {}) {
 
   return {
     mode,
+    target: "web",
     entry: {
       main: "./src/js/index.js"
     },
@@ -64,7 +66,7 @@ module.exports = function(env = {}) {
       minimizer: [new TerserPlugin({
         parallel: true,
         terserOptions: {
-          ecma: 8,
+          ecma: 2019,
           output: {
             comments: false
           }
@@ -75,8 +77,8 @@ module.exports = function(env = {}) {
       rules: [
         {
           test: /\.s?css$/,
-          loaders: [
-            MiniCssExtractPlugin.loader,
+          use: [
+            { loader: MiniCssExtractPlugin.loader },
             {
               loader: "css-loader",
               options: {
@@ -88,16 +90,10 @@ module.exports = function(env = {}) {
               loader: "postcss-loader",
               options: {
                 sourceMap: !env.prod,
-                plugins() {
-                  const plugins = [
-                    require("autoprefixer")(),
-                    require("css-mqpacker")()
-                  ];
-
-                  if (env.prod) {
-                    plugins.push(require("cssnano")());
-                  }
-                  return plugins;
+                postcssOptions: {
+                  plugins: [
+                    require("autoprefixer")()
+                  ]
                 }
               }
             },
@@ -111,16 +107,18 @@ module.exports = function(env = {}) {
         },
         {
           test: /\.js$/,
-          loader: "babel-loader",
           exclude: /node_modules/,
-          options: {
-            presets: [["@babel/preset-env", {
-              modules: false,
-              loose: true,
-              bugfixes: true,
-              useBuiltIns: "usage",
-              corejs: 3
-            }]]
+          use: {
+            loader: "babel-loader",
+            options: {
+              presets: [["@babel/preset-env", {
+                modules: false,
+                loose: true,
+                bugfixes: true,
+                useBuiltIns: "usage",
+                corejs: 3
+              }]]
+            }
           }
         }
       ]
