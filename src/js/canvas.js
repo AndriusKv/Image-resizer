@@ -361,7 +361,7 @@ cropBtnElement.addEventListener("click", () => {
   image.src = blobUrl;
 });
 
-selectionToggleBtn.addEventListener("click" , ({ currentTarget }) => {
+selectionToggleBtn.addEventListener("click", ({ currentTarget }) => {
   selectionDisabled = !selectionDisabled;
 
   if (selectionDisabled) {
@@ -369,6 +369,23 @@ selectionToggleBtn.addEventListener("click" , ({ currentTarget }) => {
   }
   else {
     currentTarget.textContent = "Disabled Selection";
+  }
+});
+
+window.addEventListener("keydown", (event) => {
+  if (event.key === "a" && event.ctrlKey) {
+    const area = getArea();
+    const { a: scale, e: x, f: y } = getTransform();
+    const { width, height } = canvasImage;
+
+    area.x = scale + x;
+    area.y = scale + y;
+    area.width = width * scale;
+    area.height = height * scale;
+
+    requestAnimationFrame(drawCanvas);
+    allowCropAreaModification();
+    event.preventDefault();
   }
 });
 
