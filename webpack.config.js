@@ -45,7 +45,7 @@ module.exports = function(env = {}) {
 
   return {
     mode,
-    target: "web",
+    target: "browserslist",
     entry: {
       main: "./src/js/index.js"
     },
@@ -70,6 +70,14 @@ module.exports = function(env = {}) {
           output: {
             comments: false
           }
+        }
+      }),
+      new CssMinimizerPlugin({
+        minimizerOptions: {
+          preset: [
+            "default",
+            { discardComments: { removeAll: true } }
+          ]
         }
       })]
     },
