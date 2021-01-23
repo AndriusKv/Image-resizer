@@ -14,6 +14,7 @@ import "./canvas.js";
 import "./transform.js";
 import "./area.js";
 import "./web-worker.js";
+import "./bottom-bar-panel.js";
 
 if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch(console.log);
