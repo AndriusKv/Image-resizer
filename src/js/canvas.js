@@ -20,6 +20,8 @@ let pointerPosition = null;
 let eventToEnable = "";
 let keepMask = false;
 let selectionDisabled = false;
+let snapArea = false;
+let handlingMove = false;
 
 function initCanvasElement(blobUrl) {
   canvas = document.getElementById("js-canvas");
@@ -184,6 +186,11 @@ function handlePointerdown(event) {
 }
 
 function handlePointermove({ clientX, clientY }) {
+  if (handlingMove) {
+    return;
+  }
+  handlingMove = true;
+
   const x = clientX > 0 ? clientX : 0;
   const y = clientY > 0 ? clientY : 0;
 
@@ -201,7 +208,10 @@ function handlePointermove({ clientX, clientY }) {
       dragImage(x, y);
       break;
   }
-  requestAnimationFrame(drawCanvas);
+  requestAnimationFrame(() => {
+    drawCanvas();
+    handlingMove = false;
+  });
 }
 
 function handlePointerup() {
@@ -267,10 +277,52 @@ function resizeArea(x, y) {
   }
 }
 
-function moveArea(x, y) {
+function updatePoint(point, pointName, dimensionName, offset, scale) {
   const area = getArea();
-  area.x = x - pointerPosition.x;
-  area.y = y - pointerPosition.y;
+  const diff = point - pointerPosition[pointName];
+  const dimension = canvasImage[dimensionName];
+  const scaledDimension = dimension * scale;
+  const areaDimension = area[dimensionName];
+
+  if (areaDimension > 0) {
+    if (offset + 8 > diff && offset - 8 < diff) {
+      area[pointName] = offset;
+    }
+    else if (offset + 8 + scaledDimension > diff + areaDimension && offset - 8 + scaledDimension < diff + areaDimension) {
+      area[pointName] = offset + scaledDimension - areaDimension;
+    }
+    else {
+      area[pointName] = diff;
+    }
+  }
+  else {
+    const diff2 = diff + areaDimension;
+
+    if (offset + 8 > diff2 && offset - 8 < diff2) {
+      area[pointName] = offset - areaDimension;
+    }
+    else if (offset + 8 + scaledDimension > diff && offset - 8 + scaledDimension < diff) {
+      area[pointName] = offset + scaledDimension;
+    }
+    else {
+      area[pointName] = diff;
+    }
+  }
+}
+
+function moveArea(x, y) {
+  if (snapArea) {
+    const { a: scale, e, f } = getTransform();
+
+    updatePoint(x, "x", "width", e, scale);
+    updatePoint(y, "y", "height", f, scale);
+  }
+  else {
+    const area = getArea();
+
+    area.x = x - pointerPosition.x;
+    area.y = y - pointerPosition.y;
+  }
 }
 
 function dragImage(x, y) {
@@ -372,14 +424,18 @@ selectionToggleBtn.addEventListener("click", ({ currentTarget }) => {
   }
 });
 
+document.getElementById("js-snap-checkbox").addEventListener("change", event => {
+  snapArea = event.target.checked;
+});
+
 window.addEventListener("keydown", (event) => {
   if (event.key === "a" && event.ctrlKey) {
     const area = getArea();
     const { a: scale, e: x, f: y } = getTransform();
     const { width, height } = canvasImage;
 
-    area.x = scale + x;
-    area.y = scale + y;
+    area.x = x;
+    area.y = y;
     area.width = width * scale;
     area.height = height * scale;
 

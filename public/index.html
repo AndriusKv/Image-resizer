@@ -204,25 +204,33 @@
             </svg>
           </button>
         </div>
-        <div class="bottom-bar-item bottom-bar-flip-item panel-container">
-          <button id="js-bottom-bar-flip-toggle-btn" class="icon-btn bottom-bar-flip-btn">
+        <div class="panel-container bottom-bar-item bottom-bar-panel-container">
+          <button id="js-bottom-bar-panel-toggle-btn" class="icon-btn bottom-bar-panel-toggle-btn">
             <svg viewBox="0 0 24 24">
               <use href="#dots-horizontal"></use>
             </svg>
           </button>
-          <div id="js-bottom-bar-flip-toggle-items" class="panel bottom-bar-flip-items">
-            <button class="btn btn-invert icon-text-btn" data-item="flipH">
-              <svg viewBox="0 0 24 24">
-                <use href="#flip-horizontal"></use>
-              </svg>
-              <span>Flip Horizontally</span>
-            </button>
-            <button class="btn btn-invert icon-text-btn" data-item="flipV">
-              <svg viewBox="0 0 24 24">
-                <use href="#flip-vertical"></use>
-              </svg>
-              <span>Flip Vertically</span>
-            </button>
+          <div id="js-bottom-bar-panel" class="bottom-bar-panel">
+            <div id="js-bottom-bar-flip-toggle-items" class="bottom-bar-panel-group">
+              <button class="btn btn-invert icon-text-btn bottom-bar-panel-btn" data-item="flipH">
+                <svg viewBox="0 0 24 24">
+                  <use href="#flip-horizontal"></use>
+                </svg>
+                <span>Flip Horizontally</span>
+              </button>
+              <button class="btn btn-invert icon-text-btn bottom-bar-panel-btn" data-item="flipV">
+                <svg viewBox="0 0 24 24">
+                  <use href="#flip-vertical"></use>
+                </svg>
+                <span>Flip Vertically</span>
+              </button>
+            </div>
+            <div class="bottom-bar-panel-group bottom-bar-panel-checkbox-container">
+              <label class="bottom-bar-panel-checkbox">
+                <input type="checkbox" id="js-snap-checkbox">
+                <span>Snap area to image sides</span>
+              </label>
+            </div>
           </div>
         </div>
         <div id="js-bottom-bar-zoom" class="bottom-bar-item">
