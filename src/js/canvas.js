@@ -30,6 +30,7 @@ function initCanvasElement(blobUrl) {
   loadImageFile(blobUrl);
   canvas.addEventListener("wheel", handleScroll, { passive: true });
   canvas.addEventListener("pointerdown", handlePointerdown);
+  canvas.addEventListener("dblclick", handleDoubleClick);
 }
 
 function initCanvas(blobUrl) {
@@ -230,6 +231,61 @@ function handlePointerup() {
   }
   window.removeEventListener("pointermove", handlePointermove);
   window.removeEventListener("pointerup", handlePointerup);
+}
+
+function handleDoubleClick() {
+  const area = getArea();
+  const areaDrawn = area.width && area.height;
+
+  if (!areaDrawn) {
+    return;
+  }
+  const { a: scale, e, f } = getTransform();
+  const { width, height } = canvasImage;
+  const direction = getDirection().split("");
+
+  if (area.height > 0) {
+    if (direction.includes("n")) {
+      area.height = area.height + area.y - f;
+      area.y = f;
+    }
+    else if (direction.includes("s")) {
+      area.height = f + area.height + height * scale - (area.y + area.height);
+    }
+  }
+  else {
+    const scaledHeight = height * scale;
+
+    if (direction.includes("n")) {
+      area.height = area.height - (scaledHeight - area.y) - f;
+      area.y = scaledHeight + f;
+    }
+    else if (direction.includes("s")) {
+      area.height = area.height + f - (area.y + area.height);
+    }
+  }
+
+  if (area.width > 0) {
+    if (direction.includes("w")) {
+      area.width = area.width + area.x - e;
+      area.x = e;
+    }
+    else if (direction.includes("e")) {
+      area.width = e + area.width + width * scale - (area.x + area.width);
+    }
+  }
+  else {
+    if (direction.includes("w")) {
+      const scaledWidth = width * scale;
+
+      area.width = area.width - (scaledWidth - area.x) - e;
+      area.x = scaledWidth + e;
+    }
+    else if (direction.includes("e")) {
+      area.width = area.width + e - (area.x + area.width);
+    }
+  }
+  requestAnimationFrame(drawCanvas);
 }
 
 function allowCropAreaModification() {
