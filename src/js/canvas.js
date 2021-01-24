@@ -2,7 +2,7 @@ import { getRotation, resetRotation } from "./rotation.js";
 import { applyScaleMultiplier, scaleImageToFitCanvas } from "./zoom.js";
 import { getFlip } from "./flip.js";
 import { getUniqueImageName, renderAddedFolderImage } from "./image-folder.js";
-import { getActiveImage } from "./uploaded-images.js";
+import { getImages, getActiveImage, readImages, setActiveImage } from "./uploaded-images.js";
 import { getArea, resetArea, isInsideArea, setDirection, getDirection } from "./area.js";
 import { setTransformContext, getTransform, setTransform, translateContext, getTransformedPoint } from "./transform.js";
 import { resetCropPanelInputs } from "./crop-panel";
@@ -21,6 +21,7 @@ let eventToEnable = "";
 let keepMask = false;
 let selectionDisabled = false;
 let snapArea = false;
+let cutModeEnabled = false;
 let handlingMove = false;
 
 function initCanvasElement(blobUrl) {
@@ -152,6 +153,14 @@ function handleScroll(event) {
 
 function handlePointerdown(event) {
   if (event.which !== 1 || isPanelVisible()) {
+    return;
+  }
+  if (cutModeEnabled) {
+    eventToEnable = "resize";
+
+    window.addEventListener("pointermove", handlePointermove);
+    window.addEventListener("pointerup", handlePointerup);
+    window.removeEventListener("pointermove", changeCursor);
     return;
   }
   const { clientX: x, clientY: y } = event;
@@ -389,16 +398,23 @@ function dragImage(x, y) {
   }
 }
 
+function disableCutMode() {
+  cutModeEnabled = false;
+  document.getElementById("js-cut-mode-btn").lastElementChild.textContent = "Enable Cut Mode";
+}
+
 function loadImageFile(blobUrl) {
   keepMask = false;
   cropBtnElement.classList.remove("visible");
 
   resetRotation();
   resetArea();
+
   canvasImage.onload = function() {
     scaleImageToFitCanvas(canvasImage);
   };
   canvasImage.src = blobUrl;
+  disableCutMode();
 }
 
 function getImageData(image, area, ctx) {
@@ -460,11 +476,27 @@ cropBtnElement.addEventListener("click", () => {
   const image = new Image();
 
   image.onload = async function() {
-    renderAddedFolderImage({
-      name: getUniqueImageName(file.name),
-      type: file.type,
-      ...await getCanvasSlice(image, file.type)
-    });
+    if (cutModeEnabled) {
+      const canvasSlice = await getCanvasSlice(image, file.type);
+      const newFile = new File([canvasSlice.file], getUniqueImageName(file.name), { type: file.type });
+
+      await readImages([newFile]);
+
+      const images = getImages();
+      const index = images.length - 1;
+      const { blobUrl } = images[index];
+
+      loadImageFile(blobUrl);
+      setActiveImage(index);
+      disableCutMode();
+    }
+    else {
+      renderAddedFolderImage({
+        name: getUniqueImageName(file.name),
+        type: file.type,
+        ...await getCanvasSlice(image, file.type)
+      });
+    }
   };
   image.src = blobUrl;
 });
@@ -478,6 +510,29 @@ selectionToggleBtn.addEventListener("click", ({ currentTarget }) => {
   else {
     currentTarget.textContent = "Disabled Selection";
   }
+});
+
+document.getElementById("js-cut-mode-btn").addEventListener("click", ({ currentTarget }) => {
+  cutModeEnabled = !cutModeEnabled;
+
+  if (cutModeEnabled) {
+    const area = getArea();
+    const { a: scale, e: x, f: y } = getTransform();
+    const { width, height } = canvasImage;
+
+    area.x = x;
+    area.y = y;
+    area.width = width * scale;
+    area.height = height * scale;
+
+    allowCropAreaModification();
+    currentTarget.lastElementChild.textContent = "Disable Cut Mode";
+  }
+  else {
+    resetArea();
+    currentTarget.lastElementChild.textContent = "Enable Cut Mode";
+  }
+  requestAnimationFrame(drawCanvas);
 });
 
 document.getElementById("js-snap-checkbox").addEventListener("change", event => {

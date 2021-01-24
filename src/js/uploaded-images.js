@@ -4,16 +4,27 @@ import { resetCropPanelInputs } from "./crop-panel";
 
 const modalElement = document.getElementById("js-top-bar-upload-panel");
 const fileInputElement = document.getElementById("js-uploaded-images-file-input");
-let images = [];
+const images = [];
 let activeImageIndex = 0;
 let activeListItem = null;
 
-function addImages(loadedImages) {
-  images = images.concat(loadedImages);
-}
-
 function getActiveImage() {
   return images[activeImageIndex];
+}
+
+function getImages() {
+  return images;
+}
+
+function setActiveImage(index) {
+  const element = document.getElementById("js-uploaded-images-list").children[index];
+  const image = images[index];
+
+  activeImageIndex = index;
+
+  updateImagePreview(image);
+  highlightImage(element);
+  setDocumentTitle(image.name);
 }
 
 function doneReadingImages() {
@@ -170,6 +181,9 @@ window.addEventListener("dragover", event => {
 });
 
 export {
-  addImages,
-  getActiveImage
+  getImages,
+  readImage,
+  readImages,
+  getActiveImage,
+  setActiveImage
 };
