@@ -20,7 +20,6 @@ module.exports = function(env = {}) {
     }),
     new HtmlWebpackPlugin({
       template: "./public/index.html",
-      cache: false,
       minify: env.prod ? {
         keepClosingSlash: true,
         collapseWhitespace: true,
@@ -30,7 +29,9 @@ module.exports = function(env = {}) {
     new CopyPlugin({ patterns: [
       { from: "./src/libs", to: "./libs" },
       { from: "./src/assets", to: "./assets" },
-      { from: "./public" }
+      { from: "./public", globOptions: {
+        ignore: ["**/index.html"]
+      }}
     ]})
   ];
 
@@ -50,7 +51,7 @@ module.exports = function(env = {}) {
       main: "./src/js/index.js"
     },
     output: {
-      path: path.resolve(__dirname, "./dist"),
+      path: path.resolve(__dirname, "./build"),
       filename: "[name].js"
     },
     optimization: {
@@ -66,7 +67,7 @@ module.exports = function(env = {}) {
       minimizer: [new TerserPlugin({
         parallel: true,
         terserOptions: {
-          ecma: 2019,
+          ecma: 2022,
           output: {
             comments: false
           }
