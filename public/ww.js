@@ -5,6 +5,8 @@ importScripts("./libs/jszip.min.js");
 const zip = new JSZip();
 
 self.onmessage = async function(event) {
+  zip.remove("images");
+
   event.data.forEach(image => {
     zip.folder("images").file(image.name, image.file);
   });
