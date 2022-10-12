@@ -7,10 +7,25 @@
 }
 
 .bottom-bar-crop-btn {
+  position: relative;
   display: none;
   margin: 0 auto 8px auto;
   box-shadow: 0 2px 4px 0 var(--color-black-40);
   pointer-events: auto;
+
+  &.visible {
+    display: block;
+  }
+}
+
+.bottom-bar-crop-btn-cut-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: none;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
 
   &.visible {
     display: block;
