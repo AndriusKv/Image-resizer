@@ -1,7 +1,7 @@
 @mixin breakpoint-high {
-    @media (max-width: 50rem) { @content; }
+  @media (max-width: 50rem) { @content; }
 }
 
 @mixin breakpoint {
-    @media (max-width: 38rem) { @content; }
+  @media (max-width: 38rem) { @content; }
 }

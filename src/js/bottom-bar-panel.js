@@ -5,7 +5,7 @@ function handleWindowClick({ target }) {
   let hideDropdown = true;
 
   if (closestContainer) {
-    hideDropdown = false;
+    hideDropdown = !!target.closest(".bottom-bar-panel-btn");
   }
 
   if (hideDropdown) {

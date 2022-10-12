@@ -297,8 +297,12 @@ function handleDoubleClick() {
   requestAnimationFrame(drawCanvas);
 }
 
-function allowCropAreaModification() {
+function allowCropAreaModification(cutModeEnabled) {
   cropBtnElement.classList.add("visible");
+
+  if (cutModeEnabled) {
+    cropBtnElement.lastElementChild.classList.add("visible");
+  }
   window.addEventListener("pointermove", changeCursor);
 }
 
@@ -400,6 +404,7 @@ function dragImage(x, y) {
 
 function disableCutMode() {
   cutModeEnabled = false;
+  cropBtnElement.lastElementChild.classList.remove("visible");
   document.getElementById("js-cut-mode-btn").lastElementChild.textContent = "Enable Cut Mode";
 }
 
@@ -525,12 +530,14 @@ document.getElementById("js-cut-mode-btn").addEventListener("click", ({ currentT
     area.width = width * scale;
     area.height = height * scale;
 
-    allowCropAreaModification();
+    allowCropAreaModification(cutModeEnabled);
     currentTarget.lastElementChild.textContent = "Disable Cut Mode";
   }
   else {
     resetArea();
     currentTarget.lastElementChild.textContent = "Enable Cut Mode";
+    cropBtnElement.classList.remove("visible");
+    cropBtnElement.lastElementChild.classList.remove("visible");
   }
   requestAnimationFrame(drawCanvas);
 });
