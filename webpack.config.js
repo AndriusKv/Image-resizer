@@ -45,6 +45,18 @@ module.exports = function(env = {}) {
   }
 
   return {
+    devServer: {
+      static: {
+        directory: path.join(__dirname, "public")
+      },
+      client: {
+        logging: "error"
+      },
+      open: true,
+      hot: false,
+      compress: true,
+      port: 3000
+    },
     mode,
     target: "browserslist",
     entry: {
