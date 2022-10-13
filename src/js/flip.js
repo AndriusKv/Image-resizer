@@ -10,6 +10,11 @@ function getFlip() {
   return flip;
 }
 
+function resetFlip() {
+  flip.flipH = 1;
+  flip.flipV = 1;
+}
+
 document.getElementById("js-bottom-bar-flip-toggle-items").addEventListener("click", ({ target, currentTarget }) => {
   const element = getElementByAttr("data-item", target, currentTarget);
 
@@ -21,5 +26,6 @@ document.getElementById("js-bottom-bar-flip-toggle-items").addEventListener("cli
 });
 
 export {
-  getFlip
+  getFlip,
+  resetFlip
 };

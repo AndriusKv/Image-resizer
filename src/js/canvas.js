@@ -1,6 +1,6 @@
 import { getRotation, resetRotation } from "./rotation.js";
 import { applyScaleMultiplier, scaleImageToFitCanvas } from "./zoom.js";
-import { getFlip } from "./flip.js";
+import { getFlip, resetFlip } from "./flip.js";
 import { getUniqueImageName, renderAddedFolderImage } from "./image-folder.js";
 import { getImages, getActiveImage, readImages, setActiveImage } from "./uploaded-images.js";
 import { getArea, resetArea, isInsideArea, setDirection, getDirection } from "./area.js";
@@ -514,9 +514,10 @@ cropBtnElement.addEventListener("click", () => {
       const index = images.length - 1;
       const { blobUrl } = images[index];
 
+      disableCutMode();
+      resetFlip();
       loadImageFile(blobUrl);
       setActiveImage(index);
-      disableCutMode();
     }
     else {
       renderAddedFolderImage({
