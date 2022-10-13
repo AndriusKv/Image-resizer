@@ -1,6 +1,7 @@
 import { getElementByAttr, getFileSizeString } from "./utils.js";
-import { initCanvas, loadImageFile } from "./canvas.js";
+import { initCanvas, loadImageFile } from "./canvas";
 import { resetCropPanelInputs } from "./crop-panel";
+import { resetFlip } from "./flip";
 
 const modalElement = document.getElementById("js-top-bar-upload-panel");
 const fileInputElement = document.getElementById("js-uploaded-images-file-input");
@@ -103,7 +104,6 @@ function readFiles(files) {
 
   if (images.length) {
     readImages(images);
-    return;
   }
 }
 
@@ -158,6 +158,7 @@ modalElement.addEventListener("click", event => {
       setDocumentTitle(file.name);
       resetCropPanelInputs();
     }
+    resetFlip();
     loadImageFile(blobUrl);
   }
 });
