@@ -16,5 +16,16 @@
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#2a426e",
-  "background_color": "#2a426e"
+  "background_color": "#2a426e",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "file_handlers": [
+    {
+      "action": ".",
+      "accept": {
+        "image/*": [".jpg", ".jpeg", ".png", ".webp", ".svg"]
+      }
+    }
+  ]
 }
