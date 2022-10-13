@@ -181,6 +181,52 @@ window.addEventListener("dragover", event => {
   event.preventDefault();
 });
 
+document.addEventListener("paste", async event => {
+  const clipboardItems = typeof navigator?.clipboard?.read === "function" ? await navigator.clipboard.read() : event.clipboardData.files;
+  const blobs = [];
+
+  event.preventDefault();
+
+  for (const clipboardItem of clipboardItems) {
+    // For files from `e.clipboardData.files`.
+    if (clipboardItem.type?.startsWith("image/")) {
+      blobs.push(clipboardItem);
+    } else {
+      // For files from `navigator.clipboard.read()`.
+      const imageTypes = clipboardItem.types?.filter(type => type.startsWith("image/"));
+
+      for (const imageType of imageTypes) {
+        const blob = await clipboardItem.getType(imageType);
+
+        blobs.push(blob);
+      }
+    }
+  }
+
+  if (blobs.length) {
+    readImages(blobs);
+  }
+});
+
+if ("launchQueue" in window && "files" in window.LaunchParams.prototype) {
+  window.launchQueue.setConsumer(async launchParams => {
+    if (!launchParams.files.length) {
+      return;
+    }
+    const blobs = [];
+
+    for (const fileHandle of launchParams.files) {
+      const blob = await fileHandle.getFile();
+
+      blobs.push(blob);
+    }
+
+    if (blobs.length) {
+      readImages(blobs);
+    }
+  });
+}
+
 export {
   getImages,
   readImage,
