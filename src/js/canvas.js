@@ -17,6 +17,7 @@ let canvas = null;
 let canvasWidth = 0;
 let canvasHeight = 0;
 let pointerPosition = null;
+let transformedPointerPosition = null;
 let eventToEnable = "";
 let keepMask = false;
 let selectionDisabled = false;
@@ -130,7 +131,7 @@ function drawArea(ctx) {
 }
 
 function drawCanvas() {
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
   drawImage(ctx);
   drawArea(ctx);
@@ -155,8 +156,23 @@ function handlePointerdown(event) {
   if (event.which !== 1 || isPanelVisible()) {
     return;
   }
+
   if (cutModeEnabled) {
-    eventToEnable = "resize";
+    if (event.shiftKey) {
+      const { clientX: x, clientY: y } = event;
+      const area = getArea();
+
+      transformedPointerPosition = getTransformedPoint(x, y);
+      eventToEnable = "drag";
+
+      pointerPosition = {
+        x: x - area.x,
+        y: y - area.y
+      };
+    }
+    else {
+      eventToEnable = "resize";
+    }
 
     window.addEventListener("pointermove", handlePointermove);
     window.addEventListener("pointerup", handlePointerup);
@@ -167,11 +183,12 @@ function handlePointerdown(event) {
   const area = getArea();
   const areaDrawn = area.width && area.height;
   const direction = setDirection(x, y);
+
   eventToEnable = "select";
   keepMask = areaDrawn;
 
   if (event.shiftKey || selectionDisabled) {
-    pointerPosition = getTransformedPoint(x, y);
+    transformedPointerPosition = getTransformedPoint(x, y);
     eventToEnable = "drag";
   }
   else if ((event.ctrlKey || isMobile) && areaDrawn && isInsideArea(x, y)) {
@@ -187,7 +204,6 @@ function handlePointerdown(event) {
   else {
     resetArea({ x, y });
   }
-  requestAnimationFrame(drawCanvas);
   cropBtnElement.classList.remove("visible");
   editorElement.style.userSelect = "none";
   window.addEventListener("pointermove", handlePointermove);
@@ -216,6 +232,10 @@ function handlePointermove({ clientX, clientY }) {
       break;
     case "drag":
       dragImage(x, y);
+
+      if (cutModeEnabled) {
+        moveArea(x, y);
+      }
       break;
   }
   requestAnimationFrame(() => {
@@ -226,7 +246,10 @@ function handlePointermove({ clientX, clientY }) {
 
 function handlePointerup() {
   const area = getArea();
+
   eventToEnable = "";
+  pointerPosition = null;
+  transformedPointerPosition = null;
   editorElement.style.userSelect = "auto";
 
   if (area.width && area.height) {
@@ -395,10 +418,10 @@ function moveArea(x, y) {
 }
 
 function dragImage(x, y) {
-  if (pointerPosition) {
+  if (transformedPointerPosition) {
     const pt = getTransformedPoint(x, y);
 
-    translateContext(pt.x - pointerPosition.x, pt.y - pointerPosition.y);
+    translateContext(pt.x - transformedPointerPosition.x, pt.y - transformedPointerPosition.y);
   }
 }
 
