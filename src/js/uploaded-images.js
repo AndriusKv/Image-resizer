@@ -29,12 +29,25 @@ function setActiveImage(index) {
 }
 
 function doneReadingImages() {
-  const [image] = images;
+  const image = images.at(-1);
 
-  updateImagePreview(image);
-  highlightImage(document.querySelector(".uploaded-images-list-item"));
-  setDocumentTitle(image.name);
-  initCanvas(image.blobUrl);
+  if (activeListItem) {
+    activeImageIndex = images.length - 1;
+
+    resetCropPanelInputs();
+    resetFlip();
+    loadImageFile(image.blobUrl);
+  }
+  else {
+    initCanvas(image.blobUrl);
+  }
+  requestAnimationFrame(() => {
+    const lastElement = [...document.querySelectorAll(".uploaded-images-list-item")].at(-1);
+
+    updateImagePreview(image);
+    highlightImage(lastElement);
+    setDocumentTitle(image.name);
+  });
 }
 
 function updateImagePreview(image) {
@@ -51,7 +64,7 @@ function getFileExtensionFromType(type) {
   if (!type) {
     return "png";
   }
-  let ext = type.split("/")[1];
+  const ext = type.split("/")[1];
 
   if (ext === "jpeg") {
     return "jpg";
@@ -102,7 +115,7 @@ async function readImages(imagesToRead) {
     readImages(imagesToRead);
   }
   else {
-    doneReadingImages(!activeListItem);
+    doneReadingImages();
   }
 }
 
