@@ -47,12 +47,26 @@ function updateImagePreview(image) {
   `;
 }
 
+function getFileExtensionFromType(type) {
+  if (!type) {
+    return "png";
+  }
+  let ext = type.split("/")[1];
+
+  if (ext === "jpeg") {
+    return "jpg";
+  }
+  return ext;
+}
+
 function readImage(file) {
   return new Promise(resolve => {
     const image = new Image();
     const blobUrl = URL.createObjectURL(file);
 
     image.onload = function() {
+      file.name ??= `${crypto.randomUUID()}.${getFileExtensionFromType(file.type)}`;
+
       resolve({
         file,
         blobUrl,
@@ -64,6 +78,12 @@ function readImage(file) {
         aspectRatio: image.width / image.height
       });
     };
+
+    image.onerror = function(e) {
+      console.log(e);
+      resolve();
+    };
+
     image.src = blobUrl;
   });
 }
@@ -72,15 +92,17 @@ async function readImages(imagesToRead) {
   const [imageToRead] = imagesToRead.splice(0, 1);
   const image = await readImage(imageToRead);
 
-  images.push(image);
-  renderUploadedImage(image);
-  indicateImageUpload();
+  if (image) {
+    images.push(image);
+    renderUploadedImage(image);
+    indicateImageUpload();
+  }
 
   if (imagesToRead.length) {
     readImages(imagesToRead);
   }
-  else if (!activeListItem) {
-    doneReadingImages();
+  else {
+    doneReadingImages(!activeListItem);
   }
 }
 
@@ -90,13 +112,14 @@ function indicateImageUpload() {
   element.classList.add("ping");
   element.style.setProperty("--delay", `${Math.random() * 2}s`);
   document.getElementById("js-top-bar-upload-btn-container").appendChild(element);
+
   setTimeout(() => {
     element.remove();
   }, 4000);
 }
 
 function filterOutNonImages(files) {
-  return files.filter(file => file.type.includes("image"));
+  return files.filter(file => !file.type || file.type.includes("image"));
 }
 
 function readFiles(files) {
