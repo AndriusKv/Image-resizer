@@ -1,4 +1,4 @@
-*, *:after, *:before {
+*, *::after, *::before {
   box-sizing: border-box;
 }
 
@@ -61,8 +61,9 @@ button {
   cursor: pointer;
 }
 
-.js-focus-visible :focus:not(.focus-visible) {
-  outline: 0;
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-accent);
 }
 
 .input {

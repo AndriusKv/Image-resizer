@@ -17,60 +17,62 @@
 </head>
 <body>
   <svg style="display:none">
-    <symbol id="picture" viewBox="0 0 24 24">
+    <defs>
+      <symbol id="picture" viewBox="0 0 24 24">
         <path d="M21,3H3C2,3 1,4 1,5V19A2,2 0 0,0 3,21H21C22,21 23,20 23,19V5C23,4 22,3 21,3M5,17L8.5,12.5L11,15.5L14.5,11L19,17H5Z" />
-    </symbol>
-    <symbol id="rotate-left" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="rotate-left" viewBox="0 0 24 24">
         <path d="M13,4.07V1L8.45,5.55L13,10V6.09C15.84,6.57 18,9.03 18,12C18,14.97 15.84,17.43 13,17.91V19.93C16.95,19.44 20,16.08 20,12C20,7.92 16.95,4.56 13,4.07M7.1,18.32C8.26,19.22 9.61,19.76 11,19.93V17.9C10.13,17.75 9.29,17.41 8.54,16.87L7.1,18.32M6.09,13H4.07C4.24,14.39 4.79,15.73 5.69,16.89L7.1,15.47C6.58,14.72 6.23,13.88 6.09,13M7.11,8.53L5.7,7.11C4.8,8.27 4.24,9.61 4.07,11H6.09C6.23,10.13 6.58,9.28 7.11,8.53Z" />
-    </symbol>
-    <symbol id="minus" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="minus" viewBox="0 0 24 24">
         <path d="M19,13H5V11H19V13Z" />
-    </symbol>
-    <symbol id="plus" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="plus" viewBox="0 0 24 24">
         <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-    </symbol>
-    <symbol id="resize" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="resize" viewBox="0 0 24 24">
         <path d="M21,15H23V17H21V15M21,11H23V13H21V11M23,19H21V21C22,21 23,20 23,19M13,3H15V5H13V3M21,7H23V9H21V7M21,3V5H23C23,4 22,3 21,3M1,7H3V9H1V7M17,3H19V5H17V3M17,19H19V21H17V19M3,3C2,3 1,4 1,5H3V3M9,3H11V5H9V3M5,3H7V5H5V3M1,11V19A2,2 0 0,0 3,21H15V11H1M3,19L5.5,15.79L7.29,17.94L9.79,14.72L13,19H3Z" />
-    </symbol>
-    <symbol id="folder" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="folder" viewBox="0 0 24 24">
         <path d="M5,17L9.5,11L13,15.5L15.5,12.5L19,17M20,6H12L10,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8A2,2 0 0,0 20,6Z" />
-    </symbol>
-    <symbol id="enlarge" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="enlarge" viewBox="0 0 24 24">
         <path d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" />
-    </symbol>
-    <symbol id="remove" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="remove" viewBox="0 0 24 24">
         <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
-    </symbol>
-    <symbol id="close" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="close" viewBox="0 0 24 24">
         <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-    </symbol>
-    <symbol id="crop" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="crop" viewBox="0 0 24 24">
         <path d="M19,3H15V5H19V9H21V5C21,3.89 20.1,3 19,3M19,19H15V21H19A2,2 0 0,0 21,19V15H19M5,15H3V19A2,2 0 0,0 5,21H9V19H5M3,5V9H5V5H9V3H5A2,2 0 0,0 3,5Z" />
-    </symbol>
-    <symbol id="open-in-new" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="open-in-new" viewBox="0 0 24 24">
         <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
-    </symbol>
-    <symbol id="arrow-left" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="arrow-left" viewBox="0 0 24 24">
         <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-    </symbol>
-    <symbol id="arrow-right" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="arrow-right" viewBox="0 0 24 24">
         <path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" />
-    </symbol>
-    <symbol id="crop-panel" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="crop-panel" viewBox="0 0 24 24">
         <path d="M23,15H21V17H23V15M23,11H21V13H23V11M23,19H21V21C22,21 23,20 23,19M15,3H13V5H15V3M23,7H21V9H23V7M21,3V5H23C23,4 22,3 21,3M3,21H11V15H1V19A2,2 0 0,0 3,21M3,7H1V9H3V7M15,19H13V21H15V19M19,3H17V5H19V3M19,19H17V21H19V19M3,3C2,3 1,4 1,5H3V3M3,11H1V13H3V11M11,3H9V5H11V3M7,3H5V5H7V3Z"/>
-    </symbol>
-    <symbol id="dots-horizontal" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="dots-horizontal" viewBox="0 0 24 24">
         <path d="M16,12A2,2 0 0,1 18,10A2,2 0 0,1 20,12A2,2 0 0,1 18,14A2,2 0 0,1 16,12M10,12A2,2 0 0,1 12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12M4,12A2,2 0 0,1 6,10A2,2 0 0,1 8,12A2,2 0 0,1 6,14A2,2 0 0,1 4,12Z"/>
-    </symbol>
-    <symbol id="flip-horizontal" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="flip-horizontal" viewBox="0 0 24 24">
         <path d="M15 21H17V19H15M19 9H21V7H19M3 5V19C3 20.1 3.9 21 5 21H9V19H5V5H9V3H5C3.9 3 3 3.9 3 5M19 3V5H21C21 3.9 20.1 3 19 3M11 23H13V1H11M19 17H21V15H19M15 5H17V3H15M19 13H21V11H19M19 21C20.1 21 21 20.1 21 19H19Z"/>
-    </symbol>
-    <symbol id="flip-vertical" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="flip-vertical" viewBox="0 0 24 24">
         <path d="M3 15V17H5V15M15 19V21H17V19M19 3H5C3.9 3 3 3.9 3 5V9H5V5H19V9H21V5C21 3.9 20.1 3 19 3M21 19H19V21C20.1 21 21 20.1 21 19M1 11V13H23V11M7 19V21H9V19M19 15V17H21V15M11 19V21H13V19M3 19C3 20.1 3.9 21 5 21V19Z"/>
-    </symbol>
-    <symbol id="cut" viewBox="0 0 24 24">
+      </symbol>
+      <symbol id="cut" viewBox="0 0 24 24">
         <path d="M19,3L13,9L15,11L22,4V3M12,12.5A0.5,0.5 0 0,1 11.5,12A0.5,0.5 0 0,1 12,11.5A0.5,0.5 0 0,1 12.5,12A0.5,0.5 0 0,1 12,12.5M6,20A2,2 0 0,1 4,18C4,16.89 4.9,16 6,16A2,2 0 0,1 8,18C8,19.11 7.1,20 6,20M6,8A2,2 0 0,1 4,6C4,4.89 4.9,4 6,4A2,2 0 0,1 8,6C8,7.11 7.1,8 6,8M9.64,7.64C9.87,7.14 10,6.59 10,6A4,4 0 0,0 6,2A4,4 0 0,0 2,6A4,4 0 0,0 6,10C6.59,10 7.14,9.87 7.64,9.64L10,12L7.64,14.36C7.14,14.13 6.59,14 6,14A4,4 0 0,0 2,18A4,4 0 0,0 6,22A4,4 0 0,0 10,18C10,17.41 9.87,16.86 9.64,16.36L12,14L19,21H22V20L9.64,7.64Z"/>
-    </symbol>
+      </symbol>
+    </defs>
   </svg>
   <div id="js-intro" class="intro">
     <img src="./assets/images/logo.png" class="intro-logo" alt="">

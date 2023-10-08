@@ -27,11 +27,12 @@ let handlingMove = false;
 
 function initCanvasElement(blobUrl) {
   canvas = document.getElementById("js-canvas");
-  setTransformContext(canvas.getContext("2d"));
+  setTransformContext(canvas.getContext("2d", { willReadFrequently: true }));
   resetCanvasDimensions();
   loadImageFile(blobUrl);
+
   canvas.addEventListener("wheel", handleScroll, { passive: true });
-  canvas.addEventListener("pointerdown", handlePointerdown);
+  canvas.addEventListener("pointerdown", handlePointerDown);
   canvas.addEventListener("dblclick", handleDoubleClick);
 }
 
@@ -152,7 +153,7 @@ function handleScroll(event) {
   applyScaleMultiplier(event.deltaY > 0 ? 0.8 : 1.25, event.clientX, event.clientY);
 }
 
-function handlePointerdown(event) {
+function handlePointerDown(event) {
   if (event.which !== 1 || isPanelVisible()) {
     return;
   }
@@ -173,9 +174,8 @@ function handlePointerdown(event) {
     else {
       eventToEnable = "resize";
     }
-
-    window.addEventListener("pointermove", handlePointermove);
-    window.addEventListener("pointerup", handlePointerup);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
     window.removeEventListener("pointermove", changeCursor);
     return;
   }
@@ -206,12 +206,12 @@ function handlePointerdown(event) {
   }
   cropBtnElement.classList.remove("visible");
   editorElement.style.userSelect = "none";
-  window.addEventListener("pointermove", handlePointermove);
-  window.addEventListener("pointerup", handlePointerup);
+  window.addEventListener("pointermove", handlePointerMove);
+  window.addEventListener("pointerup", handlePointerUp);
   window.removeEventListener("pointermove", changeCursor);
 }
 
-function handlePointermove({ clientX, clientY }) {
+function handlePointerMove({ clientX, clientY }) {
   if (handlingMove) {
     return;
   }
@@ -244,7 +244,7 @@ function handlePointermove({ clientX, clientY }) {
   });
 }
 
-function handlePointerup() {
+function handlePointerUp() {
   const area = getArea();
 
   eventToEnable = "";
@@ -261,8 +261,8 @@ function handlePointerup() {
     setCanvasCursor();
     resetCropPanelInputs();
   }
-  window.removeEventListener("pointermove", handlePointermove);
-  window.removeEventListener("pointerup", handlePointerup);
+  window.removeEventListener("pointermove", handlePointerMove);
+  window.removeEventListener("pointerup", handlePointerUp);
 }
 
 function handleDoubleClick() {

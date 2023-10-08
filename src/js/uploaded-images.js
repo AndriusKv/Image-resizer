@@ -56,7 +56,7 @@ function updateImagePreview(image) {
   element.innerHTML = `
     <div class="uploaded-images-preview-info">${image.name}</div>
     <div class="uploaded-images-preview-info">${image.width}x${image.height} | ${image.sizeString}</div>
-    <img src="${image.blobUrl}" class="uploaded-images-preview-image" alt="">
+    <img src="${image.blobUrl}" class="uploaded-images-preview-image" alt="" draggable="false">
   `;
 }
 
@@ -154,7 +154,7 @@ function renderUploadedImage(image) {
   element.insertAdjacentHTML("beforeend", `
     <li class="uploaded-images-list-item" data-index="${index}" data-type="image">
         <button class="uploaded-images-list-btn">
-          <img src="${image.blobUrl}" class="uploaded-images-list-image">
+          <img src="${image.blobUrl}" class="uploaded-images-list-image" draggable="false">
         </button>
     </li>
   `);

@@ -1,5 +1,3 @@
-import "focus-visible";
-
 import "normalize.css";
 import "../scss/index.scss";
 
