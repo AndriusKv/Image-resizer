@@ -161,7 +161,10 @@
       <h3 class="top-bar-panel-title">Image Folder</h3>
       <p id="js-image-folder-message" class="image-folder-empty-list-message">You have nothing here yet.</p>
       <ul id="js-image-folder-list" class="image-folder-list"></ul>
-      <button id="js-image-folder-download-btn" class="btn image-folder-download-btn">Download Folder</button>
+      <div id="js-image-folder-bottom" class="image-folder-bottom">
+        <button class="btn image-folder-download-btn" data-type="all">Download All</button>
+        <button class="btn image-folder-download-btn" data-type="selected" disabled>Download Selected</button>
+      </div>
     </div>
     <div id="js-top-bar-crop-panel" class="js-top-bar-item top-bar-panel top-bar-crop-panel">
       <h3 class="top-bar-panel-title">Crop Area</h3>
