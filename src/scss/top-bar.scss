@@ -270,23 +270,36 @@
   &.visible {
     display: grid;
 
-    & + .image-folder-download-btn {
-      display: block;
+    & + .image-folder-bottom {
+      display: flex;
     }
   }
 }
 
 .image-folder-list-item {
-  overflow: hidden;
   position: relative;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 56px;
-  border-radius: 2px;
+  border-radius: 4px;
   background-image: url("./assets/images/pattern.png");
 
-  &:hover .image-folder-remove-btn {
+  &:has(:hover, :focus-visible, .image-folder-checkbox:checked) :where(.image-folder-remove-btn, .image-folder-checkbox) {
+    opacity: 1;
+  }
+}
+
+.image-folder-checkbox {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  opacity: 0;
+  width: 16px;
+  height: 16px;
+
+  &:focus-visible {
     opacity: 1;
   }
 }
@@ -301,7 +314,7 @@
   background-color: var(--color-light);
   color: var(--color-brand);
 
-  &:focus-within {
+  &:focus-visible {
     opacity: 1;
   }
 
@@ -324,9 +337,19 @@
   max-height: 65px;
 }
 
-.image-folder-download-btn {
+.image-folder-bottom {
   display: none;
-  margin: 0 auto;
+  justify-content: center;
+  gap: 8px;
+}
+
+.image-folder-download-btn {
+  line-height: 1;
+
+  &:disabled {
+    cursor: default;
+    color: var(--color-light-40);
+  }
 }
 
 .image-folder-viewer {

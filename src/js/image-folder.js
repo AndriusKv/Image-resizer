@@ -2,6 +2,7 @@ import { getElementByAttr, getFileSizeString } from "./utils.js";
 import { postMessageToWorker } from "./web-worker.js";
 
 const listElement = document.getElementById("js-image-folder-list");
+const bottomElement = document.getElementById("js-image-folder-bottom");
 const images = [];
 const imageNames = {};
 let activeIndex = 0;
@@ -37,6 +38,7 @@ function renderAddedFolderImage(image) {
       <button class="image-folder-enlarge-btn" data-type="enlarge" title="Enlarge">
         <image src=${URL.createObjectURL(image.file)} class="image-folder-list-item-image" alt="">
       </button>
+      <input type="checkbox" class="image-folder-checkbox">
       <button class="image-folder-remove-btn" data-type="remove" title="Remove">
         <svg viewBox="0 0 24 24">
           <use href="#remove"></use>
@@ -196,28 +198,48 @@ function updateFolderImageList() {
 }
 
 listElement.addEventListener("click", ({ target, currentTarget }) => {
-  const buttonElement = getElementByAttr("data-type", target, currentTarget);
+  const listItemElement = getElementByAttr("data-index", target, currentTarget);
 
-  if (!buttonElement) {
+  if (!listItemElement) {
     return;
   }
-  const listItemElement = getElementByAttr("data-index", target, currentTarget);
+  const buttonElement = getElementByAttr("data-type", target, currentTarget);
   const { attrValue: index, elementRef } = listItemElement;
-  const { attrValue: type } = buttonElement;
 
-  if (type === "enlarge") {
-    activeIndex = parseInt(index, 10);
-    showFolderImageViewer(activeIndex);
+  if (buttonElement) {
+    const { attrValue: type } = buttonElement;
+
+    if (type === "enlarge") {
+      activeIndex = parseInt(index, 10);
+      showFolderImageViewer(activeIndex);
+    }
+    else if (type === "remove") {
+      elementRef.remove();
+      images.splice(index, 1);
+      updateFolderImageList();
+    }
   }
-  else if (type === "remove") {
-    elementRef.remove();
-    images.splice(index, 1);
-    updateFolderImageList();
+  else if (target.nodeName === "INPUT") {
+    const element = bottomElement.querySelector("[data-type=selected]");
+
+    images[index].selected = target.checked;
+    element.disabled = !images.some(image => image.selected);
   }
 });
 
-document.getElementById("js-image-folder-download-btn").addEventListener("click", () => {
-  postMessageToWorker(images);
+bottomElement.addEventListener("click", ({ target, currentTarget }) => {
+  const element = getElementByAttr("data-type", target, currentTarget);
+
+  if (!element) {
+    return;
+  }
+
+  if (element.attrValue === "all") {
+    postMessageToWorker(images);
+  }
+  else if (element.attrValue === "selected") {
+    postMessageToWorker(images.filter(image => image.selected));
+  }
 });
 
 export {
