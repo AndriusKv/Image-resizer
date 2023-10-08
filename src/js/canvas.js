@@ -3,7 +3,7 @@ import { applyScaleMultiplier, scaleImageToFitCanvas } from "./zoom.js";
 import { getFlip, resetFlip } from "./flip.js";
 import { getUniqueImageName, renderAddedFolderImage } from "./image-folder.js";
 import { getImages, getActiveImage, readImages, setActiveImage } from "./uploaded-images.js";
-import { getArea, resetArea, isInsideArea, setDirection, getDirection } from "./area.js";
+import { getArea, normalizeArea, resetArea, isInsideArea, setDirection, getDirection } from "./area.js";
 import { setTransformContext, getTransform, setTransform, translateContext, getTransformedPoint } from "./transform.js";
 import { resetCropPanelInputs } from "./crop-panel";
 import { isPanelVisible } from "./top-bar";
@@ -12,6 +12,7 @@ const canvasImage = new Image();
 const editorElement = document.getElementById("js-editor");
 const cropBtnElement = document.getElementById("js-crop-btn");
 const selectionToggleBtn = document.getElementById("js-selection-toggle-btn");
+const cutModeToggleBtn = document.getElementById("js-cut-mode-btn");
 const isMobile = window.orientation !== undefined;
 let canvas = null;
 let canvasWidth = 0;
@@ -253,7 +254,9 @@ function handlePointerUp() {
   editorElement.style.userSelect = "auto";
 
   if (area.width && area.height) {
+    normalizeArea();
     allowCropAreaModification();
+    requestAnimationFrame(drawCanvas);
   }
   else {
     keepMask = false;
@@ -428,12 +431,12 @@ function dragImage(x, y) {
 function disableCutMode() {
   cutModeEnabled = false;
   cropBtnElement.lastElementChild.classList.remove("visible");
-  document.getElementById("js-cut-mode-btn").lastElementChild.textContent = "Enable Cut Mode";
+  cropBtnElement.classList.remove("visible");
+  cutModeToggleBtn.lastElementChild.textContent = "Enable Cut Mode";
 }
 
 function loadImageFile(blobUrl) {
   keepMask = false;
-  cropBtnElement.classList.remove("visible");
 
   resetRotation();
   resetArea();
@@ -514,7 +517,6 @@ cropBtnElement.addEventListener("click", () => {
       const index = images.length - 1;
       const { blobUrl } = images[index];
 
-      disableCutMode();
       resetFlip();
       loadImageFile(blobUrl);
       setActiveImage(index);
@@ -541,7 +543,7 @@ selectionToggleBtn.addEventListener("click", ({ currentTarget }) => {
   }
 });
 
-document.getElementById("js-cut-mode-btn").addEventListener("click", ({ currentTarget }) => {
+cutModeToggleBtn.addEventListener("click", ({ currentTarget }) => {
   cutModeEnabled = !cutModeEnabled;
 
   if (cutModeEnabled) {
@@ -559,9 +561,7 @@ document.getElementById("js-cut-mode-btn").addEventListener("click", ({ currentT
   }
   else {
     resetArea();
-    currentTarget.lastElementChild.textContent = "Enable Cut Mode";
-    cropBtnElement.classList.remove("visible");
-    cropBtnElement.lastElementChild.classList.remove("visible");
+    disableCutMode();
   }
   requestAnimationFrame(drawCanvas);
 });
@@ -584,6 +584,15 @@ window.addEventListener("keydown", (event) => {
     requestAnimationFrame(drawCanvas);
     allowCropAreaModification();
     event.preventDefault();
+  }
+  else if (event.key === "Escape") {
+    keepMask = false;
+
+    if (cutModeEnabled) {
+      disableCutMode();
+    }
+    resetArea();
+    requestAnimationFrame(drawCanvas);
   }
 });
 
