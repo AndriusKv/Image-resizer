@@ -27,7 +27,6 @@ module.exports = function(env = {}) {
       } : undefined
     }),
     new CopyPlugin({ patterns: [
-      { from: "./src/libs", to: "./libs" },
       { from: "./src/assets", to: "./assets" },
       { from: "./public", globOptions: {
         ignore: ["**/index.html"]

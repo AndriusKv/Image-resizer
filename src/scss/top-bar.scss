@@ -36,6 +36,10 @@
 .top-bar-header-item-btn {
   box-shadow: 0 2px 4px 0 var(--color-black-40);
   pointer-events: auto;
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--color-accent);
+  }
 }
 
 .top-bar-image-folder-toggle-btn {
