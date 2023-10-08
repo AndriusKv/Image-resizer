@@ -56,8 +56,20 @@ function setDirection(x, y) {
   return direction;
 }
 
-function resetArea(a = {}) {
-  area = { x: 0, y: 0, width: 0, height: 0, ...a };
+function normalizeArea() {
+  if (area.width < 0) {
+    area.width *= -1;
+    area.x -= area.width;
+  }
+
+  if (area.height < 0) {
+    area.height *= -1;
+    area.y -= area.height;
+  }
+}
+
+function resetArea(defaults = {}) {
+  area = { x: 0, y: 0, width: 0, height: 0, ...defaults };
 }
 
 function isInsideArea(x, y) {
@@ -73,6 +85,7 @@ function isInsideArea(x, y) {
 
 export {
   getArea,
+  normalizeArea,
   resetArea,
   getDirection,
   setDirection,
