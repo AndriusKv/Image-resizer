@@ -1,10 +1,15 @@
 import JSZip from "jszip";
 
-onmessage = async function(event) {
-  const zip = new JSZip();
+onmessage = async function({ data: { type, data } }) {
+  if (type === "zip") {
+    const zip = new JSZip();
 
-  event.data.forEach(image => {
-    zip.folder("images").file(image.name, image.file);
-  });
-  postMessage(await zip.generateAsync({ type:"blob" }));
+    data.forEach(image => {
+      zip.folder("images").file(image.name, image.file);
+    });
+    postMessage({
+      type,
+      data: await zip.generateAsync({ type: "blob" })
+    });
+  }
 };

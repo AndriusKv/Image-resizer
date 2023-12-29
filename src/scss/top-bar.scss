@@ -438,7 +438,7 @@
   width: 100%;
   background-color: var(--color-light-dark);
 
-  &:invalid + .crop-panel-input-message {
+  &:user-invalid + .crop-panel-input-message {
     display: block;
   }
 }
