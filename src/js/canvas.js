@@ -255,6 +255,22 @@ function handlePointerUp() {
 
   if (area.width && area.height) {
     normalizeArea();
+
+    if (area.x < 0) {
+      area.width += area.x;
+      area.x = 0;
+    }
+    else if (area.x + area.width > canvas.width) {
+      area.width = canvas.width - area.x;
+    }
+
+    if (area.y < 0) {
+      area.height += area.y;
+      area.y = 0;
+    }
+    else if (area.y + area.height > canvas.height) {
+      area.height = canvas.height - area.y;
+    }
     allowCropAreaModification();
     requestAnimationFrame(drawCanvas);
   }
@@ -275,51 +291,57 @@ function handleDoubleClick() {
   if (!areaDrawn) {
     return;
   }
-  const { a: scale, e, f } = getTransform();
-  const { width, height } = canvasImage;
+  const { a: scale, e: translateX, f: translateY } = getTransform();
   const direction = getDirection().split("");
 
-  if (area.height > 0) {
-    if (direction.includes("n")) {
-      area.height = area.height + area.y - f;
-      area.y = f;
-    }
-    else if (direction.includes("s")) {
-      area.height = f + area.height + height * scale - (area.y + area.height);
-    }
-  }
-  else {
-    const scaledHeight = height * scale;
+  if (direction.includes("w")) {
+    const width = area.width + area.x;
 
-    if (direction.includes("n")) {
-      area.height = area.height - (scaledHeight - area.y) - f;
-      area.y = scaledHeight + f;
+    if (translateX < 0) {
+      area.x = 0;
+      area.width = width;
     }
-    else if (direction.includes("s")) {
-      area.height = area.height + f - (area.y + area.height);
+    else {
+      area.x = translateX;
+      area.width = width - translateX;
+    }
+  }
+  else if (direction.includes("e")) {
+    const imageRight = translateX + canvasImage.width * scale;
+
+    if (imageRight > canvas.width) {
+      area.width = canvas.width - area.x;
+    }
+    else {
+      area.width = imageRight - area.x;
     }
   }
 
-  if (area.width > 0) {
-    if (direction.includes("w")) {
-      area.width = area.width + area.x - e;
-      area.x = e;
-    }
-    else if (direction.includes("e")) {
-      area.width = e + area.width + width * scale - (area.x + area.width);
-    }
-  }
-  else {
-    if (direction.includes("w")) {
-      const scaledWidth = width * scale;
+  if (direction.includes("n")) {
+    const height = area.height + area.y;
 
-      area.width = area.width - (scaledWidth - area.x) - e;
-      area.x = scaledWidth + e;
+    if (translateY < 0) {
+      area.y = 0;
+      area.height = height;
     }
-    else if (direction.includes("e")) {
-      area.width = area.width + e - (area.x + area.width);
+    else {
+      area.y = translateY;
+      area.height = height - translateY;
     }
   }
+  else if (direction.includes("s")) {
+    const imageBottom = translateY + canvasImage.height * scale;
+
+    if (imageBottom > canvas.height) {
+      area.height = canvas.height - area.y;
+    }
+    else {
+      area.height = imageBottom - area.y;
+    }
+  }
+  area.width = Math.floor(area.width);
+  area.height = Math.floor(area.height);
+
   requestAnimationFrame(drawCanvas);
 }
 
@@ -570,13 +592,37 @@ cutModeToggleBtn.addEventListener("click", ({ currentTarget }) => {
 
   if (cutModeEnabled) {
     const area = getArea();
-    const { a: scale, e: x, f: y } = getTransform();
-    const { width, height } = canvasImage;
+    const { a: scale, e: translateX, f: translateY } = getTransform();
+    const scaledWidth = canvasImage.width * scale;
+    const scaledHeight = canvasImage.height * scale;
 
-    area.x = x;
-    area.y = y;
-    area.width = width * scale;
-    area.height = height * scale;
+    if (translateX < 0) {
+      area.x = 0;
+      area.width = scaledWidth + translateX;
+    }
+    else {
+      area.x = translateX;
+      area.width = scaledWidth;
+    }
+
+    if (area.x + area.width > canvas.width) {
+      area.width = canvas.width - area.x;
+    }
+
+    if (translateY < 0) {
+      area.y = 0;
+      area.height = scaledHeight + translateY;
+    }
+    else {
+      area.y = translateY;
+      area.height = scaledHeight;
+    }
+
+    if (area.y + area.height > canvas.height) {
+      area.height = canvas.height - area.y;
+    }
+    area.width = Math.floor(area.width);
+    area.height = Math.floor(area.height);
 
     allowCropAreaModification(cutModeEnabled);
     currentTarget.lastElementChild.textContent = "Disable Cut Mode";
