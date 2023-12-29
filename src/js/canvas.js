@@ -472,6 +472,28 @@ function getCroppedCanvas(image) {
   canvas.height = Math.round(canvasHeight / scale);
   ctx.translate(translated.x, translated.y);
 
+  if (transformedArea.x < translated.x) {
+    transformedArea.x = translated.x;
+    transformedArea.width = transformedArea.width - (translated.x - transformedArea.x);
+  }
+  const tAreaRight = transformedArea.x + transformedArea.width;
+  const imageRight = translated.x + image.width;
+
+  if (tAreaRight > imageRight) {
+    transformedArea.width = transformedArea.width - (tAreaRight - imageRight);
+  }
+
+  if (transformedArea.y < translated.y) {
+    transformedArea.y = translated.y;
+    transformedArea.height = transformedArea.height - (translated.y - transformedArea.y);
+  }
+  const tAreaBottom = transformedArea.y + transformedArea.height;
+  const imageBottom = translated.y + image.height;
+
+  if (tAreaBottom > imageBottom) {
+    transformedArea.height = transformedArea.height - (tAreaBottom - imageBottom);
+  }
+
   const imageData = getImageData(image, transformedArea, ctx);
   canvas.width = imageData.width;
   canvas.height = imageData.height;
