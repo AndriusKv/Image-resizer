@@ -560,8 +560,8 @@ function getCroppedCanvas(image) {
   ctx.translate(translated.x, translated.y);
 
   if (transformedArea.x < translated.x) {
-    transformedArea.x = translated.x;
     transformedArea.width = transformedArea.width - (translated.x - transformedArea.x);
+    transformedArea.x = translated.x;
   }
   const tAreaRight = transformedArea.x + transformedArea.width;
   const imageRight = translated.x + image.width;
@@ -571,8 +571,8 @@ function getCroppedCanvas(image) {
   }
 
   if (transformedArea.y < translated.y) {
-    transformedArea.y = translated.y;
     transformedArea.height = transformedArea.height - (translated.y - transformedArea.y);
+    transformedArea.y = translated.y;
   }
   const tAreaBottom = transformedArea.y + transformedArea.height;
   const imageBottom = translated.y + image.height;
