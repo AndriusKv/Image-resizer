@@ -235,10 +235,16 @@ bottomElement.addEventListener("click", ({ target, currentTarget }) => {
   }
 
   if (element.attrValue === "all") {
-    postMessageToWorker(images);
+    postMessageToWorker({
+      type: "zip",
+      data: images
+    });
   }
   else if (element.attrValue === "selected") {
-    postMessageToWorker(images.filter(image => image.selected));
+    postMessageToWorker({
+      type: "zip",
+      data: images.filter(image => image.selected)
+    });
   }
 });
 

@@ -1,4 +1,4 @@
-let transform = document.createElementNS("http://www.w3.org/2000/svg", "svg").createSVGMatrix();
+const transform = new DOMMatrix();
 let ctx = null;
 
 function setTransformContext(transformContext) {
@@ -16,12 +16,12 @@ function getScale() {
 function scaleContext(scale) {
   transform.a = 1;
   transform.d = 1;
-  transform = transform.scale(scale, scale);
-  ctx.setTransform(transform.a, 0, 0, transform.a, transform.e, transform.f);
+  transform.scaleSelf(scale, scale);
+  ctx.setTransform(scale, 0, 0, scale, transform.e, transform.f);
 }
 
 function translateContext(dx, dy) {
-  transform = transform.translate(dx, dy);
+  transform.translateSelf(dx, dy);
   ctx.translate(dx, dy);
 }
 

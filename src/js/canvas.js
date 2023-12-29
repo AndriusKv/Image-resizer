@@ -489,7 +489,7 @@ function getCanvasSlice(image, type) {
         width: croppedCanvas.width,
         height: croppedCanvas.height
       });
-    }, type);
+    }, type, 1);
   });
 }
 

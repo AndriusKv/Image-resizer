@@ -5,7 +5,7 @@ function imageToBlob(image, type, { width, height }) {
     canvas.width = width;
     canvas.height = height;
     canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-    canvas.toBlob(resolve, type);
+    canvas.toBlob(resolve, type, 1);
   });
 }
 

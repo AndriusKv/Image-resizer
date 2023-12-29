@@ -4,10 +4,6 @@ import { allowCropAreaModification, drawCanvas } from "./canvas";
 
 const panel = document.getElementById("js-top-bar-crop-panel");
 
-function getInputs() {
-  return panel.querySelectorAll("[data-value]");
-}
-
 function updateCropPanelInputs() {
   const area = getArea();
 
@@ -19,60 +15,45 @@ function updateCropPanelInputs() {
     x: x / scale,
     y: y / scale
   };
-  let areaX = area.x;
-  let areaWidth = area.width;
-  let areaY = area.y;
-  let areaHeight = area.height;
+  const transformedArea = {
+    x: Math.round(area.x / scale - translated.x),
+    y: Math.round(area.y / scale - translated.y),
+    width: Math.round(area.width / scale),
+    height: Math.round(area.height / scale)
+  };
 
-  if (areaWidth < 0) {
-    areaX += areaWidth;
-    areaWidth *= -1;
-  }
+  for (const element of panel.querySelectorAll("[data-value]")) {
+    const key = element.getAttribute("data-value");
 
-  if (areaHeight < 0) {
-    areaY += areaHeight;
-    areaHeight *= -1;
-  }
-  const transformedValues = [
-    Math.round(areaX / scale - translated.x),
-    Math.round(areaY / scale - translated.y),
-    Math.round(areaWidth / scale),
-    Math.round(areaHeight / scale)
-  ];
-  const inputs = getInputs();
-
-  for (let i = 0; i < inputs.length; i += 1) {
-    inputs[i].value = transformedValues[i];
+    element.value = transformedArea[key];
   }
 }
 
 function resetCropPanelInputs() {
-  const inputs = getInputs();
-
-  for (let i = 0; i < inputs.length; i += 1) {
-    inputs[i].value = "";
+  for (const element of panel.querySelectorAll("[data-value]")) {
+    element.value = "";
   }
 }
 
 function updateCropArea() {
-  const inputs = getInputs();
-  const values = [];
+  const values = {};
 
-  for (const input of inputs) {
-    if (!input.validity.valid) {
+  for (const element of panel.querySelectorAll("[data-value]")) {
+    if (!element.validity.valid) {
       return;
     }
-    values.push(parseInt(input.value, 10) || 0);
+    const key = element.getAttribute("data-value");
+    values[key] = Number.parseInt(element.value, 10) || 0;
   }
 
-  if (values.length === 4) {
+  if (Object.keys(values).length === 4) {
     const { a: scale, e: x, f: y } = getTransform();
     const area = getArea();
 
-    area.x = values[0] * scale + x;
-    area.y = values[1] * scale + y;
-    area.width = values[2] * scale;
-    area.height = values[3] * scale;
+    area.x = values.x * scale + x;
+    area.y = values.y * scale + y;
+    area.width = values.width * scale;
+    area.height = values.height * scale;
 
     requestAnimationFrame(drawCanvas);
     allowCropAreaModification();
