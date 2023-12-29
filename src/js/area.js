@@ -56,6 +56,19 @@ function setDirection(x, y) {
   return direction;
 }
 
+function setDirectionString(dir) {
+  if (direction.length === 1) {
+    direction = dir;
+  }
+  else if (dir === "n" || dir === "s") {
+    direction = dir + direction[1];
+  }
+  else {
+    direction = direction[0] + dir;
+  }
+  return direction;
+}
+
 function normalizeArea() {
   if (area.width < 0) {
     area.width *= -1;
@@ -89,5 +102,6 @@ export {
   resetArea,
   getDirection,
   setDirection,
+  setDirectionString,
   isInsideArea
 };
