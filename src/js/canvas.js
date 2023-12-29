@@ -3,7 +3,7 @@ import { applyScaleMultiplier, scaleImageToFitCanvas } from "./zoom.js";
 import { getFlip, resetFlip } from "./flip.js";
 import { getUniqueImageName, renderAddedFolderImage } from "./image-folder.js";
 import { getImages, getActiveImage, readImages, setActiveImage } from "./uploaded-images.js";
-import { getArea, normalizeArea, resetArea, isInsideArea, setDirection, getDirection } from "./area.js";
+import { getArea, normalizeArea, resetArea, isInsideArea, setDirection, getDirection, setDirectionString } from "./area.js";
 import { setTransformContext, getTransform, setTransform, translateContext, getTransformedPoint } from "./transform.js";
 import { resetCropPanelInputs } from "./crop-panel";
 import { isPanelVisible } from "./top-bar";
@@ -200,9 +200,14 @@ function handlePointerDown(event) {
     eventToEnable = "move";
   }
   else if (direction && areaDrawn) {
+    pointerPosition = {
+      x: x - area.x,
+      y: y - area.y
+    };
     eventToEnable = "resize";
   }
   else {
+    pointerPosition = { x, y };
     resetArea({ x, y });
   }
   cropBtnElement.classList.remove("visible");
@@ -369,8 +374,23 @@ function changeCursor(event) {
 
 function selectArea(x, y) {
   const area = getArea();
-  area.width = x - area.x;
-  area.height = y - area.y;
+
+  area.width = x - pointerPosition.x;
+  area.height = y - pointerPosition.y;
+
+  if (area.width < 0) {
+    area.width *= -1;
+    area.x = x;
+  }
+
+  if (area.height < 0) {
+    area.height *= -1;
+    area.y = y;
+  }
+
+  if (snapArea) {
+    snapDynamicArea(x, y, area);
+  }
 }
 
 function resizeArea(x, y) {
@@ -380,50 +400,95 @@ function resizeArea(x, y) {
   if (direction[0] === "n") {
     area.height = area.y - y + area.height;
     area.y = y;
+
+    if (area.height < 0) {
+      const dir = setDirectionString("s");
+      setCanvasCursor(`${dir}-resize`);
+
+      area.height *= -1;
+      area.y -= area.height;
+    }
   }
   else if (direction[0] === "s") {
     area.height = y - area.y;
+
+    if (area.height < 0) {
+      const dir = setDirectionString("n");
+      setCanvasCursor(`${dir}-resize`);
+
+      area.height *= -1;
+      area.y -= area.height;
+    }
   }
 
   if (direction.includes("w")) {
     area.width = area.x - x + area.width;
     area.x = x;
+
+    if (area.width < 0) {
+      const dir = setDirectionString("e");
+      setCanvasCursor(`${dir}-resize`);
+
+      area.width *= -1;
+      area.x -= area.width;
+    }
   }
   else if (direction.includes("e")) {
     area.width = x - area.x;
+
+    if (area.width < 0) {
+      const dir = setDirectionString("w");
+      setCanvasCursor(`${dir}-resize`);
+
+      area.width *= -1;
+      area.x -= area.width;
+    }
+  }
+
+  if (snapArea) {
+    snapDynamicArea(x, y, area);
+  }
+}
+
+function snapDynamicArea(x, y, area) {
+  const { a: scale, e: translateX, f: translateY } = getTransform();
+  const margin = 8;
+  const areaRight = area.x + area.width;
+  const areaBottom = area.y + area.height;
+  const imageRight = translateX + canvasImage.width * scale;
+  const imageBottom = translateY + canvasImage.height * scale;
+
+  if (x + margin > translateX && x - margin < translateX) {
+    area.width = area.width + x - translateX;
+    area.x = translateX;
+  }
+  else if (areaRight + margin > imageRight && areaRight - margin < imageRight) {
+    area.width = imageRight - area.x;
+  }
+
+  if (y + margin > translateY && y - margin < translateY) {
+    area.height = area.height + y - translateY;
+    area.y = translateY;
+  }
+  else if (areaBottom + margin > imageBottom && areaBottom - margin < imageBottom) {
+    area.height = imageBottom - area.y;
   }
 }
 
 function updatePoint(point, pointName, dimensionName, offset, scale) {
   const area = getArea();
   const diff = point - pointerPosition[pointName];
-  const dimension = canvasImage[dimensionName];
-  const scaledDimension = dimension * scale;
+  const scaledDimension = canvasImage[dimensionName] * scale;
   const areaDimension = area[dimensionName];
 
-  if (areaDimension > 0) {
-    if (offset + 8 > diff && offset - 8 < diff) {
-      area[pointName] = offset;
-    }
-    else if (offset + 8 + scaledDimension > diff + areaDimension && offset - 8 + scaledDimension < diff + areaDimension) {
-      area[pointName] = offset + scaledDimension - areaDimension;
-    }
-    else {
-      area[pointName] = diff;
-    }
+  if (offset + 8 > diff && offset - 8 < diff) {
+    area[pointName] = offset;
+  }
+  else if (offset + 8 + scaledDimension > diff + areaDimension && offset - 8 + scaledDimension < diff + areaDimension) {
+    area[pointName] = offset + scaledDimension - areaDimension;
   }
   else {
-    const diff2 = diff + areaDimension;
-
-    if (offset + 8 > diff2 && offset - 8 < diff2) {
-      area[pointName] = offset - areaDimension;
-    }
-    else if (offset + 8 + scaledDimension > diff && offset - 8 + scaledDimension < diff) {
-      area[pointName] = offset + scaledDimension;
-    }
-    else {
-      area[pointName] = diff;
-    }
+    area[pointName] = diff;
   }
 }
 
