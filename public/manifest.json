@@ -24,7 +24,7 @@
     {
       "action": ".",
       "accept": {
-        "image/*": [".jpg", ".jpeg", ".png", ".webp", ".svg"]
+        "image/*": [".jpg", ".jpeg", ".png", ".webp", ".svg", ".avif"]
       }
     }
   ]

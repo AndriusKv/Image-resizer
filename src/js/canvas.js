@@ -11,8 +11,6 @@ import { isPanelVisible } from "./top-bar";
 const canvasImage = new Image();
 const editorElement = document.getElementById("js-editor");
 const cropBtnElement = document.getElementById("js-crop-btn");
-const selectionToggleBtn = document.getElementById("js-selection-toggle-btn");
-const cutModeToggleBtn = document.getElementById("js-cut-mode-btn");
 const isMobile = window.orientation !== undefined;
 let canvas = null;
 let canvasWidth = 0;
@@ -21,10 +19,9 @@ let pointerPosition = null;
 let transformedPointerPosition = null;
 let eventToEnable = "";
 let keepMask = false;
-let selectionDisabled = false;
 let snapArea = false;
-let cutModeEnabled = false;
 let handlingMove = false;
+let currentTool = "pan";
 
 function initCanvasElement(blobUrl) {
   canvas = document.getElementById("js-canvas");
@@ -43,7 +40,6 @@ function initCanvas(blobUrl) {
   document.getElementById("js-intro").remove();
   initCanvasElement(blobUrl);
   enableViewportResizeHandler();
-  selectionToggleBtn.classList.toggle("visible", isMobile);
 }
 
 function getCanvasElement() {
@@ -158,59 +154,38 @@ function handlePointerDown(event) {
   if (event.which !== 1 || isPanelVisible()) {
     return;
   }
+  const { clientX: x, clientY: y } = event;
+  const area = getArea();
+  const areaDrawn = area.width && area.height;
+  const direction = setDirection(x, y);
 
-  if (cutModeEnabled) {
-    if (event.shiftKey) {
-      const { clientX: x, clientY: y } = event;
-      const area = getArea();
+  keepMask = areaDrawn;
 
-      transformedPointerPosition = getTransformedPoint(x, y);
-      eventToEnable = "drag";
-
+  if (currentTool === "select" || currentTool === "cut") {
+    if (direction && areaDrawn) {
+      eventToEnable = "resize";
+      pointerPosition = {
+        x: x - area.x,
+        y: y - area.y
+      };
+    }
+    else if ((event.ctrlKey || isMobile) && areaDrawn && isInsideArea(x, y)) {
+      eventToEnable = "move";
       pointerPosition = {
         x: x - area.x,
         y: y - area.y
       };
     }
     else {
-      eventToEnable = "resize";
+      eventToEnable = "select";
+      pointerPosition = { x, y };
+      resetArea({ x, y });
     }
-    window.addEventListener("pointermove", handlePointerMove);
-    window.addEventListener("pointerup", handlePointerUp);
-    window.removeEventListener("pointermove", changeCursor);
-    return;
   }
-  const { clientX: x, clientY: y } = event;
-  const area = getArea();
-  const areaDrawn = area.width && area.height;
-  const direction = setDirection(x, y);
-
-  eventToEnable = "select";
-  keepMask = areaDrawn;
-
-  if (event.shiftKey || selectionDisabled) {
-    transformedPointerPosition = getTransformedPoint(x, y);
+  else if (currentTool === "pan") {
     eventToEnable = "drag";
+    transformedPointerPosition = getTransformedPoint(x, y);
   }
-  else if ((event.ctrlKey || isMobile) && areaDrawn && isInsideArea(x, y)) {
-    pointerPosition = {
-      x: x - area.x,
-      y: y - area.y
-    };
-    eventToEnable = "move";
-  }
-  else if (direction && areaDrawn) {
-    pointerPosition = {
-      x: x - area.x,
-      y: y - area.y
-    };
-    eventToEnable = "resize";
-  }
-  else {
-    pointerPosition = { x, y };
-    resetArea({ x, y });
-  }
-  cropBtnElement.classList.remove("visible");
   editorElement.style.userSelect = "none";
   window.addEventListener("pointermove", handlePointerMove);
   window.addEventListener("pointerup", handlePointerUp);
@@ -238,10 +213,6 @@ function handlePointerMove({ clientX, clientY }) {
       break;
     case "drag":
       dragImage(x, y);
-
-      if (cutModeEnabled) {
-        moveArea(x, y);
-      }
       break;
   }
   requestAnimationFrame(() => {
@@ -276,14 +247,14 @@ function handlePointerUp() {
     else if (area.y + area.height > canvas.height) {
       area.height = canvas.height - area.y;
     }
-    allowCropAreaModification();
+
+    if (currentTool === "select" || currentTool === "cut") {
+      allowCropAreaModification();
+    }
     requestAnimationFrame(drawCanvas);
   }
   else {
-    keepMask = false;
-    drawImage(canvas.getContext("2d"));
-    setCanvasCursor();
-    resetCropPanelInputs();
+    resetCanvas();
   }
   window.removeEventListener("pointermove", handlePointerMove);
   window.removeEventListener("pointerup", handlePointerUp);
@@ -350,12 +321,17 @@ function handleDoubleClick() {
   requestAnimationFrame(drawCanvas);
 }
 
-function allowCropAreaModification(cutModeEnabled) {
-  cropBtnElement.classList.add("visible");
+function resetCanvas() {
+  keepMask = false;
+  drawImage(canvas.getContext("2d"));
+  setCanvasCursor();
+  resetCropPanelInputs();
+  cropBtnElement.classList.remove("visible");
+  window.removeEventListener("pointermove", changeCursor);
+}
 
-  if (cutModeEnabled) {
-    cropBtnElement.lastElementChild.classList.add("visible");
-  }
+function allowCropAreaModification() {
+  cropBtnElement.classList.add("visible");
   window.addEventListener("pointermove", changeCursor);
 }
 
@@ -515,13 +491,6 @@ function dragImage(x, y) {
   }
 }
 
-function disableCutMode() {
-  cutModeEnabled = false;
-  cropBtnElement.lastElementChild.classList.remove("visible");
-  cropBtnElement.classList.remove("visible");
-  cutModeToggleBtn.lastElementChild.textContent = "Enable Cut Mode";
-}
-
 function loadImageFile(blobUrl) {
   keepMask = false;
 
@@ -532,7 +501,7 @@ function loadImageFile(blobUrl) {
     scaleImageToFitCanvas(canvasImage);
   };
   canvasImage.src = blobUrl;
-  disableCutMode();
+  // disableCutMode();
 }
 
 function getImageData(image, area, ctx) {
@@ -611,12 +580,23 @@ function enableViewportResizeHandler() {
   });
 }
 
+function resetCurrentTool() {
+  if (currentTool) {
+    const currentToolElement = document.querySelector(`[data-tool=${currentTool}]`);
+
+    if (currentToolElement) {
+      currentToolElement.classList.remove("selected");
+    }
+    currentTool = "";
+  }
+}
+
 cropBtnElement.addEventListener("click", () => {
   const { file, blobUrl } = getActiveImage();
   const image = new Image();
 
   image.onload = async function() {
-    if (cutModeEnabled) {
+    if (currentTool === "cut") {
       const canvasSlice = await getCanvasSlice(image, file.type);
       const newFile = new File([canvasSlice.file], getUniqueImageName(file.name), { type: file.type });
 
@@ -641,62 +621,34 @@ cropBtnElement.addEventListener("click", () => {
   image.src = blobUrl;
 });
 
-selectionToggleBtn.addEventListener("click", ({ currentTarget }) => {
-  selectionDisabled = !selectionDisabled;
+document.getElementById("js-left-bar").addEventListener("click", event => {
+  const toolElement = event.target.closest("[data-tool]");
 
-  if (selectionDisabled) {
-    currentTarget.textContent = "Enable Selection";
+  if (!toolElement) {
+    return;
   }
-  else {
-    currentTarget.textContent = "Disabled Selection";
+  const tool = toolElement.getAttribute("data-tool");
+
+  if (tool === "pan") {
+    window.removeEventListener("pointermove", changeCursor);
   }
-});
-
-cutModeToggleBtn.addEventListener("click", ({ currentTarget }) => {
-  cutModeEnabled = !cutModeEnabled;
-
-  if (cutModeEnabled) {
-    const area = getArea();
-    const { a: scale, e: translateX, f: translateY } = getTransform();
-    const scaledWidth = canvasImage.width * scale;
-    const scaledHeight = canvasImage.height * scale;
-
-    if (translateX < 0) {
-      area.x = 0;
-      area.width = scaledWidth + translateX;
-    }
-    else {
-      area.x = translateX;
-      area.width = scaledWidth;
-    }
-
-    if (area.x + area.width > canvas.width) {
-      area.width = canvas.width - area.x;
-    }
-
-    if (translateY < 0) {
-      area.y = 0;
-      area.height = scaledHeight + translateY;
-    }
-    else {
-      area.y = translateY;
-      area.height = scaledHeight;
-    }
-
-    if (area.y + area.height > canvas.height) {
-      area.height = canvas.height - area.y;
-    }
-    area.width = Math.floor(area.width);
-    area.height = Math.floor(area.height);
-
-    allowCropAreaModification(cutModeEnabled);
-    currentTarget.lastElementChild.textContent = "Disable Cut Mode";
-  }
-  else {
+  else if (tool === "reset") {
     resetArea();
-    disableCutMode();
+    resetCanvas();
+    resetCurrentTool();
+    return;
   }
-  requestAnimationFrame(drawCanvas);
+
+  if (currentTool) {
+    if (currentTool === tool) {
+      toolElement.classList.remove("selected");
+      currentTool = "";
+      return;
+    }
+    resetCurrentTool();
+  }
+  toolElement.classList.add("selected");
+  currentTool = tool;
 });
 
 document.getElementById("js-snap-checkbox").addEventListener("change", event => {
@@ -720,10 +672,6 @@ window.addEventListener("keydown", (event) => {
   }
   else if (event.key === "Escape") {
     keepMask = false;
-
-    if (cutModeEnabled) {
-      disableCutMode();
-    }
     resetArea();
     requestAnimationFrame(drawCanvas);
   }
