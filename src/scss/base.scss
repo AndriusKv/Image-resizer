@@ -109,6 +109,15 @@ button {
   border-radius: 50%;
   background-color: var(--color-light);
   color: var(--color-brand);
+
+  &.small {
+    padding: 4px;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
 }
 
 .editor {
@@ -120,4 +129,25 @@ button {
   &.hidden {
     display: none;
   }
+}
+
+.left-bar {
+  position: absolute;
+  left: 6px;
+  top: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.tool-btn {
+  &.selected {
+    box-shadow: 0 0 0 2px var(--color-accent);
+    background-color: hsl(34 72% 80% / 1);
+  }
+}
+
+.tool-reset-btn {
+  margin-top: 12px;
 }
