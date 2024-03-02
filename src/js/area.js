@@ -10,6 +10,10 @@ function getArea() {
   return area;
 }
 
+function hasArea() {
+  return area.width > 0 && area.height > 0;
+}
+
 function getDirection() {
   return direction;
 }
@@ -98,6 +102,7 @@ function isInsideArea(x, y) {
 
 export {
   getArea,
+  hasArea,
   normalizeArea,
   resetArea,
   getDirection,

@@ -3,7 +3,7 @@ import { applyScaleMultiplier, scaleImageToFitCanvas } from "./zoom.js";
 import { getFlip, resetFlip } from "./flip.js";
 import { getUniqueImageName, renderAddedFolderImage } from "./image-folder.js";
 import { getImages, getActiveImage, readImages, setActiveImage } from "./uploaded-images.js";
-import { getArea, normalizeArea, resetArea, isInsideArea, setDirection, getDirection, setDirectionString } from "./area.js";
+import { getArea, hasArea, normalizeArea, resetArea, isInsideArea, setDirection, getDirection, setDirectionString } from "./area.js";
 import { setTransformContext, getTransform, setTransform, translateContext, getTransformedPoint } from "./transform.js";
 import { resetCropPanelInputs } from "./crop-panel";
 import { isPanelVisible } from "./top-bar";
@@ -22,6 +22,7 @@ let keepMask = false;
 let snapArea = false;
 let handlingMove = false;
 let currentTool = "pan";
+let areaWithGrid = false;
 
 function initCanvasElement(blobUrl) {
   canvas = document.getElementById("js-canvas");
@@ -124,6 +125,11 @@ function drawArea(ctx) {
   if (imageData) {
     ctx.putImageData(imageData, x, y);
   }
+
+  if (currentTool === "cut" || currentTool === "pan" && areaWithGrid) {
+    areaWithGrid = true;
+    drawGrid(ctx, area);
+  }
   ctx.strokeRect(area.x + 0.5, area.y + 0.5, areaWidth, areaHeight);
   ctx.restore();
 }
@@ -133,6 +139,24 @@ function drawCanvas() {
 
   drawImage(ctx);
   drawArea(ctx);
+}
+
+function drawGrid(ctx, area) {
+  const cells = 3;
+  const cellWidth = Math.round(area.width / cells);
+  const cellHeight = Math.round(area.height / cells);
+
+  for (let i = 1; i < cells; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(area.x + cellWidth * i, area.y);
+    ctx.lineTo(area.x + cellWidth * i, area.y + area.height);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(area.x, area.y + cellHeight * i);
+    ctx.lineTo(area.x + area.width, area.y + cellHeight * i);
+    ctx.stroke();
+  }
 }
 
 function setCanvasCursor(name = "default") {
@@ -156,7 +180,7 @@ function handlePointerDown(event) {
   }
   const { clientX: x, clientY: y } = event;
   const area = getArea();
-  const areaDrawn = area.width && area.height;
+  const areaDrawn = hasArea();
   const direction = setDirection(x, y);
 
   keepMask = areaDrawn;
@@ -193,7 +217,7 @@ function handlePointerDown(event) {
 }
 
 function handlePointerMove({ clientX, clientY }) {
-  if (handlingMove) {
+  if (handlingMove || !eventToEnable) {
     return;
   }
   handlingMove = true;
@@ -224,12 +248,11 @@ function handlePointerMove({ clientX, clientY }) {
 function handlePointerUp() {
   const area = getArea();
 
-  eventToEnable = "";
   pointerPosition = null;
   transformedPointerPosition = null;
   editorElement.style.userSelect = "auto";
 
-  if (area.width && area.height) {
+  if (hasArea()) {
     normalizeArea();
 
     if (area.x < 0) {
@@ -251,18 +274,22 @@ function handlePointerUp() {
     if (currentTool === "select" || currentTool === "cut") {
       allowCropAreaModification();
     }
-    requestAnimationFrame(drawCanvas);
+
+    if (eventToEnable) {
+      requestAnimationFrame(drawCanvas);
+    }
   }
   else {
     resetCanvas();
   }
+  eventToEnable = "";
   window.removeEventListener("pointermove", handlePointerMove);
   window.removeEventListener("pointerup", handlePointerUp);
 }
 
 function handleDoubleClick() {
   const area = getArea();
-  const areaDrawn = area.width && area.height;
+  const areaDrawn = hasArea();
 
   if (!areaDrawn) {
     return;
@@ -323,6 +350,7 @@ function handleDoubleClick() {
 
 function resetCanvas() {
   keepMask = false;
+  areaWithGrid = false;
   drawImage(canvas.getContext("2d"));
   setCanvasCursor();
   resetCropPanelInputs();
@@ -591,6 +619,29 @@ function resetCurrentTool() {
   }
 }
 
+function handleCutToolSelection(prevTool) {
+  if (prevTool === "cut") {
+    resetArea();
+    resetCanvas();
+  }
+  else if (areaWithGrid) {
+    allowCropAreaModification();
+  }
+  else {
+    const halfWidth = canvasWidth / 2;
+    const halfHeight = canvasHeight / 2;
+    const areaHalfWidth = Math.min(halfWidth, 150);
+    const areaHalfHeight = Math.min(halfHeight, 150);
+    const startPos = { x: halfWidth - areaHalfWidth, y: halfHeight - areaHalfHeight };
+    pointerPosition = startPos;
+
+    resetArea(startPos);
+    selectArea(halfWidth + areaHalfWidth, halfHeight + areaHalfHeight);
+    allowCropAreaModification();
+    drawCanvas();
+  }
+}
+
 cropBtnElement.addEventListener("click", () => {
   const { file, blobUrl } = getActiveImage();
   const image = new Image();
@@ -628,27 +679,31 @@ document.getElementById("js-left-bar").addEventListener("click", event => {
     return;
   }
   const tool = toolElement.getAttribute("data-tool");
+  const prevTool = currentTool;
+
+  resetCurrentTool();
+
+  if (prevTool !== tool && tool !== "reset") {
+    toolElement.classList.add("selected");
+    currentTool = tool;
+  }
 
   if (tool === "pan") {
     window.removeEventListener("pointermove", changeCursor);
   }
+  else if (tool === "select") {
+    if (prevTool !== "pan" || areaWithGrid) {
+      resetArea();
+      resetCanvas();
+    }
+  }
+  else if (tool === "cut") {
+    handleCutToolSelection(prevTool);
+  }
   else if (tool === "reset") {
     resetArea();
     resetCanvas();
-    resetCurrentTool();
-    return;
   }
-
-  if (currentTool) {
-    if (currentTool === tool) {
-      toolElement.classList.remove("selected");
-      currentTool = "";
-      return;
-    }
-    resetCurrentTool();
-  }
-  toolElement.classList.add("selected");
-  currentTool = tool;
 });
 
 document.getElementById("js-snap-checkbox").addEventListener("change", event => {
@@ -671,9 +726,8 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
   }
   else if (event.key === "Escape") {
-    keepMask = false;
     resetArea();
-    requestAnimationFrame(drawCanvas);
+    resetCanvas();
   }
 });
 
