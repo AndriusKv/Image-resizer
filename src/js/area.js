@@ -4,6 +4,7 @@ let area = {
   width: 0,
   height: 0
 };
+let areas = [];
 let direction = "";
 
 function getArea() {
@@ -14,50 +15,53 @@ function hasArea() {
   return area.width > 0 && area.height > 0;
 }
 
+function getResizeSquares(isMobile) {
+  const count = 3;
+  const minGap = 2;
+  const wantedSize = isMobile ? 24 : 16;
+  const currentWidth = Math.round(area.width / count - minGap);
+  const currentHeight = Math.round(area.height / count - minGap);
+  const width = currentWidth < wantedSize ? currentWidth : wantedSize;
+  const height = currentHeight < wantedSize ? currentHeight : wantedSize;
+  const directions = ["nw", "w", "sw", "n", "s", "ne", "e", "se"];
+  let dirIndex = 0;
+  areas = [];
+
+  for (let i = 0; i < 3; i += 1) {
+    for (let j = 0; j < 3; j += 1) {
+      // Skip middle square
+      if (i === 1 && j === 1) {
+        continue;
+      }
+      const x = area.x + area.width / 2 * i - (width / 2 * i);
+      const y = area.y + area.height / 2 * j - (height / 2 * j);
+
+      areas.push({ x, y, width, height, direction: directions[dirIndex] });
+      dirIndex += 1;
+    }
+  }
+
+  return areas;
+}
+
 function getDirection() {
   return direction;
 }
 
-function getVerticalDirection(direction, inWestBound, inEastBound) {
-  if (inWestBound) {
-    direction += "w";
-  }
-  else if (inEastBound) {
-    direction += "e";
-  }
-  return direction;
-}
-
 function setDirection(x, y) {
-  const margin = 8;
-  const x2 = area.x;
-  const y2 = area.y;
-  const x3 = x2 + area.width;
-  const y3 = y2 + area.height;
-  const inXBound = x >= x2 - margin && x <= x3 + margin || x <= x2 + margin && x >= x3 - margin;
-  const inYBound = y >= y2 - margin && y <= y3 + margin || y <= y2 + margin && y >= y3 - margin;
   direction = "";
 
-  if (inXBound && inYBound) {
-    const inNorthBound = y >= y2 - margin && y <= y2 + margin;
-    const inEastBound = x >= x3 - margin && x <= x3 + margin;
-    const inSouthBound = y >= y3 - margin && y <= y3 + margin;
-    const inWestBound = x >= x2 - margin && x <= x2 + margin;
+  for (const area of areas) {
+    const x2 = area.x;
+    const y2 = area.y;
+    const x3 = x2 + area.width;
+    const y3 = y2 + area.height;
 
-    if (inNorthBound) {
-      direction = getVerticalDirection("n", inWestBound, inEastBound);
-    }
-    else if (inSouthBound) {
-      direction = getVerticalDirection("s", inWestBound, inEastBound);
-    }
-    else if (inEastBound) {
-      direction = "e";
-    }
-    else if (inWestBound) {
-      direction = "w";
+    if (x >= x2 && x <= x3 && y >= y2 && y <= y3) {
+      direction = area.direction;
+      return direction;
     }
   }
-  return direction;
 }
 
 function setDirectionString(dir) {
@@ -105,6 +109,7 @@ export {
   hasArea,
   normalizeArea,
   resetArea,
+  getResizeSquares,
   getDirection,
   setDirection,
   setDirectionString,
