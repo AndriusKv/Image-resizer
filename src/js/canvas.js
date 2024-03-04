@@ -3,7 +3,7 @@ import { applyScaleMultiplier, scaleImageToFitCanvas } from "./zoom.js";
 import { getFlip, resetFlip } from "./flip.js";
 import { getUniqueImageName, renderAddedFolderImage } from "./image-folder.js";
 import { getImages, getActiveImage, readImages, setActiveImage } from "./uploaded-images.js";
-import { getArea, hasArea, normalizeArea, resetArea, isInsideArea, setDirection, getDirection, setDirectionString } from "./area.js";
+import { getArea, hasArea, normalizeArea, resetArea, isInsideArea, getResizeSquares, setDirection, getDirection, setDirectionString } from "./area.js";
 import { setTransformContext, getTransform, setTransform, translateContext, getTransformedPoint } from "./transform.js";
 import { resetCropPanelInputs } from "./crop-panel";
 import { isPanelVisible } from "./top-bar";
@@ -97,8 +97,8 @@ function drawArea(ctx) {
   const area = getArea();
   const areaWidth = Math.round(area.width);
   const areaHeight = Math.round(area.height);
-  let x = Math.round(area.x);
-  let y = Math.round(area.y);
+  const x = Math.round(area.x);
+  const y = Math.round(area.y);
   let imageData;
 
   ctx.save();
@@ -108,14 +108,6 @@ function drawArea(ctx) {
 
   if (areaWidth && areaHeight) {
     imageData = ctx.getImageData(x, y, areaWidth, areaHeight);
-
-    if (areaWidth < 0) {
-      x += areaWidth;
-    }
-
-    if (areaHeight < 0) {
-      y += areaHeight;
-    }
   }
 
   if (areaWidth || areaHeight || keepMask) {
@@ -126,9 +118,12 @@ function drawArea(ctx) {
     ctx.putImageData(imageData, x, y);
   }
 
-  if (currentTool === "cut" || currentTool === "pan" && areaWithGrid) {
-    areaWithGrid = true;
-    drawGrid(ctx, area);
+  if (areaWidth && areaHeight) {
+    if (currentTool === "cut" || currentTool === "pan" && areaWithGrid) {
+      areaWithGrid = true;
+      drawGrid(ctx, area);
+    }
+    drawResizeSquares(ctx, area);
   }
   ctx.strokeRect(area.x + 0.5, area.y + 0.5, areaWidth, areaHeight);
   ctx.restore();
@@ -139,6 +134,14 @@ function drawCanvas() {
 
   drawImage(ctx);
   drawArea(ctx);
+}
+
+function drawResizeSquares(ctx) {
+  const areas = getResizeSquares(isMobile);
+
+  for (const area of areas) {
+    ctx.strokeRect(area.x + 0.5, area.y + 0.5, area.width, area.height);
+  }
 }
 
 function drawGrid(ctx, area) {
