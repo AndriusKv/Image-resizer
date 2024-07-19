@@ -196,7 +196,7 @@ function handlePointerDown(event) {
         y: y - area.y
       };
     }
-    else if ((event.ctrlKey || isMobile) && areaDrawn && isInsideArea(x, y)) {
+    else if (areaDrawn && isInsideArea(x, y)) {
       eventToEnable = "move";
       pointerPosition = {
         x: x - area.x,
@@ -357,25 +357,27 @@ function resetCanvas() {
   drawImage(canvas.getContext("2d"));
   setCanvasCursor();
   resetCropPanelInputs();
-  cropBtnElement.classList.remove("visible");
+  actionBtnElement.classList.remove("visible");
   window.removeEventListener("pointermove", changeCursor);
 }
 
 function allowCropAreaModification() {
-  cropBtnElement.classList.add("visible");
+  actionBtnElement.classList.add("visible");
   window.addEventListener("pointermove", changeCursor);
 }
 
 function changeCursor(event) {
   const { clientX: x, clientY: y } = event;
+  const direction = setDirection(x, y);
 
-  if (event.ctrlKey) {
-    setCanvasCursor(isInsideArea(x, y) ? "move" : "default");
+  if (direction) {
+    setCanvasCursor(direction ? `${direction}-resize` : "default");
+  }
+  else if (isInsideArea(x, y)) {
+    setCanvasCursor("move");
   }
   else {
-    const direction = setDirection(x, y);
-
-    setCanvasCursor(direction ? `${direction}-resize` : "default");
+    setCanvasCursor("default");
   }
 }
 
