@@ -149,5 +149,10 @@ button {
 }
 
 .tool-reset-btn {
+  display: none;
   margin-top: 12px;
+
+  &.visible {
+    display: block;
+  }
 }

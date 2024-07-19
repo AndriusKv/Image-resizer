@@ -10,7 +10,7 @@ import { isPanelVisible } from "./top-bar";
 
 const canvasImage = new Image();
 const editorElement = document.getElementById("js-editor");
-const cropBtnElement = document.getElementById("js-crop-btn");
+const actionBtnElement = document.getElementById("js-action-btns");
 const isMobile = window.orientation !== undefined;
 let canvas = null;
 let canvasWidth = 0;
@@ -532,7 +532,6 @@ function loadImageFile(blobUrl) {
     scaleImageToFitCanvas(canvasImage);
   };
   canvasImage.src = blobUrl;
-  // disableCutMode();
 }
 
 function getImageData(image, area, ctx) {
@@ -618,6 +617,7 @@ function resetCurrentTool() {
     if (currentToolElement) {
       currentToolElement.classList.remove("selected");
     }
+    hideToolRestButton();
     currentTool = "";
   }
 }
@@ -645,7 +645,69 @@ function handleCutToolSelection(prevTool) {
   }
 }
 
-cropBtnElement.addEventListener("click", () => {
+function hideToolRestButton() {
+  document.querySelector("[data-tool=reset]").classList.remove("visible");
+}
+
+function selectTool(tool, toolElement = null) {
+  if (tool === currentTool) {
+    return;
+  }
+  const prevTool = currentTool;
+
+  if (prevTool === "pan" && tool === "reset") {
+    resetArea();
+    resetCanvas();
+    hideToolRestButton();
+    return;
+  }
+
+  if (!toolElement) {
+    toolElement = document.querySelector(`[data-tool=${tool}]`);
+  }
+  resetCurrentTool();
+
+  if (prevTool !== tool) {
+    toolElement.classList.add("selected");
+    currentTool = tool;
+  }
+
+  if (tool === "pan") {
+    window.removeEventListener("pointermove", changeCursor);
+
+    if (hasArea()) {
+      document.querySelector("[data-tool=reset]").classList.add("visible");
+    }
+  }
+  else if (tool === "select") {
+    if (prevTool !== "pan" || areaWithGrid) {
+      resetArea();
+      resetCanvas();
+    }
+  }
+  else if (tool === "cut") {
+    handleCutToolSelection(prevTool);
+  }
+  else if (tool === "reset") {
+    resetArea();
+    resetCanvas();
+  }
+}
+
+actionBtnElement.addEventListener("click", () => {
+  const element = event.target.closest("[data-action]");
+
+  if (!element) {
+    return;
+  }
+  const action = element.getAttribute("data-action");
+
+  if (action === "cancel") {
+    resetArea();
+    resetCanvas();
+    hideToolRestButton();
+    return;
+  }
   const { file, blobUrl } = getActiveImage();
   const image = new Image();
 
@@ -682,55 +744,45 @@ document.getElementById("js-left-bar").addEventListener("click", event => {
     return;
   }
   const tool = toolElement.getAttribute("data-tool");
-  const prevTool = currentTool;
-
-  resetCurrentTool();
-
-  if (prevTool !== tool && tool !== "reset") {
-    toolElement.classList.add("selected");
-    currentTool = tool;
-  }
-
-  if (tool === "pan") {
-    window.removeEventListener("pointermove", changeCursor);
-  }
-  else if (tool === "select") {
-    if (prevTool !== "pan" || areaWithGrid) {
-      resetArea();
-      resetCanvas();
-    }
-  }
-  else if (tool === "cut") {
-    handleCutToolSelection(prevTool);
-  }
-  else if (tool === "reset") {
-    resetArea();
-    resetCanvas();
-  }
+  selectTool(tool, toolElement);
 });
 
 document.getElementById("js-snap-checkbox").addEventListener("change", event => {
   snapArea = event.target.checked;
 });
 
-window.addEventListener("keydown", (event) => {
-  if (event.key === "a" && event.ctrlKey) {
-    const area = getArea();
-    const { a: scale, e: x, f: y } = getTransform();
-    const { width, height } = canvasImage;
+window.addEventListener("keydown", event => {
+  const metaKeysPressed = event.metaKey || event.ctrlKey || event.shiftKey;
 
-    area.x = x;
-    area.y = y;
-    area.width = width * scale;
-    area.height = height * scale;
+  if (metaKeysPressed) {
+    if (event.key === "a" && event.ctrlKey) {
+      const area = getArea();
+      const { a: scale, e: x, f: y } = getTransform();
+      const { width, height } = canvasImage;
 
-    requestAnimationFrame(drawCanvas);
-    allowCropAreaModification();
-    event.preventDefault();
+      area.x = x;
+      area.y = y;
+      area.width = width * scale;
+      area.height = height * scale;
+
+      requestAnimationFrame(drawCanvas);
+      allowCropAreaModification();
+      event.preventDefault();
+    }
+  }
+  else if (event.key === "h") {
+    selectTool("pan");
+  }
+  else if (event.key === "s") {
+    selectTool("select");
+  }
+  else if (event.key === "c") {
+    selectTool("cut");
   }
   else if (event.key === "Escape") {
     resetArea();
     resetCanvas();
+    hideToolRestButton();
   }
 });
 
