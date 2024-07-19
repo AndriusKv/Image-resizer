@@ -6,16 +6,20 @@
   pointer-events: none;
 }
 
-.bottom-bar-crop-btn {
-  position: relative;
+.bottom-bar-action-btns {
   display: none;
-  margin: 0 auto 8px auto;
-  box-shadow: 0 2px 4px 0 var(--color-black-40);
-  pointer-events: auto;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
 
   &.visible {
-    display: block;
+    display: flex;
   }
+}
+
+.bottom-bar-action-btn {
+  box-shadow: 0 2px 4px 0 var(--color-black-40);
+  pointer-events: auto;
 }
 
 .bottom-bar-items {
