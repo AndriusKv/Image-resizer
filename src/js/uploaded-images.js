@@ -72,6 +72,15 @@ function getFileExtensionFromType(type) {
   return ext;
 }
 
+function endsInFileExtension(name) {
+  const ext = name.split(".").at(-1) || "";
+  const extensions = ["png", "jpg", "jpeg", "webp"];
+
+  if (ext) {
+    return extensions.includes(ext.toLowerCase());
+  }
+}
+
 function readImage(file) {
   return new Promise(resolve => {
     const image = new Image();
@@ -227,14 +236,51 @@ document.addEventListener("paste", async event => {
     // For files from `e.clipboardData.files`.
     if (clipboardItem.type?.startsWith("image/")) {
       blobs.push(clipboardItem);
-    } else {
+    }
+    else {
       // For files from `navigator.clipboard.read()`.
-      const imageTypes = clipboardItem.types?.filter(type => type.startsWith("image/"));
+      for (const type of clipboardItem.types) {
+        if (type.startsWith("image/")) {
+          const blob = await clipboardItem.getType(type);
 
-      for (const imageType of imageTypes) {
-        const blob = await clipboardItem.getType(imageType);
+          blobs.push(blob);
+        }
+        else if (type === "text/plain") {
+          const blob = await clipboardItem.getType(type);
+          const text = await blob.text();
 
-        blobs.push(blob);
+          if (URL.canParse(text)) {
+            const blob = await new Promise(resolve => {
+              const url = new URL(text);
+              const image = new Image();
+
+              image.onload = async () => {
+                try {
+                  const blob = await fetch(text).then(res => res.blob());
+                  const name = url.pathname.split("/").at(-1);
+                  const filename = endsInFileExtension(name) ? name : `${name}.${getFileExtensionFromType(blob.type)}`;
+
+                  blob.name = filename;
+                  resolve(blob);
+                } catch {
+                  resolve();
+                }
+              };
+
+              image.onerror = () => {
+                console.log("error / not an image");
+                resolve();
+              };
+
+              image.crossOrigin = "Anonymous";
+              image.src = url;
+            });
+
+            if (blob) {
+              blobs.push(blob);
+            }
+          }
+        }
       }
     }
   }
