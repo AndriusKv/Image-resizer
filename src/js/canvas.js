@@ -696,7 +696,7 @@ function selectTool(tool, toolElement = null) {
   }
 }
 
-actionBtnElement.addEventListener("click", () => {
+actionBtnElement.addEventListener("click", event => {
   const element = event.target.closest("[data-action]");
 
   if (!element) {
@@ -727,6 +727,7 @@ actionBtnElement.addEventListener("click", () => {
       resetFlip();
       loadImageFile(blobUrl);
       setActiveImage(index);
+      actionBtnElement.classList.remove("visible");
     }
     else {
       renderAddedFolderImage({
@@ -734,6 +735,8 @@ actionBtnElement.addEventListener("click", () => {
         type: file.type,
         ...await getCanvasSlice(image, file.type)
       });
+      resetArea();
+      resetCanvas();
     }
   };
   image.src = blobUrl;
