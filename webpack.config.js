@@ -6,6 +6,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const { GenerateSW } = require("workbox-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
+const postcssPresetEnv = require("postcss-preset-env");
 
 module.exports = function(env = {}) {
   const mode = env.prod ? "production" : "development";
@@ -98,29 +99,30 @@ module.exports = function(env = {}) {
         {
           test: /\.s?css$/,
           use: [
-            { loader: MiniCssExtractPlugin.loader },
+            {
+              loader: MiniCssExtractPlugin.loader,
+              options: {
+                esModule: true
+              }
+            },
             {
               loader: "css-loader",
               options: {
-                sourceMap: !env.prod,
+                esModule: true,
+                importLoaders: 1,
                 url: false
               }
             },
             {
               loader: "postcss-loader",
               options: {
-                sourceMap: !env.prod,
                 postcssOptions: {
                   plugins: [
-                    require("autoprefixer")()
+                    "postcss-import",
+                    require("postcss-mixins"),
+                    postcssPresetEnv({ stage: 0 })
                   ]
                 }
-              }
-            },
-            {
-              loader: "sass-loader",
-              options: {
-                sourceMap: !env.prod
               }
             }
           ]

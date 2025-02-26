@@ -1,5 +1,5 @@
 import "normalize.css";
-import "../scss/index.scss";
+import "../styles/index.css";
 
 import "./utils.js";
 import "./zoom.js";

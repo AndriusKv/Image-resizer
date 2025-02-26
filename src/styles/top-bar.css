@@ -1,3 +1,5 @@
+@import url("./variables.css");
+
 .top-bar-header {
   position: absolute;
   top: 8px;
@@ -386,7 +388,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  @include breakpoint {
+  @media (width < 38rem) {
     width: 100%;
     margin-right: auto;
     text-align: center;
